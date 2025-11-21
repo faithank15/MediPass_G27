@@ -297,3 +297,36 @@ void MediPass::load_user(sqlite3* db,User* user)
             break;
     }
 }
+
+int MediPass::load_patient(sqlite3* db, const int& patient_id, Patient* patient)
+{
+    /*
+    ** This function loads patient details from the database into the provided Patient object.
+    */
+
+    // Implementation goes here
+
+    return 0;
+}
+
+int MediPass::load_sante(sqlite3* db, const int& sante_id, Sante* sante)
+{
+    /*
+    ** This function loads healthcare professional details from the database into the provided Sante object.
+    */
+
+    // Implementation goes here
+
+    return 0;
+}
+
+int MediPass::load_admin(sqlite3* db, const int& admin_id, Admin* admin)
+{
+    /*
+    ** This function loads admin details from the database into the provided Admin object.
+    */
+
+    // Implementation goes here
+
+    return 0;
+}
