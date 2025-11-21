@@ -1,32 +1,46 @@
-#ifndef UTILISATEUR_H
-#define UTILISATEUR_H
+#ifndef USER_HPP
+#define USER_HPP
 
 #include <string>
 
-class Utilisateur{
-
+class User {
 public:
+    User();  // Obligatoire pour MediPass
 
-    class Invalid{};
-    
-    Utilisateur(const std::string& firstname,
-                const std::string& last_name, 
-                const std::string& numero_de_tel);
+    User(int id,
+         const std::string& username,
+         const std::string& password,
+         const std::string& role,
+         bool is_active,
+         int telephone,
+         const std::string& created_by,
+         const std::string& created_at);
 
-    // Accesseurs
-    std::string obtenir_firstname() const{return firstname; };
-    std::string obtenir_lastname() const {return last_name; };
-    std::string obtenir_numero_de_tel() const {return num_telephone; }; 
+    // Getters
+    int getId() const;
+    std::string getUsername() const;
+    std::string getRole() const;
+    bool isActive() const;
+    int getTelephone() const;
+    std::string getCreatedBy() const;
+    std::string getCreatedAt() const;
+
+    // Pour login
+    bool verifyPassword(const std::string& pwd) const;
+
+    // Admin peut activer / désactiver
+    void activate();
+    void deactivate();
 
 private:
-
-    std::string num_telephone ;
-    std::string firstname;
-    std::string last_name;
-     // int id; 
-    // std::string email;
-
-
+    int id;
+    std::string username;
+    std::string password;
+    std::string role;
+    bool active;
+    int telephone;
+    std::string created_by;
+    std::string created_at;
 };
 
 #endif

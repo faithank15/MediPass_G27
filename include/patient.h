@@ -1,28 +1,26 @@
-#ifndef PATIENT_H
-#define PATIENT_H
+#ifndef PATIENT_HPP
+#define PATIENT_HPP
 
 #include <string>
-#include <chrono>
-#include <vector>
-
-// Similation d'une classe Patient pour un test - À revoir
 
 class Patient {
 public:
-    Patient(std::string nom, std::string prenom)
-        : nom(nom), prenom(prenom) {}
+    Patient(); // nécessaire pour load_patient()
 
-    std::string obtenir_nom() const { return nom; }
-    std::string obtenir_prenom() const { return prenom; }
+    Patient(int id,
+            const std::string& firstname,
+            const std::string& lastname,
+            const std::string& dateNaissance);
 
-    // Ici je surchage l'opérateur "==" afin de pouvoir utiliser la fonction "find"
-    bool operator==(const Patient& other) const {
-        return nom == other.nom && prenom == other.prenom;      // c'est assez simple - cela nous permettra de trouver facilement s'il existe une correspondance entre deux patients sans passer par une boucle range for et une vérification une à une - grâce à find()
-    }
+    int getId() const;
+    std::string getNomComplet() const;
+    std::string getDateNaissance() const;
 
 private:
-    std::string nom;
-    std::string prenom;
+    int id;
+    std::string firstname;
+    std::string lastname;
+    std::string dateNaissance;
 };
 
 #endif
