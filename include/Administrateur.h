@@ -5,17 +5,14 @@
 #include <vector>
 #include "utilisateur.h"
 #include "patient.h"
-#include "MediPass.h"
 #include <sqlite3.h>
 
 class MediPass;   // forward declaration
 
 
-class Administrateur : public User {
+class Administrateur :virtual public User{
 public:
     Administrateur(const std::string& id,
-                   const std::string& firstname,
-                   const std::string& lastname,
                    const std::string& username,
                    const std::string& password);
 

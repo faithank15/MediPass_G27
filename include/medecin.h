@@ -25,7 +25,7 @@ struct Consultation
     Patient patient;
     std::string observations;
     std::string motif;
-    std::vector<examen> examens;
+    std::vector<Examen> examens;
 };
 
 
@@ -59,7 +59,7 @@ public:
         const Patient& patient,
         const std::string& observations,
         const std::string& motif,
-        const std::vector<examen>& examens);
+        const std::vector<Examen>& examens);
 
 
     void mettre_disponibilite(const std::vector<std::chrono::system_clock::time_point>& dates);

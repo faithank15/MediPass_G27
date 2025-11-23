@@ -2,19 +2,20 @@
 #define USER_HPP
 
 #include <string>
+#include "globals.h"
 
 class User {
 public:
     User();  // Obligatoire pour MediPass
-
-    User(int id,
-         const std::string& username,
+    virtual ~User();
+    User(const std::string& username,
          const std::string& password,
          const std::string& role,
-         bool is_active,
-         int telephone,
-         const std::string& created_by,
-         const std::string& created_at);
+         bool is_active = true,
+         int telephone = 00000000,
+         const std::string& created_by = NULL,
+         const std::string& created_at = NULL,
+         int id = userCount);
 
     // Getters
     int getId() const;

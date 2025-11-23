@@ -51,7 +51,7 @@ int MediPass::print_banner() const
     return 0;
 }
 
-int MediPass::run(string db_filename)
+int MediPass::run()
 {
     /*
     ** This function runs the main application loop.
@@ -278,23 +278,16 @@ void MediPass::load_user(sqlite3* db,User* user)
     ** This function redirects to the appropriate user loading function based on the current user's role.
     */
 
-    static enum UserType { PATIENT, SANTE, ADMIN };
+    string user_type = user->getRole();
 
-    UserType user_type = current_user->getRole();
-
-    switch (user_type){
-        case PATIENT:
-            MediPass::load_patient(db, current_user->getId(), dynamic_cast<Patient*>(user));
-            break;
-        case SANTE:
-            MediPass::load_sante(db, current_user->getId(), dynamic_cast<Sante*>(user));
-            break;
-        case ADMIN:
-            MediPass::load_admin(db, current_user->getId(), dynamic_cast<Admin*>(user));
-            break;
-        default:
-            cout << "[!]: Unknown user role." << endl;
-            break;
+    if (user_type == "PATIENT") {
+        MediPass::load_patient(db, current_user->getId(), dynamic_cast<Patient*>(user));
+    } else if (user_type == "SANTE") {
+        MediPass::load_sante(db, current_user->getId(), dynamic_cast<Pro_sante*>(user));
+    } else if (user_type == "ADMIN") {
+        MediPass::load_admin(db, current_user->getId(), dynamic_cast<Administrateur*>(user));
+    } else {
+        cout << "[!]: Unknown user role." << endl;
     }
 }
 
@@ -309,7 +302,7 @@ int MediPass::load_patient(sqlite3* db, const int& patient_id, Patient* patient)
     return 0;
 }
 
-int MediPass::load_sante(sqlite3* db, const int& sante_id, Sante* sante)
+int MediPass::load_sante(sqlite3* db, const int& sante_id, Pro_sante* sante)
 {
     /*
     ** This function loads healthcare professional details from the database into the provided Sante object.
@@ -320,7 +313,7 @@ int MediPass::load_sante(sqlite3* db, const int& sante_id, Sante* sante)
     return 0;
 }
 
-int MediPass::load_admin(sqlite3* db, const int& admin_id, Admin* admin)
+int MediPass::load_admin(sqlite3* db, const int& admin_id, Administrateur* admin)
 {
     /*
     ** This function loads admin details from the database into the provided Admin object.

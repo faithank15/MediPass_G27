@@ -1,15 +1,27 @@
-#ifndef ANTECEDANT_H
-#define ANTECEDANT_H
-#include <string>
-class Antecedant
-{
-    public:
-        Antecedant(const std::string& description, const std::string& date_diagnosis);
-        std::string getDescription() const;
-        std::string getDateDiagnosis() const;
+#ifndef ANTECEDENT_H
+#define ANTECEDENT_H
 
-    private:
-        std::string description;
-        std::string date_diagnosis;
+#include <string>
+
+class Antecedant {
+private:
+    std::string description;
+    std::string date;
+
+public:
+    Antecedant();
+    Antecedant(const std::string& description,
+               const std::string& date);
+
+    // Getters
+    std::string getDescription() const;
+    std::string getDate() const;
+
+    // Setters
+    void setDescription(const std::string& d);
+    void setDate(const std::string& d);
+
+    void afficher() const;
 };
-#endif // ANTECEDANT_H
+
+#endif

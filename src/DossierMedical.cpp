@@ -70,8 +70,8 @@ void DossierMedical::setIdPatient(int idP) {
 }
 
 // Mutateurs d'ajout pour les collections
-void DossierMedical::ajouterAntecedent(const Antecedent& a) {
-    antecedents.push_back(a);
+void DossierMedical::ajouterAntecedent(const Antecedant& a) {
+    antecedants.push_back(a);
 }
 
 void DossierMedical::ajouterConsultation(const Consultation& c) {

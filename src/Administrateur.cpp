@@ -2,15 +2,13 @@
 #include <iostream>
 
 Administrateur::Administrateur(const std::string& id,
-                               const std::string& firstname,
-                               const std::string& lastname,
                                const std::string& username,
-                               const std::string& password){User(id, firstname, lastname, username, password); }
+                               const std::string& password){User(id, username, password,"administrateur",true,NULL,NULL,NULL); }
 
 // ------------------------------------------------------
 // Creer un utilisateur (admin / sante / patient)
 // ------------------------------------------------------
-void Administrateur::creerUtilisateur(MediPass& mp, sqlite3* db) {
+void Administrateur::creerUtilisateur(MediPass *mp, sqlite3* db) {
     std::string nom, prenom, username, password, role;
     std::cout << "Prenom: "; std::cin >> prenom;
     std::cout << "Nom: "; std::cin >> nom;

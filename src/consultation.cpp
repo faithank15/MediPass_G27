@@ -1,13 +1,33 @@
 #include "consultation.h"
+#include <iostream>
 
-Consultation::Consultation(const std::string& notes, const std::chrono::system_clock::time_point& date_consultation)
-    : notes(notes), date_consultation(date_consultation) {} 
+// Constructeurs
+Consultation::Consultation() {}
 
-std::string Consultation::getNotes() const {
-    return notes;
+Consultation::Consultation(const std::string& date,
+                           const std::string& professionnel,
+                           const std::string& motif,
+                           const std::string& observations)
+    : date(date), professionnel(professionnel),
+      motif(motif), observations(observations) {}
+
+// Getters
+std::string Consultation::getDate() const { return date; }
+std::string Consultation::getProfessionnel() const { return professionnel; }
+std::string Consultation::getMotif() const { return motif; }
+std::string Consultation::getObservations() const { return observations; }
+
+// Setters
+void Consultation::setDate(const std::string& d) { date = d; }
+void Consultation::setProfessionnel(const std::string& p) { professionnel = p; }
+void Consultation::setMotif(const std::string& m) { motif = m; }
+void Consultation::setObservations(const std::string& o) { observations = o; }
+
+// Affichage
+void Consultation::afficher() const {
+    std::cout << "Consultation du " << date
+              << "\nProfessionnel : " << professionnel
+              << "\nMotif : " << motif
+              << "\nObservations : " << observations
+              << "\n-------------------------------\n";
 }
-
-std::chrono::system_clock::time_point Consultation::getDateConsultation() const {
-    return date_consultation;
-}
-

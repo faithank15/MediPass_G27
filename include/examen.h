@@ -1,19 +1,31 @@
 #ifndef EXAMEN_H
 #define EXAMEN_H
+
 #include <string>
-#include <chrono>
 
-class Examen
-{
-    public:
-        Examen(const std::string& type, const std::chrono::system_clock::time_point& date_examen, const std::string& resultat);
-        std::string getType() const;
-        std::chrono::system_clock::time_point getDateExamen() const;
-        std::string getResultat() const;
+class Examen {
+private:
+    std::string date;
+    std::string typeExamen;
+    std::string resultat;
 
-    private:
-        std::string type;
-        std::chrono::system_clock::time_point date_examen;
-        std::string resultat;
+public:
+    Examen();
+    Examen(const std::string& date,
+           const std::string& typeExamen,
+           const std::string& resultat);
+
+    // Getters
+    std::string getDate() const;
+    std::string getTypeExamen() const;
+    std::string getResultat() const;
+
+    // Setters
+    void setDate(const std::string& d);
+    void setTypeExamen(const std::string& t);
+    void setResultat(const std::string& r);
+
+    void afficher() const;
 };
-#endif // EXAMEN_H
+
+#endif

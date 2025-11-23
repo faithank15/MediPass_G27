@@ -1,18 +1,19 @@
 #include "utilisateur.h"
+#include "globals.h"
 
 // constructeur vide utilisé par load_user()
 User::User()
     : id(0), username(""), password(""), role(""),
       active(false), telephone(0), created_by(""), created_at("") {}
 
-User::User(int id,
-           const std::string& username,
-           const std::string& password,
-           const std::string& role,
-           bool is_active,
-           int telephone,
-           const std::string& created_by,
-           const std::string& created_at)
+User::User(const std::string& username,
+         const std::string& password,
+         const std::string& role,
+         bool is_active,
+         int telephone,
+         const std::string& created_by,
+         const std::string& created_at,
+         int id)
     : id(id),
       username(username),
       password(password),
@@ -20,7 +21,7 @@ User::User(int id,
       active(is_active),
       telephone(telephone),
       created_by(created_by),
-      created_at(created_at) {}
+      created_at(created_at) {userCount++;}
 
 // Getters
 int User::getId() const { return id; }

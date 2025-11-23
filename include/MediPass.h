@@ -6,6 +6,7 @@
 #include "patient.h"
 #include "profesionnel_de_sante.h"
 
+
 class Administrateur;   // forward declaration
 
 using namespace std;
@@ -22,7 +23,7 @@ class MediPass
         string get_current_user() const;
         string getTime() const;
         int print_banner() const;
-        int run(string db_filename);
+        int run();
         int login(sqlite3* db);
         int logout();
         void load_user(sqlite3* db,User* user);

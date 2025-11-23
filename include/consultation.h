@@ -1,16 +1,36 @@
 #ifndef CONSULTATION_H
 #define CONSULTATION_H
-#include <string>
-#include <chrono>
-class Consultation
-{
-    public:
-        Consultation(const std::string& notes, const std::chrono::system_clock::time_point& date_consultation);
-        std::string getNotes() const;
-        std::chrono::system_clock::time_point getDateConsultation() const;
 
-    private:
-        std::string notes;
-        std::chrono::system_clock::time_point date_consultation;
+#include <string>
+
+class Consultation {
+private:
+    std::string date;
+    std::string professionnel;
+    std::string motif;
+    std::string observations;
+
+public:
+    Consultation();
+    Consultation(const std::string& date,
+                 const std::string& professionnel,
+                 const std::string& motif,
+                 const std::string& observations);
+
+    // Getters
+    std::string getDate() const;
+    std::string getProfessionnel() const;
+    std::string getMotif() const;
+    std::string getObservations() const;
+
+    // Setters
+    void setDate(const std::string& d);
+    void setProfessionnel(const std::string& p);
+    void setMotif(const std::string& m);
+    void setObservations(const std::string& o);
+
+    // Affichage
+    void afficher() const;
 };
-#endif // CONSULTATION_H
+
+#endif

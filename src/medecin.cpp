@@ -42,7 +42,7 @@ Medecin::Medecin(const string& firstname,
                  const string& role,
                  const string& statut,
                  const string& specialite)
-    : Utilisateur{firstname, last_name, numero_de_tel},
+    : User(),
       Pro_sante{firstname, last_name, numero_de_tel, autorisation, role, statut},
       specialite{specialite}
 {
@@ -51,8 +51,8 @@ Medecin::Medecin(const string& firstname,
 }
 
 Medecin::Medecin(const Medecin& original)
-    : Utilisateur{original.obtenir_firstname(), original.obtenir_lastname(), original.obtenir_numero_de_tel()}, 
-        Pro_sante{original.obtenir_firstname(), original.obtenir_lastname(), original.obtenir_numero_de_tel(), original.obtenir_autorisation(), 
+    : Utilisateur{original.obtenir_firstname(), original.obtenir_lastname(), original.obtenir_numero_de_tel()},
+        Pro_sante{original.obtenir_firstname(), original.obtenir_lastname(), original.obtenir_numero_de_tel(), original.obtenir_autorisation(),
             original.obtenir_role(), original.obtenir_statut()}
 {
 
@@ -97,11 +97,11 @@ bool Medecin::editer_dossier_medical(const Patient& patient)
         // refuser la lecture du dossier médical
         return false;
     }
-     
+
 }
 
-bool Medecin::creer_consultation(std::chrono::system_clock::time_point date_et_heure, 
-                        const Patient& patient, 
+bool Medecin::creer_consultation(std::chrono::system_clock::time_point date_et_heure,
+                        const Patient& patient,
                         const string& observations,
                         const string& motif,
                         const vector<Examen>& examens)
@@ -141,7 +141,7 @@ int main() {
         };
 
         cout << "Médecin créé avec succès." << endl;
-        cout << "Nom : " << med.obtenir_firstname() 
+        cout << "Nom : " << med.obtenir_firstname()
              << " " << med.obtenir_lastname() << endl;
         cout << "Spécialité : " << med.obtenir_specialite() << endl;
 
