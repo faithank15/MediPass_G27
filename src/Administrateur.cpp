@@ -1,30 +1,29 @@
-#include "Administrateur.hpp"
+#include "Administrateur.h"
 #include <iostream>
 
 Administrateur::Administrateur(const std::string& id,
                                const std::string& firstname,
                                const std::string& lastname,
                                const std::string& username,
-                               const std::string& password)
-    : Utilisateur(id, firstname, lastname, username, password) {}
+                               const std::string& password){User(id, firstname, lastname, username, password); }
 
 // ------------------------------------------------------
-// Créer un utilisateur (admin / sante / patient)
+// Creer un utilisateur (admin / sante / patient)
 // ------------------------------------------------------
 void Administrateur::creerUtilisateur(MediPass& mp, sqlite3* db) {
     std::string nom, prenom, username, password, role;
-    std::cout << "Prénom: "; std::cin >> prenom;
+    std::cout << "Prenom: "; std::cin >> prenom;
     std::cout << "Nom: "; std::cin >> nom;
     std::cout << "Username: "; std::cin >> username;
     std::cout << "Password: "; std::cin >> password;
-    std::cout << "Rôle (admin / sante / patient): "; std::cin >> role;
+    std::cout << "Role (admin / sante / patient): "; std::cin >> role;
 
     mp.create_user(db, username, password, role, true, 0, this->getNomComplet());
-    std::cout << "Utilisateur créé: " << prenom << " " << nom << " | Rôle: " << role << std::endl;
+    std::cout << "Utilisateur cree: " << prenom << " " << nom << " | Role: " << role << std::endl;
 }
 
 // ------------------------------------------------------
-// Modifier le rôle d’un utilisateur
+// Modifier le role d un utilisateur
 // ------------------------------------------------------
 void Administrateur::modifierRole(MediPass& mp, sqlite3* db, int userId, const std::string& nouveauRole) {
     std::string sql = "UPDATE users SET role='" + nouveauRole + "' WHERE id=" + std::to_string(userId) + ";";
@@ -33,25 +32,25 @@ void Administrateur::modifierRole(MediPass& mp, sqlite3* db, int userId, const s
         std::cerr << "Erreur SQL: " << errMsg << std::endl;
         sqlite3_free(errMsg);
     } else {
-        std::cout << "Rôle de l'utilisateur " << userId << " modifié en " << nouveauRole << std::endl;
+        std::cout << "Role de l'utilisateur " << userId << " modifie en " << nouveauRole << std::endl;
     }
 }
 
 // ------------------------------------------------------
-// Désactiver / activer compte
+// Dï¿½sactiver / activer compte
 // ------------------------------------------------------
 void Administrateur::desactiverCompte(MediPass& mp, sqlite3* db, int userId) {
     std::string sql = "UPDATE users SET is_active=0 WHERE id=" + std::to_string(userId) + ";";
     char* errMsg = nullptr;
     sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg);
-    std::cout << "Compte " << userId << " désactivé." << std::endl;
+    std::cout << "Compte " << userId << " desactive." << std::endl;
 }
 
 void Administrateur::activerCompte(MediPass& mp, sqlite3* db, int userId) {
     std::string sql = "UPDATE users SET is_active=1 WHERE id=" + std::to_string(userId) + ";";
     char* errMsg = nullptr;
     sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg);
-    std::cout << "Compte " << userId << " activé." << std::endl;
+    std::cout << "Compte " << userId << " active." << std::endl;
 }
 
 // ------------------------------------------------------
@@ -66,17 +65,17 @@ void Administrateur::afficherStatistiques(MediPass& mp, sqlite3* db) {
 }
 
 // ------------------------------------------------------
-// Menu de l’administrateur
+// Menu de lï¿½administrateur
 // ------------------------------------------------------
-void Administrateur::menuAdmin(MediPass& mp, sqlite3* db) {
+void Administrateur::menu(MediPass& mp, sqlite3* db) {
     int choix = 0;
     do {
         std::cout << "\n=== Menu Administrateur ===\n"
-                  << "1. Créer un utilisateur\n"
-                  << "2. Modifier rôle d’un utilisateur\n"
-                  << "3. Activer/Désactiver un utilisateur\n"
+                  << "1. Crï¿½er un utilisateur\n"
+                  << "2. Modifier rï¿½le dï¿½un utilisateur\n"
+                  << "3. Activer/Dï¿½sactiver un utilisateur\n"
                   << "4. Statistiques globales\n"
-                  << "5. Déconnexion\n#> ";
+                  << "5. Dï¿½connexion\n#> ";
         std::cin >> choix;
 
         switch(choix) {
@@ -84,14 +83,14 @@ void Administrateur::menuAdmin(MediPass& mp, sqlite3* db) {
             case 2: {
                 int id; std::string role;
                 std::cout << "ID utilisateur: "; std::cin >> id;
-                std::cout << "Nouveau rôle: "; std::cin >> role;
+                std::cout << "Nouveau rï¿½le: "; std::cin >> role;
                 modifierRole(mp, db, id, role);
                 break;
             }
             case 3: {
                 int id; char act;
                 std::cout << "ID utilisateur: "; std::cin >> id;
-                std::cout << "Activer(a)/Désactiver(d)? "; std::cin >> act;
+                std::cout << "Activer(a)/Dï¿½sactiver(d)? "; std::cin >> act;
                 if (act == 'a') activerCompte(mp, db, id);
                 else desactiverCompte(mp, db, id);
                 break;

@@ -1,9 +1,12 @@
 #include <iostream>
+#include "MediPass.h"
 
 using namespace std;
 
 int main()
 {
-    cout << "Hello world!" << endl;
+
+    MediPass System;
+    System.run();
     return 0;
 }

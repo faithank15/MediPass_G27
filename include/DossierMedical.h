@@ -4,9 +4,9 @@
 #include <vector>
 #include <string>
 #include <chrono> // Pour la gestion automatique du temps (heure de création)
-#include "Antecedent.h"
-#include "Consultation.h"
-#include "Examen.h"
+#include "antecedant.h"
+#include "consultation.h"
+#include "examen.h"
 
 class DossierMedical {
 
@@ -15,7 +15,7 @@ private:
     int idDossier;
     int idPatient;
     std::string heureCreation; // Format chaîne de caractères pour la simplicité
-    std::vector<Antecedent> antecedents;
+    std::vector<Antecedant> antecedants;
     std::vector<Consultation> consultations;
     std::vector<Examen> examens; // Ajout des examens
 
@@ -33,7 +33,7 @@ public:
     std::string getHeureCreation() const;
 
     // Getters pour les collections (retournent une référence constante)
-    const std::vector<Antecedent>& getAntecedents() const;
+    const std::vector<Antecedant>& getAntecedents() const;
     const std::vector<Consultation>& getConsultations() const;
     const std::vector<Examen>& getExamens() const;
 
@@ -44,7 +44,7 @@ public:
     // Pas de Setter pour l'heure de création, elle est automatique.
 
     // Mutateurs pour ajouter du contenu (méthodes d'ajout)
-    void ajouterAntecedent(const Antecedent& a);
+    void ajouterAntecedent(const Antecedant& a);
     void ajouterConsultation(const Consultation& c);
     void ajouterExamen(const Examen& e);
 

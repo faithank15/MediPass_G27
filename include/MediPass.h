@@ -2,6 +2,11 @@
 #define MEDIPASS_H
 #include <string>
 #include <sqlite3.h>
+#include "utilisateur.h"
+#include "patient.h"
+#include "profesionnel_de_sante.h"
+
+class Administrateur;   // forward declaration
 
 using namespace std;
 
@@ -22,8 +27,8 @@ class MediPass
         int logout();
         void load_user(sqlite3* db,User* user);
         int load_patient(sqlite3* db, const int& patient_id, Patient* patient);
-        int load_sante(sqlite3* db, const int& sante_id, Sante* sante);
-        int load_admin(sqlite3* db, const int& admin_id, Admin* admin);
+        int load_sante(sqlite3* db, const int& sante_id, Pro_sante* sante);
+        int load_admin(sqlite3* db, const int& admin_id, Administrateur* admin);
 
     protected:
         string db_filename;

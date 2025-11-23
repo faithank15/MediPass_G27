@@ -9,7 +9,7 @@
 // Forward declaration pour éviter les include circulaires
 class Patient;
 
-class Pro_sante: virtual public Utilisateur{
+class Pro_sante: virtual public User{
 
 public:
     class Invalid{};
@@ -49,6 +49,4 @@ private:
 };
 
 
-#endif
-
-//<<>>
+#endif //PROFESIONNEL_DE_SANTE_H

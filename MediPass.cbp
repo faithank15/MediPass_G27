@@ -13,6 +13,7 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
+					<Add directory="/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -32,10 +33,11 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename="include/Administrateur.h" />
 		<Unit filename="include/DossierMedical.h" />
 		<Unit filename="include/MediPass.h" />
 		<Unit filename="include/antecedant.h" />
-		<Unit filename="include/consulation.h" />
+		<Unit filename="include/consultation.h" />
 		<Unit filename="include/examen.h" />
 		<Unit filename="include/infirmier.h" />
 		<Unit filename="include/medecin.h" />
@@ -44,10 +46,11 @@
 		<Unit filename="include/profesionnel_de_sante.h" />
 		<Unit filename="include/utilisateur.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="src/Administrateur.cpp" />
 		<Unit filename="src/DossierMedical.cpp" />
 		<Unit filename="src/MediPass.cpp" />
 		<Unit filename="src/antecedant.cpp" />
-		<Unit filename="src/consulation.cpp" />
+		<Unit filename="src/consultation.cpp" />
 		<Unit filename="src/examen.cpp" />
 		<Unit filename="src/infirmier.cpp" />
 		<Unit filename="src/medecin.cpp" />

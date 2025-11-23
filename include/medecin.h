@@ -25,7 +25,7 @@ struct Consultation
     Patient patient;
     std::string observations;
     std::string motif;
-    std::vector<Examen> examens;
+    std::vector<examen> examens;
 };
 
 
@@ -52,14 +52,14 @@ public:
     // Actions
     void lire_dossier_medical(const Patient& patient) const;
     bool editer_dossier_medical(const Patient& patient);
-    
+
 
     bool creer_consultation(
         std::chrono::system_clock::time_point date_et_heure,
         const Patient& patient,
         const std::string& observations,
         const std::string& motif,
-        const std::vector<Examen>& examens);
+        const std::vector<examen>& examens);
 
 
     void mettre_disponibilite(const std::vector<std::chrono::system_clock::time_point>& dates);

@@ -1,4 +1,4 @@
-#include "Patient.hpp"
+#include "patient.h"
 
 Patient::Patient()
     : id(0), firstname(""), lastname(""), dateNaissance("") {}

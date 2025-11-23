@@ -25,7 +25,7 @@ bool est_valide(const string& autorisation, const string& role, const string& st
 
 
 Pro_sante::Pro_sante(string firstname, string last_name, string numero_de_tel, string autorisation, string role, string statut)
-:    Utilisateur{firstname, last_name, numero_de_tel}, autorisation{autorisation}, role{role}, statut{statut}
+:    User(firstname, last_name, numero_de_tel), autorisation{autorisation}, role{role}, statut{statut}
 {
     if(!est_valide(autorisation, role, statut))
         throw Invalid{};

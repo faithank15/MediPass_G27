@@ -47,8 +47,8 @@ std::string DossierMedical::getHeureCreation() const {
 }
 
 // Getters pour les collections (retournent une référence constante)
-const std::vector<Antecedent>& DossierMedical::getAntecedents() const {
-    return antecedents;
+const std::vector<Antecedant>& DossierMedical::getAntecedents() const {
+    return antecedants;
 }
 
 const std::vector<Consultation>& DossierMedical::getConsultations() const {

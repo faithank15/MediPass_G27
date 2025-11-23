@@ -9,7 +9,7 @@ MediPass::MediPass(string DB_filename)
 
 MediPass::~MediPass()
 {
-    
+
 }
 
 string MediPass::getDbFilename() const
@@ -38,7 +38,7 @@ int MediPass::print_banner() const
     /*
     ** This function prints the MediPass banner to the console.
     */
-    
+
     cout << "******************************************" << endl;
     cout << "**__**__**********_*_*_____***************" << endl;
     cout << "*|  \\/  |********| (_)  __ \\**************" << endl;
@@ -99,7 +99,7 @@ int MediPass::run(string db_filename)
                         MediPass::load_user(db, &user);
                         current_user = new User(user);
                         // User menu
-                        User.menu();
+                        //user.menu();
                     }else{
                         cout << "[!]: Login failed after 3 attempts." << endl;
                     }
@@ -174,7 +174,7 @@ string MediPass::create_db(sqlite3* db)
         "FOREIGN KEY(dossier_id) REFERENCES DOSSIERS_MEDICAUX(id) ON DELETE CASCADE ON UPDATE CASCADE "
         ");",
         NULL, NULL, NULL);
-    
+
     sqlite3_exec(db,
         "CREATE TABLE IF NOT EXISTS EXAMENS ("
         "id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -278,7 +278,7 @@ void MediPass::load_user(sqlite3* db,User* user)
     ** This function redirects to the appropriate user loading function based on the current user's role.
     */
 
-    enum UserType { PATIENT, SANTE, ADMIN };
+    static enum UserType { PATIENT, SANTE, ADMIN };
 
     UserType user_type = current_user->getRole();
 

@@ -3,12 +3,15 @@
 
 #include <string>
 #include <vector>
-#include "Utilisateur.hpp"
-#include "Patient.hpp"
+#include "utilisateur.h"
+#include "patient.h"
 #include "MediPass.h"
 #include <sqlite3.h>
 
-class Administrateur : public Utilisateur {
+class MediPass;   // forward declaration
+
+
+class Administrateur : public User {
 public:
     Administrateur(const std::string& id,
                    const std::string& firstname,
@@ -17,16 +20,16 @@ public:
                    const std::string& password);
 
     // Gestion des utilisateurs
-    void creerUtilisateur(MediPass& mp, sqlite3* db);
-    void modifierRole(MediPass& mp, sqlite3* db, int userId, const std::string& nouveauRole);
-    void desactiverCompte(MediPass& mp, sqlite3* db, int userId);
-    void activerCompte(MediPass& mp, sqlite3* db, int userId);
+    void creerUtilisateur(MediPass *mp, sqlite3* db);
+    void modifierRole(MediPass* mp, sqlite3* db, int userId, const std::string& nouveauRole);
+    void desactiverCompte(MediPass* mp, sqlite3* db, int userId);
+    void activerCompte(MediPass* mp, sqlite3* db, int userId);
 
     // Statistiques globales
     void afficherStatistiques(MediPass& mp, sqlite3* db);
 
     // Menu complet
-    void menuAdmin(MediPass& mp, sqlite3* db);
+    void menu(MediPass& mp, sqlite3* db);
 };
 
 #endif
