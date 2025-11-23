@@ -8,17 +8,32 @@ Administrateur::Administrateur(const std::string& id,
 // ------------------------------------------------------
 // Creer un utilisateur (admin / sante / patient)
 // ------------------------------------------------------
-void Administrateur::creerUtilisateur(MediPass *mp, sqlite3* db) {
-    std::string nom, prenom, username, password, role;
-    std::cout << "Prenom: "; std::cin >> prenom;
-    std::cout << "Nom: "; std::cin >> nom;
-    std::cout << "Username: "; std::cin >> username;
-    std::cout << "Password: "; std::cin >> password;
-    std::cout << "Role (admin / sante / patient): "; std::cin >> role;
+void Administrateur::creerUtilisateur(sqlite3* db) {
+    std::string prenom, nom, username, password, role;
 
-    mp.create_user(db, username, password, role, true, 0, this->getNomComplet());
-    std::cout << "Utilisateur cree: " << prenom << " " << nom << " | Role: " << role << std::endl;
+    std::cin.ignore();
+    std::cout << "Prénom : "; std::getline(std::cin, prenom);
+    std::cout << "Nom : "; std::getline(std::cin, nom);
+    std::cout << "Nom d'utilisateur : "; std::getline(std::cin, username);
+    std::cout << "Mot de passe : "; std::getline(std::cin, password);
+    std::cout << "Rôle (admin / patient / professionel de sante) : "; std::getline(std::cin, role);
+
+    // Construire la requête SQL
+    std::stringstream ss;
+    ss << "INSERT INTO users (username, password, role, is_active, created_by) "
+       << "VALUES ('" << username << "', '" << password << "', '" << role << "', 1, '"
+       << this->getUsername() << "');";
+
+    std::string query = ss.str();
+    char* errMsg = nullptr;
+    if (sqlite3_exec(db, query.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
+        std::cerr << "Erreur SQL : " << errMsg << std::endl;
+        sqlite3_free(errMsg);
+    } else {
+        std::cout << "Utilisateur créé avec succès !" << std::endl;
+    }
 }
+
 
 // ------------------------------------------------------
 // Modifier le role d un utilisateur
