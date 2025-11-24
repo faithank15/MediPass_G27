@@ -4,8 +4,11 @@
 #include <string>
 #include "globals.h"
 
+
 class User {
 public:
+    // DÃ©claration de la variable statique - Nous en aurons besoin pour continuer - je pense
+    static int userCount;
     User();  // Obligatoire pour MediPass
     virtual ~User();
     User(const std::string& username,
@@ -29,7 +32,7 @@ public:
     // Pour login
     bool verifyPassword(const std::string& pwd) const;
 
-    // Admin peut activer / désactiver
+    // Admin peut activer / dï¿½sactiver
     void activate();
     void deactivate();
 
@@ -43,5 +46,7 @@ private:
     std::string created_by;
     std::string created_at;
 };
+
+
 
 #endif

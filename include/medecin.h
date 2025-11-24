@@ -36,12 +36,17 @@ public:
 
     class Invalid {};
 
+    virtual void menu();
 
-    Medecin(const std::string& firstname,
-            const std::string& last_name,
-            const std::string& numero_de_tel,
+    Medecin(int id,
+            std::string username,
+            std::string password,
+            std::string role, 
+            bool active,
+            int telephone,
+            std::string created_by,
+            std::string created_at,
             const std::string& autorisation,
-            const std::string& role,
             const std::string& statut,
             const std::string& specialite);
 
@@ -66,7 +71,14 @@ public:
 
 
     // Accesseur
-    std::string obtenir_specialite() const { return specialite; }
+    std::string obtenir_specialite() const { return specialite; };
+
+    void afficher_patients();
+    void afficher_disponibilites();
+    void ajouter_consultation_interactive();
+    void afficher_infos_professionnelles();
+
+
 
 private:
     std::string specialite;

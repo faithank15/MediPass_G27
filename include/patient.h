@@ -4,7 +4,7 @@
 #include <string>
 
 class Patient {
-public:
+public: 
     Patient(); // nécessaire pour load_patient()
 
     Patient(int id,
@@ -15,6 +15,11 @@ public:
     int getId() const;
     std::string getNomComplet() const;
     std::string getDateNaissance() const;
+
+    // Surchage d'opérateur - // Je vous en prie - ne supprimer plus les surchages d'opérateurs, cela me permet d'utiliser "find" pour parcourir des vecteurs de ces objets et de les comparer - c'est souvent plus pratique q'une boucle for
+    bool operator==(const Patient& other) const {
+        return this->getNomComplet() == other.getNomComplet(); 
+    }
 
 private:
     int id;
