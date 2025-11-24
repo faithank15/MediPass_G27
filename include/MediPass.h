@@ -20,6 +20,7 @@ class MediPass
         string create_db(sqlite3* db);
         void load_db(sqlite3* db);
         static int callback(void* data, int argc, char** argv, char** azColName);
+        static int callback_names(void* data, int argc, char** argv, char** azColName);
         string get_current_user() const;
         string getTime() const;
         int print_banner() const;

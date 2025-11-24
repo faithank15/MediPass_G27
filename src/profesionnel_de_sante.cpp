@@ -2,9 +2,12 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <sqlite3.h>
+#include "MediPass.h"
 
 #include "profesionnel_de_sante.h"
 #include "patient.h"
+#include "utilisateur.h"
 
 using namespace std;
 
@@ -24,8 +27,8 @@ bool est_valide(const string& autorisation, const string& role, const string& st
 }
 
 
-Pro_sante::Pro_sante(string username, string numero_de_tel, string autorisation, string role, string statut)
-:    User(username, numero_de_tel), autorisation{autorisation}, role{role}, statut{statut}
+Pro_sante::Pro_sante(MediPass* mp, sqlite3* db, const std::string& firstname, const std::string& last_name, const std::string& numero_de_tel, const std::string& autorisation, const std::string& role, const std::string& statut)
+:    User(mp, db, firstname,last_name,NULL,role), autorisation{autorisation}, role{role}, statut{statut}
 {
     if(!est_valide(autorisation, role, statut))
         throw Invalid{};

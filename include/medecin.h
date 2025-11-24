@@ -11,7 +11,7 @@
 class Medecin;
 
 
-struct Consultation
+/*struct Consultation
 {
     Consultation(std::chrono::system_clock::time_point date_et_heure,
                  const Medecin* medecin,
@@ -26,7 +26,7 @@ struct Consultation
     std::string observations;
     std::string motif;
     std::vector<Examen> examens;
-};
+};*/
 
 
 
@@ -56,7 +56,8 @@ public:
 
     bool creer_consultation(
         std::chrono::system_clock::time_point date_et_heure,
-        const Patient& patient,
+        const Medecin* medecin,
+        const Patient* patient,
         const std::string& observations,
         const std::string& motif,
         const std::vector<Examen>& examens);
@@ -66,10 +67,12 @@ public:
 
 
     // Accesseur
-    std::string obtenir_specialite() const { return specialite; }
+    std::string getSpecialite() const { return specialite; }
+    std::string getNumero_de_tel() const {return numero_de_tel;}
 
 private:
     std::string specialite;
+    std::string numero_de_tel;
 };
 
 #endif

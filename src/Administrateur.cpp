@@ -1,14 +1,18 @@
 #include "Administrateur.h"
 #include <iostream>
+#include <string>
+#include <sstream>
+#include "MediPass.h"
 
-Administrateur::Administrateur(const std::string& id,
-                               const std::string& username,
-                               const std::string& password){User(id, username, password,"administrateur",true,NULL,NULL,NULL); }
+
+Administrateur::Administrateur(MediPass* mp, sqlite3* db, const std::string& firstname,
+                               const std::string& last_name,
+                               const std::string& password){User(mp, db, firstname, last_name, password,"administrateur",true,NULL,NULL,NULL); }
 
 // ------------------------------------------------------
 // Creer un utilisateur (admin / sante / patient)
 // ------------------------------------------------------
-void Administrateur::creerUtilisateur(sqlite3* db) {
+void Administrateur::creerUtilisateur() {
     std::string prenom, nom, username, password, role;
 
     std::cin.ignore();
@@ -20,9 +24,9 @@ void Administrateur::creerUtilisateur(sqlite3* db) {
 
     // Construire la requête SQL
     std::stringstream ss;
-    ss << "INSERT INTO users (username, password, role, is_active, created_by) "
-       << "VALUES ('" << username << "', '" << password << "', '" << role << "', 1, '"
-       << this->getUsername() << "');";
+    ss << "INSERT INTO users (firstname,last_name, password, role, is_active, created_by) "
+       << "VALUES ('" << firstname << "', '" << last_name << "', '" << password << "', '" << role << "', 1, '"
+       << this->getFirstname() << "');";
 
     std::string query = ss.str();
     char* errMsg = nullptr;
@@ -38,7 +42,7 @@ void Administrateur::creerUtilisateur(sqlite3* db) {
 // ------------------------------------------------------
 // Modifier le role d un utilisateur
 // ------------------------------------------------------
-void Administrateur::modifierRole(MediPass& mp, sqlite3* db, int userId, const std::string& nouveauRole) {
+void Administrateur::modifierRole(int userId, const std::string& nouveauRole) {
     std::string sql = "UPDATE users SET role='" + nouveauRole + "' WHERE id=" + std::to_string(userId) + ";";
     char* errMsg = nullptr;
     if (sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
@@ -52,14 +56,14 @@ void Administrateur::modifierRole(MediPass& mp, sqlite3* db, int userId, const s
 // ------------------------------------------------------
 // D�sactiver / activer compte
 // ------------------------------------------------------
-void Administrateur::desactiverCompte(MediPass& mp, sqlite3* db, int userId) {
+void Administrateur::desactiverCompte(int userId) {
     std::string sql = "UPDATE users SET is_active=0 WHERE id=" + std::to_string(userId) + ";";
     char* errMsg = nullptr;
     sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg);
     std::cout << "Compte " << userId << " desactive." << std::endl;
 }
 
-void Administrateur::activerCompte(MediPass& mp, sqlite3* db, int userId) {
+void Administrateur::activerCompte(int userId) {
     std::string sql = "UPDATE users SET is_active=1 WHERE id=" + std::to_string(userId) + ";";
     char* errMsg = nullptr;
     sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg);
@@ -69,7 +73,7 @@ void Administrateur::activerCompte(MediPass& mp, sqlite3* db, int userId) {
 // ------------------------------------------------------
 // Statistiques globales
 // ------------------------------------------------------
-void Administrateur::afficherStatistiques(MediPass& mp, sqlite3* db) {
+void Administrateur::afficherStatistiques() {
     int nbUsers = 0, nbPatients = 0;
     sqlite3_exec(db, "SELECT COUNT(*) FROM users;", MediPass::callback, &nbUsers, nullptr);
     sqlite3_exec(db, "SELECT COUNT(*) FROM patients;", MediPass::callback, &nbPatients, nullptr);
@@ -80,7 +84,7 @@ void Administrateur::afficherStatistiques(MediPass& mp, sqlite3* db) {
 // ------------------------------------------------------
 // Menu de l�administrateur
 // ------------------------------------------------------
-void Administrateur::menu(MediPass& mp, sqlite3* db) {
+void Administrateur::menu() {
     int choix = 0;
     do {
         std::cout << "\n=== Menu Administrateur ===\n"
@@ -92,23 +96,23 @@ void Administrateur::menu(MediPass& mp, sqlite3* db) {
         std::cin >> choix;
 
         switch(choix) {
-            case 1: creerUtilisateur(mp, db); break;
+            case 1: creerUtilisateur(); break;
             case 2: {
                 int id; std::string role;
                 std::cout << "ID utilisateur: "; std::cin >> id;
                 std::cout << "Nouveau r�le: "; std::cin >> role;
-                modifierRole(mp, db, id, role);
+                modifierRole(id, role);
                 break;
             }
             case 3: {
                 int id; char act;
                 std::cout << "ID utilisateur: "; std::cin >> id;
                 std::cout << "Activer(a)/D�sactiver(d)? "; std::cin >> act;
-                if (act == 'a') activerCompte(mp, db, id);
-                else desactiverCompte(mp, db, id);
+                if (act == 'a') activerCompte(id);
+                else desactiverCompte(id);
                 break;
             }
-            case 4: afficherStatistiques(mp, db); break;
+            case 4: afficherStatistiques(); break;
         }
     } while(choix != 5);
 }

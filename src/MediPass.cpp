@@ -1,6 +1,8 @@
 #include "MediPass.h"
 #include <iostream>
 #include <sqlite3.h>
+#include "utilisateur.h"
+#include "Administrateur.h"
 
 MediPass::MediPass(string DB_filename)
 {
@@ -31,6 +33,20 @@ int MediPass::callback(void* data, int argc, char** argv, char** azColName)
     int* count = (int*)data;
     *count = atoi(argv[0]);
 
+}
+
+int MediPass::callback_names(void* data, int argc, char** argv, char** azColName)
+{
+    /*
+    ** This is a callback function for SQLite queries. It retrieves names from the query result
+    ** and stores them in the provided data vector.
+    */
+
+    std::vector<std::string>* names = (std::vector<std::string>*)data;
+    names->push_back(std::string(argv[0]));
+    names->push_back(std::string(argv[1]));
+
+    return 0;
 }
 
 int MediPass::print_banner() const
@@ -127,7 +143,8 @@ string MediPass::create_db(sqlite3* db)
     sqlite3_exec(db,
         "CREATE TABLE IF NOT EXISTS users ("
         "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-        "username TEXT NOT NULL,"
+        "firstname TEXT NOT NULL,"
+        "last_name TEXT NOT NULL"
         "password TEXT NOT NULL,"
         "role TEXT NOT NULL,"
         "is_active INTEGER NOT NULL,"
@@ -212,7 +229,7 @@ string MediPass::get_current_user() const
 {
     if (current_user != nullptr)
     {
-        return current_user->getUsername();
+        return current_user->getFirstname();
     }
     else
     {

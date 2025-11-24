@@ -12,21 +12,21 @@ class MediPass;   // forward declaration
 
 class Administrateur :virtual public User{
 public:
-    Administrateur(const std::string& id,
-                   const std::string& username,
+    Administrateur(MediPass* mp, sqlite3* db, const std::string& firstname,
+                   const std::string& last_name,
                    const std::string& password);
 
     // Gestion des utilisateurs
-    void creerUtilisateur(MediPass *mp, sqlite3* db);
-    void modifierRole(MediPass* mp, sqlite3* db, int userId, const std::string& nouveauRole);
-    void desactiverCompte(MediPass* mp, sqlite3* db, int userId);
-    void activerCompte(MediPass* mp, sqlite3* db, int userId);
+    void creerUtilisateur();
+    void modifierRole(int userId, const std::string& nouveauRole);
+    void desactiverCompte(int userId);
+    void activerCompte(int userId);
 
     // Statistiques globales
-    void afficherStatistiques(MediPass& mp, sqlite3* db);
+    void afficherStatistiques();
 
     // Menu complet
-    void menu(MediPass& mp, sqlite3* db);
+    void menu();
 };
 
 #endif

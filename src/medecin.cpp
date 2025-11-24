@@ -2,6 +2,7 @@
 #include <iostream>
 #include "medecin.h"
 #include "patient.h"
+#include "consultation.h"
 
 
 using namespace std;
@@ -43,7 +44,7 @@ Medecin::Medecin(const string& firstname,
                  const string& statut,
                  const string& specialite)
     : User(),
-      Pro_sante{firstname, last_name, numero_de_tel, autorisation, role, statut},
+      Pro_sante(firstname,last_name, numero_de_tel, autorisation, role, statut),
       specialite{specialite}
 {
     if(!specialite_est_valide(specialite))
@@ -51,14 +52,14 @@ Medecin::Medecin(const string& firstname,
 }
 
 Medecin::Medecin(const Medecin& original)
-    : Utilisateur{original.obtenir_firstname(), original.obtenir_lastname(), original.obtenir_numero_de_tel()},
-        Pro_sante{original.obtenir_firstname(), original.obtenir_lastname(), original.obtenir_numero_de_tel(), original.obtenir_autorisation(),
-            original.obtenir_role(), original.obtenir_statut()}
+    : User{original.firstname,original.last_name,original.numero_de_tel,original.role},
+        Pro_sante{original.firstname, original.last_name, original.numero_de_tel, original.autorisation,
+            original.role, original.statut}
 {
 
 }
 
-Consultation::Consultation(chrono::system_clock::time_point date_et_heure,
+/*Consultation::Consultation(chrono::system_clock::time_point date_et_heure,
                            const Medecin* medecin,
                            const Patient& patient,
                            const string& observations,
@@ -74,7 +75,7 @@ Consultation::Consultation(chrono::system_clock::time_point date_et_heure,
 {
 
 }
-
+*/
 
 
 void Medecin::lire_dossier_medical(const Patient& patient) const
