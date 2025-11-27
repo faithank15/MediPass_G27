@@ -48,7 +48,7 @@ protected:
     int telephone;
     std::string created_by;
     std::string created_at;
-    MediPass* mediPass;
+    MediPass* mp;
     sqlite3* db;
 private:
 };

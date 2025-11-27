@@ -4,6 +4,7 @@
 #include <sstream>
 #include "MediPass.h"
 #include "utilisateur.h"
+#include <map>
 
 
 Administrateur::Administrateur(MediPass* mp,
@@ -16,24 +17,83 @@ Administrateur::Administrateur(MediPass* mp,
 // Creer un utilisateur (admin / sante / patient)
 // ------------------------------------------------------
 void Administrateur::creerUtilisateur() {
-    std::string prenom, nom, username, password, role;
 
-    std::cin.ignore();
-    std::cout << "Prénom : "; std::getline(std::cin, prenom);
-    std::cout << "Nom : "; std::getline(std::cin, nom);
-    std::cout << "Nom d'utilisateur : "; std::getline(std::cin, username);
-    std::cout << "Mot de passe : "; std::getline(std::cin, password);
-    std::cout << "Rôle (admin / patient / professionel de sante) : "; std::getline(std::cin, role);
+    std::string type;
+
+    std::map<std::string, std::string> defaultAut = {
+        {"admin", "A3"},
+        {"patient", ""},
+        {"medecin", "A2"},
+        {"infirmier", "A1"}
+    };
+
+    do{
+    std::cout << "Type d'utilisateur a creer (admin / patient / professionel de sante) : ";
+    std::getline(std::cin, type);
+    if(type != "admin" && type != "patient" && type != "professionel de sante"){
+        std::cout << "[!]: Type invalide. Veuillez reessayer." << std::endl;
+        }
+    } while(type != "admin" && type != "patient" && type != "professionel de sante");
+
+    std::string prenom="", nom="", password="", role="", autorisation="",statut="",specialite="";
+    int telephone=0;
+    bool is_active=true;
+
+    if(type=="professionel de sante") {
+        std::cout << "Prénom : "; std::getline(std::cin, prenom);
+        std::cout << "Nom : "; std::getline(std::cin, nom);
+        std::cout << "Statut : "; std::getline(std::cin, statut);
+        std::cout << "Spécialité : "; std::getline(std::cin, specialite);
+        std::cout << "Téléphone : "; std::cin >> telephone;
+        std::cout << "Autorisation (laisser vide pour l'autorisation par défaut): "; std::getline(std::cin, autorisation);
+
+        if(autorisation.empty()){
+            autorisation = defaultAut[statut];
+        }else if(autorisation != "A1" && autorisation != "A2"){
+            std::cout << "[!]: Autorisation invalide. Attribution de l'autorisation par défaut." << std::endl;
+            autorisation = defaultAut[statut];
+        }else if(autorisation == "A1"){
+            std::cout << "[!]: L'utilisateur pourra consulter les antécedents et l'historique de soins des patients. Il pourra aussi ajouter des soins." << std::endl;
+            std::cout << "[!]: Il ne pourra pas créer/modifier/supprimer des dossiers médicaux ni créer des utilisateurs." << std::endl;
+            std::cout << "[!]: Vous confirmer le niveau d'autorisation (O/N) ? ";
+            char confirmation;
+            std::cin >> confirmation;
+            if (confirmation != 'O' && confirmation != 'o') {
+                autorisation = defaultAut[statut];
+            }
+        }else if(autorisation == "A2"){
+            std::cout << "[!]: L'utilisateur pourra tout faire sauf créer des utilisateurs." << std::endl;
+            std::cout << "[!]: Vous confirmer le niveau d'autorisation (O/N) ? ";
+            char confirmation;
+            std::cin >> confirmation;
+            if (confirmation != 'O' && confirmation != 'o') {
+                autorisation = defaultAut[statut];
+            }
+        }
+    }else if(type=="admin"){
+        std::cin.ignore();
+        std::cout << "Prénom : "; std::getline(cin, prenom);
+        std::cout << "Nom : "; std::getline(cin, nom);
+        std::cout << "Téléphone : "; std::cin >> telephone;
+    }else if(type=="patient"){
+        std::cin.ignore();
+        std::cout << "Prénom : "; std::getline(std::cin, prenom);
+        std::cout << "Nom : "; std::getline(std::cin, nom);
+    }
 
     // Construire la requête SQL
-    std::stringstream ss;
-    ss << "INSERT INTO users (firstname,last_name, password, role, is_active, created_by) "
-       << "VALUES ('" << firstname << "', '" << last_name << "', '" << password << "', '" << role << "', 1, '"
-       << this->getFirstname() << "');";
-
-    std::string query = ss.str();
+    std::string sql = sqlite3_mprintf(
+        "INSERT INTO users (firstname, last_name, password, role, is_active, telephone,created_by,created_at, autorisation, statut, specialite) "
+        "VALUES ('%q', '%q', '%q', '%q', %d, %d, '%q', '%q', '%q', '%q', '%q');",
+        prenom.c_str(), nom.c_str(), password.c_str(),
+        type.c_str(),
+        is_active ? 1 : 0, telephone,
+        this->getFirstname().c_str(), "CURRENT_TIMESTAMP",
+        mp->getTimeDate().c_str(),
+        autorisation.c_str(), statut.c_str(), specialite.c_str()
+    );
     char* errMsg = nullptr;
-    if (sqlite3_exec(db, query.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
+    if (sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
         std::cerr << "Erreur SQL : " << errMsg << std::endl;
         sqlite3_free(errMsg);
     } else {

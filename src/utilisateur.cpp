@@ -24,7 +24,7 @@ User::User(MediPass* mp, sqlite3* db, const std::string& firstname,
       telephone(telephone),
       created_by(created_by),
       created_at(created_at),
-      mediPass(mp),
+      mp(mp),
       db(db) {
         sqlite3_exec(db,
             sqlite3_mprintf("INSERT INTO users (firstname, last_name, password, role, is_active, telephone, created_by, created_at) "

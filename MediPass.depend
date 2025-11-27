@@ -24,13 +24,13 @@
 1764026414 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/patient.h
 	<string>
 
-1764221377 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/utilisateur.cpp
+1764268379 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/utilisateur.cpp
 	"utilisateur.h"
 	"globals.h"
 	<sqlite3.h>
 	"MediPass.h"
 
-1764246982 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/utilisateur.h
+1764268371 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/utilisateur.h
 	<string>
 	<sqlite3.h>
 
@@ -94,7 +94,7 @@
 
 1763933504 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/globals.h
 
-1764248038 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/MediPass.cpp
+1764249691 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/MediPass.cpp
 	"MediPass.h"
 	<iostream>
 	<sqlite3.h>
@@ -121,13 +121,14 @@
 	"patient.h"
 	"utilisateur.h"
 
-1764247527 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/Administrateur.cpp
+1764268574 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/Administrateur.cpp
 	"Administrateur.h"
 	<iostream>
 	<string>
 	<sstream>
 	"MediPass.h"
 	"utilisateur.h"
+	<map>
 
 1764225938 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/medecin.cpp
 	<algorithm>
