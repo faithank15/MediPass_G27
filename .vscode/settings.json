@@ -53,5 +53,6 @@
         "typeinfo": "cpp",
         "variant": "cpp",
         "queue": "cpp"
-    }
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }

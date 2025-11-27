@@ -8,7 +8,6 @@
 #include "examen.h"
 #include "profesionnel_de_sante.h"
 #include "patient.h"
-class Medecin;
 
 
 /*struct Consultation
@@ -41,7 +40,7 @@ public:
     Medecin(MediPass* mp,sqlite3* db,std::string firstname,
             std::string last_name,
             std::string password,
-            std::string role, 
+            std::string role,
             bool active,
             int telephone,
             std::string created_by,

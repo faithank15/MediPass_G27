@@ -3,6 +3,10 @@
 #include <chrono>
 
 #include <string>
+#include "MediPass.h"
+
+class Medecin;
+class Examen;
 
 class Consultation {
 private:

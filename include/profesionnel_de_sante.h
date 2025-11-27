@@ -16,7 +16,7 @@ class Pro_sante: public User{
 public:
     class Invalid{};
 
-    virtual void menu();
+    virtual void menu()=0;
     Pro_sante(MediPass* mp, sqlite3* db, const std::string& firstname,
               const std::string& last_name,
               std::string password,
@@ -25,7 +25,7 @@ public:
               int telephone,
               std::string created_by,
               std::string created_at,
-              std::string autorisation,  
+              std::string autorisation,
               std::string statut);
 
     // Acesseurs

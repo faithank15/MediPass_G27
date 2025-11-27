@@ -1,25 +1,25 @@
-#ifndef USER_HPP
-#define USER_HPP
+#ifndef USER_H
+#define USER_H
 
 #include <string>
-#include "globals.h"
+#include <sqlite3.h>
 
+class MediPass;
 
 class User {
 public:
-    // Déclaration de la variable statique - Nous en aurons besoin pour continuer - je pense
-    static int userCount;
+
     User();  // Obligatoire pour MediPass
     virtual ~User();
+    virtual void menu()=0;
     User(MediPass* mp,sqlite3* db, const std::string& firstname,
          const std::string& last_name,
          const std::string& password,
          const std::string& role,
          bool is_active = true,
          int telephone = 00000000,
-         const std::string& created_by = NULL,
-         const std::string& created_at = NULL,
-         int id = userCount);
+         const std::string& created_by = "",
+         const std::string& created_at = "");
 
     // Getters
     int getId() const;
@@ -55,4 +55,4 @@ private:
 
 
 
-#endif
+#endif //USER_H

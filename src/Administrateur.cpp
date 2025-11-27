@@ -3,12 +3,15 @@
 #include <string>
 #include <sstream>
 #include "MediPass.h"
+#include "utilisateur.h"
 
 
-Administrateur::Administrateur(MediPass* mp, sqlite3* db, const std::string& firstname,
-                               const std::string& last_name,
-                               const std::string& password){User(mp, db, firstname, last_name, password,"administrateur",true,NULL,NULL,NULL); }
-
+Administrateur::Administrateur(MediPass* mp,
+                                sqlite3* db,
+                                const std::string& firstname,
+                                const std::string& last_name,
+                                const std::string& password
+                            ) : User(mp, db, firstname, last_name, password, "admin", true) {}
 // ------------------------------------------------------
 // Creer un utilisateur (admin / sante / patient)
 // ------------------------------------------------------

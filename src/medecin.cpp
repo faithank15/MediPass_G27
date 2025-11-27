@@ -40,7 +40,7 @@ bool specialite_est_valide(const string& specialite)
 Medecin::Medecin(MediPass* mp,sqlite3* db,std::string firstname,
             std::string last_name,
             std::string password,
-            std::string role, 
+            std::string role,
             bool active,
             int telephone,
             std::string created_by,
@@ -142,14 +142,14 @@ void Medecin::afficher_disponibilites() {
 
 void Medecin::afficher_patients() {
     cout << "\n--- Liste des patients suivis ---\n";
-    
+
     if (patients_en_charge.empty()) {
         cout << "Aucun patient actuellement.\n";
         return;
     }
 
-    for (int i = 0; i < patients_en_charge.size(); ++i) {
-        cout << i + 1 << ". " 
+    for (int i = 0; i < (int)patients_en_charge.size(); ++i) {
+        cout << i + 1 << ". "
              << patients_en_charge[i].getNomComplet() << "\n";
     }
 }
@@ -205,7 +205,7 @@ void Medecin::ajouter_consultation_interactive() {
     cout << "\nAjouter un examen ? (o/n) : ";
     cin >> choix;
 
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');            // Ici on vide le buffer afin de ne pas laisser des chaînes vides coincées dans l'objet cin dù à une utilisation antérieur 
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');            // Ici on vide le buffer afin de ne pas laisser des chaînes vides coincées dans l'objet cin dù à une utilisation antérieur
 
     while (choix == 'o' || choix == 'O') {
         string date, typeExamen, resultat;
@@ -221,7 +221,7 @@ void Medecin::ajouter_consultation_interactive() {
         cout << "Résultat : ";
         getline(cin, resultat);
 
-        examens.emplace_back(date, typeExamen, resultat);          // ici emplace_back est une méthode très utile car elle construit l'objet directement à l'intérieur du vecteur en passant les arguments du constructeur. Il nous évite donc la copie ou le déplacement.              
+        examens.emplace_back(date, typeExamen, resultat);          // ici emplace_back est une méthode très utile car elle construit l'objet directement à l'intérieur du vecteur en passant les arguments du constructeur. Il nous évite donc la copie ou le déplacement.
 
         cout << "Ajouter un autre examen ? (o/n) : ";
         cin >> choix;
@@ -229,7 +229,7 @@ void Medecin::ajouter_consultation_interactive() {
     }
 
     // Ici on crée la consultation
-    auto now = chrono::system_clock::now();
+    //auto now = chrono::system_clock::now();
 
     Consultation nouvelleConsultation(
         mp,
@@ -241,7 +241,7 @@ void Medecin::ajouter_consultation_interactive() {
         examens
     );
 
-    // Une fois la consultation crée - elle est automatiquement ajouté à la liste des différentes consultations. 
+    // Une fois la consultation crée - elle est automatiquement ajouté à la liste des différentes consultations.
 
     cout << "\nConsultation ajoutée avec succès pour le patient "
          << p.getNomComplet() << ".\n";
@@ -266,7 +266,7 @@ void Medecin::menu() {
         cout << "     MENU DU MÉDECIN\n";
         cout << "==============================\n";
         cout << "Connecté en tant que : Dr " << Medecin::getLast_name() << " (" << Medecin::getRole() << ")\n";
-        cout << "Statut : " << obtenir_statut() 
+        cout << "Statut : " << obtenir_statut()
              << " | Autorisation : " << obtenir_autorisation() << "\n";
         cout << "------------------------------\n";
         cout << "1. Voir la liste de mes patients\n";
