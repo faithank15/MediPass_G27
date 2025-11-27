@@ -16,14 +16,14 @@
 1763837325 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/patient.cpp
 	"patient.h"
 
-1763804553 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/patient.h
+1764026414 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/patient.h
 	<string>
 
 1763974585 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/utilisateur.cpp
 	"utilisateur.h"
 	"globals.h"
 
-1763975325 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/utilisateur.h
+1764026414 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/utilisateur.h
 	<string>
 	"globals.h"
 
@@ -37,25 +37,28 @@
 	"consultation.h"
 	<iostream>
 
-1763907594 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/consultation.h
+1763978989 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/consultation.h
+	<chrono>
 	<string>
 
 1763932657 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/main.cpp
 	<iostream>
 	"MediPass.h"
 
-1763932657 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/MediPass.h
+1764010146 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/MediPass.h
 	<string>
 	<sqlite3.h>
 	"utilisateur.h"
 	"patient.h"
 	"profesionnel_de_sante.h"
 
-1763972296 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/profesionnel_de_sante.h
+1764161570 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/profesionnel_de_sante.h
 	<chrono>
 	<vector>
 	<string>
+	<sqlite3.h>
 	"utilisateur.h"
+	"MediPass.h"
 
 1763927421 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/DossierMedical.cpp
 	"DossierMedical.h"

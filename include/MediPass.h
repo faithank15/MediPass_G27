@@ -28,9 +28,9 @@ class MediPass
         int login(sqlite3* db);
         int logout();
         void load_user(sqlite3* db,User* user);
-        int load_patient(sqlite3* db, const int& patient_id, Patient* patient);
         int load_sante(sqlite3* db, const int& sante_id, Pro_sante* sante);
         int load_admin(sqlite3* db, const int& admin_id, Administrateur* admin);
+        string getTimeDate() const;
 
     protected:
         string db_filename;

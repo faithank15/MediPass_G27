@@ -308,17 +308,6 @@ void MediPass::load_user(sqlite3* db,User* user)
     }
 }
 
-int MediPass::load_patient(sqlite3* db, const int& patient_id, Patient* patient)
-{
-    /*
-    ** This function loads patient details from the database into the provided Patient object.
-    */
-
-    // Implementation goes here
-
-    return 0;
-}
-
 int MediPass::load_sante(sqlite3* db, const int& sante_id, Pro_sante* sante)
 {
     /*
@@ -339,4 +328,30 @@ int MediPass::load_admin(sqlite3* db, const int& admin_id, Administrateur* admin
     // Implementation goes here
 
     return 0;
+}
+
+void MediPass::create_user(sqlite3* db, const string& username, const string& password, const string& role, const bool& is_active, const int& telephone, const string& created_by)
+{
+
+    /*
+    ** This function creates a new user in the database with the provided details.
+    */
+
+    char* sql = sqlite3_mprintf("INSERT INTO users (username, password, role, is_active, telephone, created_by) VALUES ('%q', '%q', '%q', %d, %d, '%q');",
+                                username.c_str(), password.c_str(), role.c_str(), is_active ? 1 : 0, telephone, created_by.c_str());
+
+    sqlite3_exec(db, sql, NULL, NULL, NULL);
+
+}
+
+string MediPass::getTimeDate() const
+{
+    /*
+    ** This function returns the current date and time as a formatted string.
+    */
+
+    time_t now = time(0);
+    char buf[80];
+    strftime(buf, sizeof(buf), "%Y-%m-%d %X", localtime(&now));
+    return string(buf);
 }

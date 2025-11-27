@@ -45,3 +45,14 @@ bool User::verifyPassword(const std::string& pwd) const {
 
 void User::activate() { active = true; }
 void User::deactivate() { active = false; }
+
+
+
+
+
+// Définition du destructeur  - Indensipensable si je veux tester - Honorat
+User::~User() {}
+
+// Obligatoire
+
+int User::userCount = 0;

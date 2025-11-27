@@ -27,7 +27,16 @@ bool est_valide(const string& autorisation, const string& role, const string& st
 }
 
 
-Pro_sante::Pro_sante(MediPass* mp, sqlite3* db, const std::string& firstname, const std::string& last_name, const std::string& numero_de_tel, const std::string& autorisation, const std::string& role, const std::string& statut)
+Pro_sante::Pro_sante(MediPass* mp, sqlite3* db, const std::string& firstname,
+              const std::string& last_name,
+              std::string password,
+              std::string role,
+              bool active,
+              int telephone,
+              std::string created_by,
+              std::string created_at,
+              std::string autorisation,  
+              std::string statut)
 :    User(mp, db, firstname,last_name,NULL,role), autorisation{autorisation}, role{role}, statut{statut}
 {
     if(!est_valide(autorisation, role, statut))

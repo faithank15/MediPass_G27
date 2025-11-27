@@ -36,12 +36,17 @@ public:
 
     class Invalid {};
 
+    virtual void menu();
 
-    Medecin(const std::string& firstname,
-            const std::string& last_name,
-            const std::string& numero_de_tel,
+    Medecin(MediPass* mp,sqlite3* db,std::string firstname,
+            std::string last_name,
+            std::string password,
+            std::string role, 
+            bool active,
+            int telephone,
+            std::string created_by,
+            std::string created_at,
             const std::string& autorisation,
-            const std::string& role,
             const std::string& statut,
             const std::string& specialite);
 
@@ -57,7 +62,7 @@ public:
     bool creer_consultation(
         std::chrono::system_clock::time_point date_et_heure,
         const Medecin* medecin,
-        const Patient* patient,
+        int id_patient,
         const std::string& observations,
         const std::string& motif,
         const std::vector<Examen>& examens);
@@ -67,8 +72,14 @@ public:
 
 
     // Accesseur
-    std::string getSpecialite() const { return specialite; }
-    std::string getNumero_de_tel() const {return numero_de_tel;}
+
+    std::string obtenir_specialite() const { return specialite; };
+
+    void afficher_patients();
+    void afficher_disponibilites();
+    void ajouter_consultation_interactive();
+    void afficher_infos_professionnelles();
+
 
 private:
     std::string specialite;

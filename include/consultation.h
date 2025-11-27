@@ -6,7 +6,7 @@
 
 class Consultation {
 private:
-    std::chrono::system_clock::time_point date_et_heure;
+    std::string date_et_heure;
     int pro_id;
     int patient_id;
     std::string motif;
@@ -14,11 +14,13 @@ private:
 
 public:
     Consultation();
-    Consultation(const std::chrono::system_clock::time_point date_et_heure,
-                 const int& pro_id,
-                 const int& patient_id,
+    Consultation(MediPass* mp,sqlite3* db,
+                 const Medecin* medecin,
+                 int id_patient,
                  const std::string& motif,
-                 const std::string& observations);
+                 const std::string& observations,
+                 const std::vector<Examen> examens = {}
+                );
 
     // Getters
     std::string getDateHeure() const;
@@ -36,6 +38,12 @@ public:
 
     // Affichage
     void afficher() const;
+    //Menu
+    void menu();
+private:
+    std::vector<std::string> professionnel_info;
+    std::vector<std::string> patient_info;
+    std::vector<Examen> examens;
 };
 
 #endif

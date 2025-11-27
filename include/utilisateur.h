@@ -4,8 +4,11 @@
 #include <string>
 #include "globals.h"
 
+
 class User {
 public:
+    // Déclaration de la variable statique - Nous en aurons besoin pour continuer - je pense
+    static int userCount;
     User();  // Obligatoire pour MediPass
     virtual ~User();
     User(MediPass* mp,sqlite3* db, const std::string& firstname,
@@ -49,5 +52,7 @@ protected:
     sqlite3* db;
 private:
 };
+
+
 
 #endif

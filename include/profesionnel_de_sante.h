@@ -4,25 +4,32 @@
 #include <chrono>
 #include <vector>
 #include <string>
+#include <sqlite3.h>
 #include "utilisateur.h"
+#include "MediPass.h"
 
 // Forward declaration pour éviter les include circulaires
 class Patient;
 
-class Pro_sante: virtual public User{
+class Pro_sante: public User{
 
 public:
     class Invalid{};
+
+    virtual void menu();
     Pro_sante(MediPass* mp, sqlite3* db, const std::string& firstname,
               const std::string& last_name,
-              const std::string& numero_de_tel,
-              const std::string& autorisation,
-              const std::string& role,
-              const std::string& statut);
+              std::string password,
+              std::string role,
+              bool active,
+              int telephone,
+              std::string created_by,
+              std::string created_at,
+              std::string autorisation,  
+              std::string statut);
 
     // Acesseurs
     std::string obtenir_autorisation() const{ return autorisation; };
-    std::string obtenir_role() const { return role; };
     std::string obtenir_statut() const { return statut; };
 
     const std::vector<std::chrono::system_clock::time_point>& obtenir_disponibilite() const{return liste_disponibilite; };
@@ -34,6 +41,8 @@ public:
 
 
 protected:
+    MediPass* mp;
+    sqlite3* db;
 
     std::string autorisation;
     std::string role;

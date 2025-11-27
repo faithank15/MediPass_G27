@@ -2,24 +2,29 @@
 #include <iostream>
 #include <sqlite3.h>
 #include "MediPass.h"
+#include "medecin.h"
 
 // Constructeurs
 Consultation::Consultation() {}
 
-Consultation::Consultation(const std::chrono::system_clock::time_point date_et_heure,
-                           const int& pro_id,
-                           const int& patient_id,
-                           const std::string& motif,
-                           const std::string& observations)
-    : date_et_heure(date_et_heure), pro_id(pro_id), patient_id(patient_id),
-      motif(motif), observations(observations) {
+Consultation::Consultation(MediPass* mp,sqlite3* db,
+                          const Medecin* medecin,
+                          int id_patient,
+                          const std::string& motif,
+                          const std::string& observations,
+                          const std::vector<Examen> examens)
+    :  patient_id(id_patient),
+      motif(motif), observations(observations), examens(examens) {
       
-      std::vector<std::string> professionnel_info;
-      professionnel_info.push_back(std::to_string(pro_id));
+      this->date_et_heure = mp->getTimeDate();
+      
+      professionnel_info.push_back(medecin->getFirstname());
+      professionnel_info.push_back(medecin->getLast_name());
+
       sqlite3_exec(db,
-        "SELECT first_name, last_name FROM users WHERE id = " + std::to_string(pro_id) + ";",
+        sqlite3_mprintf("SELECT first_name, last_name FROM users WHERE id = %d;", id_patient),
         MediPass::callback_names,
-        &professionnel_info,
+        &patient_info,
         nullptr
       );
       }
@@ -40,9 +45,25 @@ void Consultation::setObservations(const std::string& o) { observations = o; }
 
 // Affichage
 void Consultation::afficher() const {
+if (examens.empty()) {
     std::cout << "Consultation du " << date_et_heure
-              << "\nProfessionnel : " << professionnel
+              << "\n-----Professionnel-----\n" << "Prénoms: " << professionnel_info[0] << "\nNom de famille: " << professionnel_info[1]
+              << "\n-----Patient-----\n" << "Prénoms: " << patient_info[0] << "\nNom de famille: " << patient_info[1]
               << "\nMotif : " << motif
               << "\nObservations : " << observations
               << "\n-------------------------------\n";
+} else {
+    std::cout << "Consultation du " << date_et_heure
+              << "\n-----Professionnel-----\n" << "Prénoms: " << professionnel_info[0] << "\nNom de famille: " << professionnel_info[1]
+              << "\n-----Patient-----\n" << "Prénoms: " << patient_info[0] << "\nNom de famille: " << patient_info[1]
+              << "\nMotif : " << motif
+              << "\nObservations : " << observations
+              << "\n-----Examens-----\n";
+    for (const auto& examen : examens) {
+      std::cout << "- Date: " << examen.getDate()
+                << ", Type: " << examen.getTypeExamen()
+                << ", Résultat: " << examen.getResultat() << "\n";
+    }
+    std::cout << "-------------------------------\n";
+}
 }
