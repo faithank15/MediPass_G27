@@ -5,6 +5,8 @@
 #include "MediPass.h"
 #include "utilisateur.h"
 #include <map>
+#include <limits>
+
 
 
 Administrateur::Administrateur(MediPass* mp,
@@ -27,25 +29,27 @@ void Administrateur::creerUtilisateur() {
         {"infirmier", "A1"}
     };
 
-    do{
-    std::cout << "Type d'utilisateur a creer (admin / patient / professionel de sante) : ";
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    do {
+    std::cout << "Type d'utilisateur a creer (admin / patient / professionnel de sante) :  ";
     std::getline(std::cin, type);
-    if(type != "admin" && type != "patient" && type != "professionel de sante"){
+    if(type != "admin" && type != "patient" && type != "professionnel de sante"){
         std::cout << "[!]: Type invalide. Veuillez reessayer." << std::endl;
         }
-    } while(type != "admin" && type != "patient" && type != "professionel de sante");
+    } while(type != "admin" && type != "patient" && type != "professionnel de sante");
 
     std::string prenom="", nom="", password="", role="", autorisation="",statut="",specialite="";
     int telephone=0;
     bool is_active=true;
 
-    if(type=="professionel de sante") {
-        std::cout << "Prénom : "; std::getline(std::cin, prenom);
+    if(type=="professionnel de sante") {
+        std::cout << "Prenom : "; std::getline(std::cin, prenom);
         std::cout << "Nom : "; std::getline(std::cin, nom);
         std::cout << "Statut : "; std::getline(std::cin, statut);
         std::cout << "Spécialité : "; std::getline(std::cin, specialite);
         std::cout << "Téléphone : "; std::cin >> telephone;
-        std::cout << "Autorisation (laisser vide pour l'autorisation par défaut): "; std::getline(std::cin, autorisation);
+        std::cout << "Autorisation (laisser vide pour l'autorisation par défaut): ";  std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); std::getline(std::cin, autorisation);
 
         if(autorisation.empty()){
             autorisation = defaultAut[statut];
@@ -80,6 +84,9 @@ void Administrateur::creerUtilisateur() {
         std::cout << "Prénom : "; std::getline(std::cin, prenom);
         std::cout << "Nom : "; std::getline(std::cin, nom);
     }
+    if(password.empty()) {
+    password = "temp123"; // mot de passe par défaut
+}
 
     // Construire la requête SQL
     std::string sql = sqlite3_mprintf(
@@ -116,6 +123,36 @@ void Administrateur::modifierRole(int userId, const std::string& nouveauRole) {
     }
 }
 
+void Administrateur::listerUtilisateurs() {
+    const char* sql = "SELECT id, firstname, last_name, role, is_active FROM users;";
+    sqlite3_stmt* stmt;
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        std::cerr << "[ERROR] Impossible de préparer la requête : " << sqlite3_errmsg(db) << std::endl;
+        return;
+    }
+
+    std::cout << "\n=== Liste des utilisateurs ===\n";
+    std::cout << "ID | Prénom | Nom | Rôle | Actif\n";
+    std::cout << "----------------------------------\n";
+
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        int id = sqlite3_column_int(stmt, 0);
+        const unsigned char* prenom = sqlite3_column_text(stmt, 1);
+        const unsigned char* nom = sqlite3_column_text(stmt, 2);
+        const unsigned char* role = sqlite3_column_text(stmt, 3);
+        int actif = sqlite3_column_int(stmt, 4);
+
+        std::cout << id << " | "
+                  << (prenom ? reinterpret_cast<const char*>(prenom) : "") << " | "
+                  << (nom ? reinterpret_cast<const char*>(nom) : "") << " | "
+                  << (role ? reinterpret_cast<const char*>(role) : "") << " | "
+                  << (actif ? "Oui" : "Non") << "\n";
+    }
+
+    sqlite3_finalize(stmt);
+}
+
 // ------------------------------------------------------
 // D�sactiver / activer compte
 // ------------------------------------------------------
@@ -145,17 +182,19 @@ void Administrateur::afficherStatistiques() {
 }
 
 // ------------------------------------------------------
-// Menu de l�administrateur
+// Menu de l'administrateur
 // ------------------------------------------------------
 void Administrateur::menu() {
     int choix = 0;
     do {
         std::cout << "\n=== Menu Administrateur ===\n"
-                  << "1. Cr�er un utilisateur\n"
-                  << "2. Modifier r�le d�un utilisateur\n"
-                  << "3. Activer/D�sactiver un utilisateur\n"
+                  << "1. Créer un utilisateur\n"
+                  << "2. Modifier rôle d'un utilisateur\n"
+                  << "3. Activer/Désactiver un utilisateur\n"
                   << "4. Statistiques globales\n"
-                  << "5. D�connexion\n#> ";
+                  << "5. Déconnexion\n"
+                  << "6. Liste Utilisateur\n#> ";
+
         std::cin >> choix;
 
         switch(choix) {
@@ -163,19 +202,29 @@ void Administrateur::menu() {
             case 2: {
                 int id; std::string role;
                 std::cout << "ID utilisateur: "; std::cin >> id;
-                std::cout << "Nouveau r�le: "; std::cin >> role;
+                std::cout << "Nouveau rôle: "; std::cin >> role;
                 modifierRole(id, role);
                 break;
             }
             case 3: {
                 int id; char act;
                 std::cout << "ID utilisateur: "; std::cin >> id;
-                std::cout << "Activer(a)/D�sactiver(d)? "; std::cin >> act;
+                std::cout << "Activer(a)/Désactiver(d)? "; std::cin >> act;
                 if (act == 'a') activerCompte(id);
                 else desactiverCompte(id);
                 break;
             }
             case 4: afficherStatistiques(); break;
+            case 5:
+                mp->logout();  // <-- Déconnexion effective
+                std::cout << "[+]: Déconnexion réussie.\n";
+                break;
+            case 6: listerUtilisateurs(); break;
+            default:
+                std::cout << "[!]: Choix invalide.\n";
+                break;
+
         }
+
     } while(choix != 5);
 }

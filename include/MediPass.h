@@ -25,7 +25,7 @@ class MediPass
         static int callback(void* data, int argc, char** argv, char** azColName);
         static int callback_names(void* data, int argc, char** argv, char** azColName);
         static int clallbackVector(void* data, int argc, char** argv, char** azColName);
-        string get_current_user() const;
+        std::string get_current_user() const;
         string getTime() const;
         int print_banner() const;
         int run();
@@ -36,15 +36,16 @@ class MediPass
         int load_admin(sqlite3* db,vector<string> creds);
         string getTimeDate();
         vector<string> getUserCreds(sqlite3* db, const string& firstname,const string& last_name,const string& password) const;
-        bool must_change_password(sqlite3* db, int user_id, std::string& current_password);
-        void update_password(sqlite3* db, int user_id, const std::string& newPwd);
+        bool must_change_password(sqlite3* db, int user_id,string& current_password );
+        void update_password(sqlite3* db, int user_id, const string& newPwd);
+        void forceChangePassword(sqlite3* db, int user_id);
 
     protected:
         string db_filename;
         User* current_user=nullptr;
 
     private:
-        void create_user(sqlite3* db, const string& firstname,const string& last_name, const string& password, const string& role, const bool& is_active, const int& telephone, const string& created_by);
+        bool create_user(sqlite3* db, const string& firstname,const string& last_name, const string& password, const string& role, const bool& is_active, const int& telephone, const string& created_by);
 
 };
 

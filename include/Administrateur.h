@@ -21,6 +21,7 @@ public:
     void modifierRole(int userId, const std::string& nouveauRole);
     void desactiverCompte(int userId);
     void activerCompte(int userId);
+    void listerUtilisateurs();
 
     // Statistiques globales
     void afficherStatistiques();

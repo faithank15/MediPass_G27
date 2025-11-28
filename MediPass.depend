@@ -165,3 +165,228 @@
 	<vector>
 	"profesionnel_de_sante.h"
 
+1764310435 source:c:\users\dell\desktop\planb\medipass_g27\main.cpp
+	<iostream>
+	"MediPass.h"
+
+1764317668 c:\users\dell\desktop\planb\medipass_g27\include\medipass.h
+	<string>
+	<sqlite3.h>
+	"patient.h"
+	"profesionnel_de_sante.h"
+
+1763914836 c:\users\dell\desktop\planb\medipass_g27\include\sqlite3.h
+	<stdarg.h>
+
+1764309420 c:\users\dell\desktop\planb\medipass_g27\include\patient.h
+	<string>
+
+1764309420 c:\users\dell\desktop\planb\medipass_g27\include\profesionnel_de_sante.h
+	<chrono>
+	<vector>
+	<string>
+	<sqlite3.h>
+	"utilisateur.h"
+	"MediPass.h"
+
+1764309420 c:\users\dell\desktop\planb\medipass_g27\include\utilisateur.h
+	<string>
+	<sqlite3.h>
+
+1764318798 source:c:\users\dell\desktop\planb\medipass_g27\src\administrateur.cpp
+	"Administrateur.h"
+	<iostream>
+	<string>
+	<sstream>
+	"MediPass.h"
+	"utilisateur.h"
+	<map>
+	<limits>
+
+1764314507 c:\users\dell\desktop\planb\medipass_g27\include\administrateur.h
+	<string>
+	<vector>
+	"utilisateur.h"
+	"patient.h"
+	<sqlite3.h>
+
+1764309420 source:c:\users\dell\desktop\planb\medipass_g27\src\antecedant.cpp
+	"antecedant.h"
+	<iostream>
+
+1764309419 c:\users\dell\desktop\planb\medipass_g27\include\antecedant.h
+	<string>
+
+1764309420 source:c:\users\dell\desktop\planb\medipass_g27\src\consultation.cpp
+	"consultation.h"
+	<iostream>
+	<sqlite3.h>
+	"MediPass.h"
+	"medecin.h"
+
+1764309419 c:\users\dell\desktop\planb\medipass_g27\include\consultation.h
+	<chrono>
+	<string>
+	"MediPass.h"
+
+1764309420 c:\users\dell\desktop\planb\medipass_g27\include\medecin.h
+	<string>
+	<chrono>
+	<vector>
+	"examen.h"
+	"profesionnel_de_sante.h"
+	"patient.h"
+
+1764309419 c:\users\dell\desktop\planb\medipass_g27\include\examen.h
+	<string>
+
+1764309420 source:c:\users\dell\desktop\planb\medipass_g27\src\dossiermedical.cpp
+	"DossierMedical.h"
+	<iostream>
+	<ctime>
+	<chrono>
+
+1764309419 c:\users\dell\desktop\planb\medipass_g27\include\dossiermedical.h
+	<vector>
+	<string>
+	<chrono>
+	"antecedant.h"
+	"consultation.h"
+	"examen.h"
+
+1764309420 source:c:\users\dell\desktop\planb\medipass_g27\src\examen.cpp
+	"examen.h"
+	<iostream>
+
+1764309420 source:c:\users\dell\desktop\planb\medipass_g27\src\infirmier.cpp
+	"infirmier.h"
+	<iostream>
+	"MediPass.h"
+	"profesionnel_de_sante.h"
+	"Soin.h"
+
+1764309420 c:\users\dell\desktop\planb\medipass_g27\include\infirmier.h
+	<string>
+	<chrono>
+	<vector>
+	"profesionnel_de_sante.h"
+
+1764309419 c:\users\dell\desktop\planb\medipass_g27\include\soin.h
+	<sqlite3.h>
+	<string>
+	"MediPass.h"
+
+1764309420 source:c:\users\dell\desktop\planb\medipass_g27\src\medecin.cpp
+	<algorithm>
+	<iostream>
+	<limits>
+	"medecin.h"
+	"patient.h"
+	"consultation.h"
+
+1764322501 source:c:\users\dell\desktop\planb\medipass_g27\src\medipass.cpp
+	"MediPass.h"
+	<iostream>
+	<sqlite3.h>
+	"utilisateur.h"
+	"medecin.h"
+	"infirmier.h"
+	"Administrateur.h"
+
+1764309420 source:c:\users\dell\desktop\planb\medipass_g27\src\patient.cpp
+	"patient.h"
+
+1764309420 source:c:\users\dell\desktop\planb\medipass_g27\src\pharmacien.cpp
+
+1764309420 source:c:\users\dell\desktop\planb\medipass_g27\src\profesionnel_de_sante.cpp
+	<iostream>
+	<vector>
+	<string>
+	<algorithm>
+	<sqlite3.h>
+	"MediPass.h"
+	"profesionnel_de_sante.h"
+	"patient.h"
+	"utilisateur.h"
+
+1764309420 source:c:\users\dell\desktop\planb\medipass_g27\src\soin.cpp
+	"Soin.h"
+	"infirmier.h"
+	<sqlite3.h>
+	<iostream>
+	<vector>
+	"MediPass.h"
+
+1763914836 source:c:\users\dell\desktop\planb\medipass_g27\src\sqlite3.c
+	<vxWorks.h>
+	<pthread.h>
+	"mingw.h"
+	"_mingw.h"
+	<stdarg.h>
+	"sqlite_cfg.h"
+	<stdint.h>
+	<inttypes.h>
+	<intrin.h>
+	<cmnintrin.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<assert.h>
+	<stddef.h>
+	<ctype.h>
+	<TargetConditionals.h>
+	<time.h>
+	<sys/sysctl.h>
+	<malloc/malloc.h>
+	<libkern/OSAtomic.h>
+	<malloc.h>
+	<pthread.h>
+	"windows.h"
+	<sys/cygwin.h>
+	<sys/stat.h>
+	<unistd.h>
+	<errno.h>
+	<process.h>
+	<math.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<unistd.h>
+	<sys/time.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<fcntl.h>
+	<sys/ioctl.h>
+	<unistd.h>
+	<sys/time.h>
+	<errno.h>
+	<sys/mman.h>
+	<sys/file.h>
+	<sys/param.h>
+	<semaphore.h>
+	<limits.h>
+	<sys/mount.h>
+	<utime.h>
+	<sys/dcmd_blk.h>
+	<sys/statvfs.h>
+	<dlfcn.h>
+	<Windows.h>
+	"tclsqlite.h"
+	"sqlite3rtree.h"
+	<ctype.h>
+	<unicode/utypes.h>
+	<unicode/uregex.h>
+	<unicode/ustring.h>
+	<unicode/ucol.h>
+	<unicode/ubrk.h>
+	<unicode/utf16.h>
+	<sys/uio.h>
+	<math.h>
+
+1764309420 source:c:\users\dell\desktop\planb\medipass_g27\src\utilisateur.cpp
+	"utilisateur.h"
+	"globals.h"
+	<sqlite3.h>
+	"MediPass.h"
+
+1764309420 c:\users\dell\desktop\planb\medipass_g27\include\globals.h
+

@@ -27,6 +27,17 @@ string MediPass::getDbFilename() const
 
     return db_filename;
 }
+std::string MediPass::get_current_user() const
+{
+    if (current_user != nullptr)
+    {
+        return current_user->getFirstname(); // Assure-toi que User a cette méthode
+    }
+    else
+    {
+        return "No user logged in.";
+    }
+}
 
 int MediPass::callback(void* data, int argc, char** argv, char** azColName)
 {
@@ -73,24 +84,26 @@ int callbackVector(void* data, int argc, char** argv, char** azColName)
     return 0;
 }
 
-bool MediPass::must_change_password(sqlite3* db, int user_id, std::string& current_password) {
+bool MediPass::must_change_password(sqlite3* db, int user_id, string& password) {
     sqlite3_stmt* stmt;
-    const char* sql = "SELECT password FROM users WHERE id=?";
+    const char* sql = "SELECT is_default_password FROM users WHERE id=?";
 
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK)
         return false;
 
     sqlite3_bind_int(stmt, 1, user_id);
 
+    int is_default = 0;
     if (sqlite3_step(stmt) == SQLITE_ROW) {
-        current_password = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+        is_default = sqlite3_column_int(stmt, 0);
     }
 
     sqlite3_finalize(stmt);
 
-    // Conditions de première connexion
-    return (current_password == "" || current_password == "admin" || current_password == "temp123");
+    return is_default != 0;  // vrai si l'utilisateur doit changer son mot de passe
 }
+
+
 
 void MediPass::update_password(sqlite3* db, int user_id, const std::string& newPwd) {
     sqlite3_stmt* stmt;
@@ -103,6 +116,66 @@ void MediPass::update_password(sqlite3* db, int user_id, const std::string& newP
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 }
+
+void MediPass::forceChangePassword(sqlite3* db, int user_id) {
+    std::string newPwd;
+    do {
+        std::cout << "[!] Votre mot de passe est encore par défaut. Veuillez le changer : ";
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::getline(std::cin, newPwd);
+        if(newPwd.empty()) {
+            std::cout << "[!]: Mot de passe invalide, réessayez." << std::endl;
+        }
+    } while(newPwd.empty());
+
+    // Mise à jour du mot de passe
+    update_password(db, user_id, newPwd);
+
+    // Réinitialiser le flag
+    char* sql = sqlite3_mprintf("UPDATE users SET is_default_password=0 WHERE id=%d;", user_id);
+    sqlite3_exec(db, sql, NULL, NULL, NULL);
+
+    std::cout << "[+]: Mot de passe changé avec succès !" << std::endl;
+}
+
+void MediPass::load_db(sqlite3* db)
+{
+    // Créer les tables si elles n'existent pas
+    create_db(db);
+
+    // Vérifie s'il existe déjà un admin par défaut
+    int admin_count = 0;
+    sqlite3_stmt* stmt;
+    const char* sql = "SELECT COUNT(*) FROM users "
+                  "WHERE LOWER(firstname)='admin' "
+                  "AND LOWER(last_name)='admin' "
+                  "AND LOWER(role)='admin';";
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        std::cerr << "[ERROR] Failed to prepare admin check: " << sqlite3_errmsg(db) << std::endl;
+        return;
+    }
+
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        admin_count = sqlite3_column_int(stmt, 0);
+    }
+    sqlite3_finalize(stmt);
+
+    //std::cout << "[DEBUG] admin_count = " << admin_count << std::endl;
+
+    if (admin_count == 0) {
+        // Crée l'admin par défaut une seule fois
+        if (create_user(db, "admin", "admin", "admin", "admin", true, 0, "")) {
+            std::cout << "[+]: Default admin created." << std::endl;
+        } else {
+            std::cerr << "[ERROR]: Failed to create default admin." << std::endl;
+        }
+    } else {
+        std::cout << "[+]: Database loaded successfully with " << admin_count << " admin(s)." << std::endl;
+    }
+}
+
+
 
 int MediPass::print_banner() const
 {
@@ -124,69 +197,51 @@ int MediPass::print_banner() const
 
 int MediPass::run()
 {
-    /*
-    ** This function runs the main application loop.
-    */
+    print_banner();
 
-    MediPass::print_banner();
     sqlite3* db;
-    int exit = sqlite3_open(db_filename.c_str(), &db); //c_str() converts string to const char* type
-    if (exit)
-    {
-        cerr << "Error open DB " << sqlite3_errmsg(db) << endl;
+    if (sqlite3_open(db_filename.c_str(), &db)) {
+        cerr << "Error opening DB: " << sqlite3_errmsg(db) << endl;
         return 0;
     }
-    else
-    {
-        cout << "[+]: Opened Database Successfully!" << endl;
-    }
+    cout << "[+]: Database opened successfully!" << endl;
 
-    MediPass::load_db(db);
+    // Charger la DB et créer l'admin par défaut uniquement si nécessaire
+    load_db(db);
 
     int choice;
+    do {
+        cout << "\n=== Main Menu ===\n"
+             << "1-> Login\n"
+             << "2-> Exit\n"
+             << "#> ";
+        std::cin >> choice;
 
-    int login_status = 1;
-
-    do{
-
-        do{
-            cout << "=== Main Menu ===" << endl;
-            cout << endl;
-            cout << "1-> Login" << endl;
-            cout << "2-> Exit" << endl;
-            cout << endl;
-            cout << "#> ";
-            cin >> choice;
-        }while(choice != 1 && choice != 2);
-
-        switch(choice){
+        switch(choice) {
             case 1:
-                {
-                    login_status = MediPass::login(db);
-                    if(login_status == 1){
-                        cout << "[+]: Login successful. Welcome " << MediPass::get_current_user() << "!" << endl;
-                        //  Vérification première connexion
-
-                        // User menu
-                        current_user->menu();
-                    }else{
-                        cout << "[!]: Login failed after 3 attempts." << endl;
-                    }
+                if (login(db) == 1) {
+                    // login() gère l'accès au menu utilisateur
+                } else {
+                    cout << "[!]: Login failed after 3 attempts." << endl;
                 }
                 break;
+
             case 2:
                 cout << "[+]: Exiting the application. Goodbye!" << endl;
-                MediPass::logout();
+                if (current_user) logout();
+                break;
+
+            default:
+                cout << "[!]: Invalid choice." << endl;
                 break;
         }
 
-    }while(login_status == 0 || choice != 2);
+    } while (choice != 2);
 
     sqlite3_close(db);
-    MediPass::~MediPass();
     return 0;
-
 }
+
 
 std::string MediPass::create_db(sqlite3* db)
 {
@@ -207,7 +262,7 @@ std::string MediPass::create_db(sqlite3* db)
         std::string sql;
     };
 
-    Table tables[] = {
+        Table tables[] = {
         {"USERS",
          "CREATE TABLE IF NOT EXISTS USERS ("
          "id INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -221,7 +276,9 @@ std::string MediPass::create_db(sqlite3* db)
          "created_at DATETIME DEFAULT CURRENT_TIMESTAMP,"
          "autorisation TEXT,"
          "statut TEXT,"
-         "specialite TEXT"
+         "specialite TEXT,"
+         "is_default_password INTEGER NOT NULL DEFAULT 1,"
+         "UNIQUE(firstname, last_name, role)"
          ");"
         },
         {"PATIENTS",
@@ -280,87 +337,79 @@ std::string MediPass::create_db(sqlite3* db)
             sqlite3_free(errmsg);
             return "[ERROR]: Failed to create table " + table.name;
         } else {
-            std::cout << "[OK] Table '" << table.name << "' created or already exists." << std::endl;
+            //std::cout << "[OK] Table '" << table.name << "' created or already exists." << std::endl;
         }
     }
 
     return "[+]: Database created successfully.";
 }
 
-void MediPass::load_db(sqlite3* db)
-{
-    //int (*callback)(void*,int,char**,char**)= MediPass::callback;
-    int num_rows = 0;
-    sqlite3_exec(db, "SELECT COUNT(*) FROM users;",callback, &num_rows, NULL);
-    if (num_rows == 0)
-    {
-
-        cout << "[!]: No database found" << endl;
-        cout << "[+]: Creating a new database with default admin user..." << endl;
-        MediPass::create_db(db);
-        MediPass::create_user(db, "admin", "admin", "admin", "admin" ,true, 00000000,"");
-        MediPass::load_db(db);
-
-    }else{
-        cout << "[+]: Database loaded successfully with " << num_rows << " users." << endl;
-    }
-}
-
-string MediPass::get_current_user() const
-{
-    if (current_user != nullptr)
-    {
-        return current_user->getFirstname();
-    }
-    else
-    {
-        return "No user logged in.";
-    }
-}
 
 int MediPass::login(sqlite3* db)
 {
-
     int num_matches = 0;
-    string fname;
-    string lname;
-    string password;
+    std::string fname, lname, password;
     int count = 0;
 
-    do{
-        cout<<"====== LOGIN ======"<<endl;
-        cout<<endl;
-        cout<<"[ ]: Enter your firstname : ";
-        cin>>fname;
-        cout<<"[ ]: Enter your lastname :";
-        cin>>lname;
-        cout<<"[ ]: Enter your password : ";
-        cin>>password;
-        char* sql = sqlite3_mprintf("SELECT COUNT(*) FROM users WHERE firstname='%q' AND last_name='%q' AND password='%q' AND is_active=1;",fname.c_str(), lname.c_str(), password.c_str());
-        sqlite3_exec(db, sql, MediPass::callback, &num_matches, NULL);
+    do {
+        std::cout << "====== LOGIN ======" << std::endl;
+        std::cout << "[ ]: Enter your firstname : ";
+        std::cin >> fname;
+        std::cout << "[ ]: Enter your lastname : ";
+        std::cin >> lname;
+        std::cout << "[ ]: Enter your password : ";
+        std::cin >> password;
 
-        if(num_matches==0){
+        char* sql = sqlite3_mprintf(
+            "SELECT COUNT(*) FROM users "
+            "WHERE firstname='%q' AND last_name='%q' AND password='%q' AND is_active=1;",
+            fname.c_str(), lname.c_str(), password.c_str()
+        );
 
-            cout<<"[!]: Username ou password incorrect reessayer"<<endl;
+        sqlite3_exec(db, sql, MediPass::callback, &num_matches, nullptr);
+
+        if (num_matches == 0) {
+            std::cout << "[!]: Username ou password incorrect. Veuillez reessayer." << std::endl;
             count++;
-
         }
-        if(count==3){
+
+        if (count == 3) {
+            std::cout << "[!]: Nombre maximal de tentatives atteint. Login échoué." << std::endl;
             return 0;
         }
-    }while(num_matches==0);
 
+    } while (num_matches == 0);
 
+    // Récupérer les informations complètes de l'utilisateur
+    std::vector<std::string> creds = MediPass::getUserCreds(db, fname, lname, password);
 
-    vector<string> creds = MediPass::getUserCreds(db, fname, lname, password);
-    if(creds[5] != "1"){
-        cout << "[!]: User account is inactive. Contact administrator." << endl;
+    // Vérifier si l'utilisateur est actif
+    if (creds[5] != "1") {
+        std::cout << "[!]: User account is inactive. Contact administrator." << std::endl;
         return 0;
     }
-    MediPass::load_user(db,creds);
+
+    MediPass::load_user(db, creds);
+    int user_id = std::stoi(creds[0]);
+    std::string role = creds[4];
+
+    // Vérifier si le mot de passe est par défaut pour admin ou professionnel de santé
+    if (role == "admin" || role == "professionnel de sante") {
+        std::string current_password;
+        if (must_change_password(db, user_id, current_password)) {
+            forceChangePassword(db, user_id);
+        }
+    }
+
+    // Message de bienvenue
+    std::cout << "[+]: Login successful. Welcome " << get_current_user() << "!" << std::endl;
+
+    // Accès au menu utilisateur
+    current_user->menu();
 
     return 1;
 }
+
 
 int MediPass::logout()
 {
@@ -433,26 +482,74 @@ int MediPass::load_admin(sqlite3* db,vector<string> creds)
     return 0;
 }
 
-void MediPass::create_user(sqlite3* db, const string& firstname,const string& last_name, const string& password, const string& role, const bool& is_active, const int& telephone, const string& created_by)
+// Modifiée pour retourner vrai si l'utilisateur a été créé, faux sinon
+bool MediPass::create_user(sqlite3* db, const string& firstname,
+                           const string& last_name,
+                           const string& password,
+                           const string& role,
+                           const bool& is_active,
+                           const int& telephone,
+                           const string& created_by)
 {
+    // Vérifie si l'utilisateur existe déjà
+    sqlite3_stmt* stmt;
+    const char* check_sql = "SELECT COUNT(*) FROM users WHERE firstname=? AND last_name=? AND role=?;";
 
-    /*
-    ** This function creates a new user in the database with the provided details.
-    */
-
-
-
-    char* sql = sqlite3_mprintf("INSERT INTO users (firstname,last_name, password, role, is_active, telephone, created_by) VALUES ('%q','%q', '%q', '%q', %d, %d, '%q');",
-                                firstname.c_str(),last_name.c_str(), password.c_str(), role.c_str(), is_active ? 1 : 0, telephone, created_by.c_str());
-
-    int rc = sqlite3_exec(db, sql, NULL, NULL, NULL);
-    if (rc != SQLITE_OK) {
-        std::cerr << "[ERROR] Creating user: " << sqlite3_errmsg(db) << std::endl;
-        return;
+    if (sqlite3_prepare_v2(db, check_sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        std::cerr << "[ERROR] Failed to prepare check statement: " << sqlite3_errmsg(db) << std::endl;
+        return false;
     }
-    cout << "[+]: User " << firstname << " " << last_name << " created successfully." << endl;
 
+    sqlite3_bind_text(stmt, 1, firstname.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, last_name.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, role.c_str(), -1, SQLITE_STATIC);
+
+    int exists = 0;
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        exists = sqlite3_column_int(stmt, 0);
+    }
+
+    sqlite3_finalize(stmt);
+
+    if (exists > 0) {
+        std::cout << "[!]: User " << firstname << " " << last_name
+                  << " with role " << role << " already exists. Creation refused." << std::endl;
+        return false;
+    }
+
+    // Insère l'utilisateur
+    sqlite3_stmt* insert_stmt;
+    const char* insert_sql = "INSERT INTO users (firstname, last_name, password, role, is_active, telephone, created_by, is_default_password) "
+                             "VALUES (?, ?, ?, ?, ?, ?, ?, 1);";
+
+    if (sqlite3_prepare_v2(db, insert_sql, -1, &insert_stmt, nullptr) != SQLITE_OK) {
+        std::cerr << "[ERROR] Failed to prepare insert statement: " << sqlite3_errmsg(db) << std::endl;
+        return false;
+    }
+
+    sqlite3_bind_text(insert_stmt, 1, firstname.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(insert_stmt, 2, last_name.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(insert_stmt, 3, password.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(insert_stmt, 4, role.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_int(insert_stmt, 5, is_active ? 1 : 0);
+    sqlite3_bind_int(insert_stmt, 6, telephone);
+    sqlite3_bind_text(insert_stmt, 7, created_by.c_str(), -1, SQLITE_STATIC);
+
+    if (sqlite3_step(insert_stmt) != SQLITE_DONE) {
+        std::cerr << "[ERROR] Creating user: " << sqlite3_errmsg(db) << std::endl;
+        sqlite3_finalize(insert_stmt);
+        return false;
+    }
+
+    sqlite3_finalize(insert_stmt);
+    std::cout << "[+]: User " << firstname << " " << last_name << " created successfully." << std::endl;
+    return true;
 }
+
+
+
+
+
 
 string MediPass::getTimeDate()
 {

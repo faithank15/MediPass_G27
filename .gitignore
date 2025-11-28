@@ -39,3 +39,7 @@
 
 # debug information files
 *.dwo
+
+# SQLite database files
+*.db
+*.sqlite
