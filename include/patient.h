@@ -2,30 +2,49 @@
 #define PATIENT_HPP
 
 #include <string>
+#include "DossierMedical.h"
+#include "utilisateur.h"
+#include "DossierMedical.h"
 
-class Patient {
+class Patient : public User
+
+{
 public: 
-    Patient(); // nécessaire pour load_patient()
 
-    Patient(int id,
+    Patient(); 
+    Patient(MediPass* mp,sqlite3* db,
+            int id,
             const std::string& firstname,
             const std::string& lastname,
-            const std::string& dateNaissance);
+            bool active,
+            int telephone,
+            const std::string created_by,
+            const std::string created_at,
+            const std::string autorisation,
+            const std::string statut, 
+            const std::string& dateNaissance
+            ); 
 
-    int getId() const;
-    std::string getNomComplet() const;
-    std::string getDateNaissance() const;
+    int getId() const { return id; }
+    std::string getNomComplet() const { return firstname + " " + lastname; }
+    std::string getDateNaissance() const { return dateNaissance; }
 
-    // Surchage d'opérateur - // Je vous en prie - ne supprimer plus les surchages d'opérateurs, cela me permet d'utiliser "find" pour parcourir des vecteurs de ces objets et de les comparer - c'est souvent plus pratique q'une boucle for
+    // Surcharge d'opérateur == (surtout ne pas supprimer)
     bool operator==(const Patient& other) const {
-        return this->getNomComplet() == other.getNomComplet(); 
+        return this->getNomComplet() == other.getNomComplet();
     }
+
+    const DossierMedical& getDossierMedical() const { return dossier; }
+    DossierMedical& getDossierMedical() { return dossier; }
 
 private:
     int id;
     std::string firstname;
     std::string lastname;
     std::string dateNaissance;
+    DossierMedical dossier;
+    MediPass* mp;
+    sqlite3* db;
 };
 
 #endif

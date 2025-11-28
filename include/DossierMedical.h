@@ -3,10 +3,11 @@
 
 #include <vector>
 #include <string>
-#include <chrono> // Pour la gestion automatique du temps (heure de création)
+#include <chrono> // Pour la gestion automatique du temps (heure de crï¿½ation)
 #include "antecedant.h"
 #include "consultation.h"
 #include "examen.h"
+#include "Soin.h"
 
 class DossierMedical {
 
@@ -14,17 +15,18 @@ private:
 
     int idDossier;
     int idPatient;
-    std::string heureCreation; // Format chaîne de caractères pour la simplicité
+    std::string heureCreation; // Format chaï¿½ne de caractï¿½res pour la simplicitï¿½
     std::vector<Antecedant> antecedants;
     std::vector<Consultation> consultations;
     std::vector<Examen> examens; // Ajout des examens
+    std::vector<Soin> soins;
 
-    // Méthode utilitaire interne pour obtenir l'heure courante formatée
+    // Mï¿½thode utilitaire interne pour obtenir l'heure courante formatï¿½e
     std::string getCurrentTimeAsString() const;
 
 public:
     // Constructeur
-    // Prend l'ID du dossier et l'ID du patient. L'heure de création est automatique.
+    // Prend l'ID du dossier et l'ID du patient. L'heure de crï¿½ation est automatique.
     DossierMedical(int idD, int idP);
 
     // Accesseurs
@@ -32,7 +34,7 @@ public:
     int getIdPatient() const;
     std::string getHeureCreation() const;
 
-    // Getters pour les collections (retournent une référence constante)
+    // Getters pour les collections (retournent une rï¿½fï¿½rence constante)
     const std::vector<Antecedant>& getAntecedents() const;
     const std::vector<Consultation>& getConsultations() const;
     const std::vector<Examen>& getExamens() const;
@@ -41,15 +43,19 @@ public:
 
     void setIdDossier(int idD);
     void setIdPatient(int idP);
-    // Pas de Setter pour l'heure de création, elle est automatique.
+    // Pas de Setter pour l'heure de crï¿½ation, elle est automatique.
 
-    // Mutateurs pour ajouter du contenu (méthodes d'ajout)
+    // Mutateurs pour ajouter du contenu (mï¿½thodes d'ajout)
     void ajouterAntecedent(const Antecedant& a);
     void ajouterConsultation(const Consultation& c);
     void ajouterExamen(const Examen& e);
 
     //destructeur
      ~DossierMedical();
+
+     // afficher le dossier medical
+     void afficher(std::string autorisation) const;
+
 };
 
 #endif // DOSSIERMEDICAL_H

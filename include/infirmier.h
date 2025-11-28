@@ -18,7 +18,8 @@ public:
             int telephone,
             std::string created_by,
             std::string created_at,
-            const std::string& autorisation = "A1");
+            const std::string& autorisation = "A1",
+            std::string statut);
     virtual ~Infirmier();
     void administrer_soin();
     void menu();

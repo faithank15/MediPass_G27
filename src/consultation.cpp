@@ -43,6 +43,8 @@ void Consultation::setPatientId(const int& p) { patient_id = p; }
 void Consultation::setMotif(const std::string& m) { motif = m; }
 void Consultation::setObservations(const std::string& o) { observations = o; }
 
+void Consultation::ajouter_examen(Examen& examen) {return examens.push_back(examen); };
+
 // Affichage
 void Consultation::afficher() const {
 if (examens.empty()) {

@@ -11,9 +11,9 @@
 
 using namespace std;
 
-static const vector<string> AUTORISATIONS = {"A1", "A2", "A3"};              // Les différentes autorisations possibles, j'ai mis "ob" pour autorisations basique - nous allons compléter
-static const vector<string> ROLES = {"professionnel de santé", "admin", "patient"}; // Les différents status
-static const vector<string> STATUTS = {"Infirmier", "médecin"}; // les différents rôles hiérarchique et organisationnelle. Peut être que ce ,'est pas exactement à cette fin que nous avons créer cet attribut mais je l'ai interprété de cette façon pour staisfaire la dépendance
+static const vector<string> AUTORISATIONS = {"A1", "A2", "A3"};                                 // Les différentes autorisations possibles, j'ai mis "ob" pour autorisations basique - nous allons compléter
+static const vector<string> ROLES = {"professionnel de santé", "admin", "patient"};             // Les différents status
+static const vector<string> STATUTS = {"Infirmier", "médecin"};                                 // les différents rôles hiérarchique et organisationnelle. Peut être que ce ,'est pas exactement à cette fin que nous avons créer cet attribut mais je l'ai interprété de cette façon pour staisfaire la dépendance
 
 
 
@@ -30,14 +30,13 @@ bool est_valide(const string& autorisation, const string& role, const string& st
 Pro_sante::Pro_sante(MediPass* mp, sqlite3* db, const std::string& firstname,
               const std::string& last_name,
               std::string password,
-              std::string role,
               bool active,
               int telephone,
               std::string created_by,
               std::string created_at,
               std::string autorisation,
               std::string statut)
-:    User(mp, db, firstname,last_name,NULL,role), autorisation{autorisation}, role{role}, statut{statut}
+:    User(mp, db, firstname,last_name,password,role), role{role}, statut{statut}
 {
     if(!est_valide(autorisation, role, statut))
         throw Invalid{};

@@ -20,7 +20,6 @@ public:
     Pro_sante(MediPass* mp, sqlite3* db, const std::string& firstname,
               const std::string& last_name,
               std::string password,
-              std::string role,
               bool active,
               int telephone,
               std::string created_by,
@@ -49,7 +48,7 @@ protected:
     std::string statut;
 
     std::vector<std::chrono::system_clock::time_point> liste_disponibilite;
-    std::vector<Patient> patients_en_charge;
+    std::vector<int> patients_id;
 
 
 private:

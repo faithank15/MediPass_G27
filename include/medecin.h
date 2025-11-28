@@ -10,25 +10,6 @@
 #include "patient.h"
 
 
-/*struct Consultation
-{
-    Consultation(std::chrono::system_clock::time_point date_et_heure,
-                 const Medecin* medecin,
-                 const Patient& patient,
-                 const std::string& observations,
-                 const std::string& motif,
-                 const std::vector<Examen>& examens);
-
-    std::chrono::system_clock::time_point date_et_heure;
-    const Medecin* medecin; // Référence légère au médecin associé
-    Patient patient;
-    std::string observations;
-    std::string motif;
-    std::vector<Examen> examens;
-};*/
-
-
-
 class Medecin : public Pro_sante
 {
 public:
@@ -40,12 +21,11 @@ public:
     Medecin(MediPass* mp,sqlite3* db,std::string firstname,
             std::string last_name,
             std::string password,
-            std::string role,
             bool active,
             int telephone,
             std::string created_by,
             std::string created_at,
-            const std::string& autorisation,
+            const std::string& autorisation="A1",
             const std::string& statut,
             const std::string& specialite);
 
@@ -55,13 +35,11 @@ public:
 
     // Actions
     void lire_dossier_medical(const Patient& patient) const;
-    bool editer_dossier_medical(const Patient& patient);
+    bool editer_dossier_medical(Patient& patient);
 
 
     bool creer_consultation(
-        std::chrono::system_clock::time_point date_et_heure,
-        const Medecin* medecin,
-        int id_patient,
+        Patient& patient,
         const std::string& observations,
         const std::string& motif,
         const std::vector<Examen>& examens);
@@ -79,10 +57,8 @@ public:
     void ajouter_consultation_interactive();
     void afficher_infos_professionnelles();
 
-
 private:
     std::string specialite;
-    std::string numero_de_tel;
 };
 
 #endif

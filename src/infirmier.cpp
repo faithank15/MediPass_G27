@@ -14,8 +14,9 @@ Infirmier::Infirmier(MediPass* mp,sqlite3* db,std::string firstname,
             int telephone,
             std::string created_by,
             std::string created_at,
-            const std::string& autorisation)
-     : Pro_sante(mp, db, firstname,last_name,password,role,active,telephone,created_by,created_at,autorisation,"Infirmier")
+            const std::string& autorisation, 
+            std::string statut)
+     : Pro_sante(mp, db, firstname,last_name,password,active,telephone,created_by,created_at,autorisation,statut)
 {
 }
 
