@@ -188,9 +188,9 @@ int MediPass::print_banner() const
     cout << "******************************************" << endl;
     cout << "**__**__**********_*_*_____***************" << endl;
     cout << "*|  \\/  |********| (_)  __ \\**************" << endl;
-    cout << "*| \\ /  |  ___  __| |_| |__) |_ _ ___ ___**" << endl;
+    cout << "*| \\ /  | ___  __| |_| |__) |_ _ ___ ___**" << endl;
     cout << "*| |\\/| |/ _ \\/ _` | |  ___/ _` / __/ __|*" << endl;
-    cout << "*| |  | | __/ (_| | | | | (_| \\__ \\__ \\*" << endl;
+    cout << "*| |  | |  __/ (_| | | |  | (_| \\__ \\__ \\*" << endl;
     cout << "*|_|  |_|\\___|\\__,_|_|_|   \\__,_|___/___/*" << endl;
     cout << "******************************************" << endl;
     cout << "******************************************" << endl;
@@ -323,10 +323,21 @@ std::string MediPass::create_db(sqlite3* db)
          "CREATE TABLE IF NOT EXISTS EXAMENS ("
          "id INTEGER PRIMARY KEY AUTOINCREMENT,"
          "consultation_id INTEGER NOT NULL,"
+         "dossier_id INTEGER NOT NULL"
          "type TEXT NOT NULL,"
          "results TEXT,"
          "date DATETIME DEFAULT CURRENT_TIMESTAMP,"
-         "FOREIGN KEY(consultation_id) REFERENCES CONSULTATIONS(id) ON DELETE CASCADE ON UPDATE CASCADE"
+         "FOREIGN KEY(consultation_id) REFERENCES CONSULTATIONS(id) ON DELETE CASCADE ON UPDATE CASCADE,"
+         "FOREIGN KEY(dossier_id) REFERENCES DOSSIERS_MEDICAUX(id) ON DELETE CASCADE ON UPDATE CASCADE"
+         ");"
+        },
+        {"ANTECEDANTS",
+         "CREATE TABLE IF NOT EXISTS ANTECEDANTS ("
+         "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+         "dossier_id INTEGER NOT NULL,"
+         "type TEXT NOT NULL,"
+         "observations TEXT NOT NULL,"
+         "FOREIGN KEY(dossier_id) REFERENCES DOSSIERS_MEDICAUX(id) ON DELETE CASCADE ON UPDATE CASCADE"
          ");"
         }
     };
@@ -492,8 +503,8 @@ Patient* MediPass::load_patient(sqlite3* db, vector<string> creds) {
 
     Patient* p = new Patient(this,db,stoi(creds[0]),creds[1],creds[2],creds[3],creds[6]=="1",stoi(creds[7]),creds[8],creds[9]);
 
-    //vecto
 
+    return p;
 
 }
 
@@ -593,4 +604,21 @@ vector<string> MediPass::getUserCreds(sqlite3* db, const string& firstname,const
     //cout  << "[+]: Number of credentials retrieved: " << creds.size() << endl;
 
     return creds;
+}
+
+int MediPass::getDossierId(sqlite3* db, int patientId) {
+    const char* sql = "SELECT id FROM DOSSIER_MEDICAUX WHERE patient_id = ?;";
+    sqlite3_stmt* stmt = nullptr;
+    int dossierId = -1; // -1 si pas trouvé
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_int(stmt, 1, patientId);
+
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            dossierId = sqlite3_column_int(stmt, 0);
+        }
+    }
+
+    sqlite3_finalize(stmt);
+    return dossierId;
 }

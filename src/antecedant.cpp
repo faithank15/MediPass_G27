@@ -3,9 +3,10 @@
 
 Antecedant::Antecedant() {}
 
-Antecedant::Antecedant(const std::string& description,
-                       const std::string& date)
-    : description(description), date(date) {}
+Antecedant::Antecedant(int id,const std::string& type,
+                        const std::string& date,
+                        const std::string& description)
+    : description(description), date(date),type(type),id(id){}
 
 std::string Antecedant::getDescription() const { return description; }
 std::string Antecedant::getDate() const { return date; }
@@ -14,7 +15,8 @@ void Antecedant::setDescription(const std::string& d) { description = d; }
 void Antecedant::setDate(const std::string& d) { date = d; }
 
 void Antecedant::afficher() const {
-    std::cout << "Antecedant : " << description
-              << "\nDate : " << date
+    std::cout << "\nDate : " << date
+              << "\nType: " << type
+              << "\n\n " << description
               << "\n-----------------------------\n";
 }

@@ -7,6 +7,7 @@
 #include "antecedant.h"
 #include "examen.h"
 #include "Soin.h"
+#include "MediPass.h"
 
 class Consultation;
 
@@ -14,6 +15,8 @@ class DossierMedical {
 
 private:
 
+    MediPass* mp;
+    sqlite3* db;
     int idDossier;
     int idPatient;
     std::string heureCreation; // Format cha�ne de caract�res pour la simplicit�
@@ -29,6 +32,8 @@ public:
     // Constructeur
     // Prend l'ID du dossier et l'ID du patient. L'heure de cr�ation est automatique.
     DossierMedical(sqlite3* db,int idP);
+
+    DossierMedical(MediPass* mp,sqlite3* db, int patientId, int DossierId);
 
     DossierMedical(int idPatient, const std::string& heureCreation,std::vector<Antecedant> antecedants,std::vector<Consultation> consultations,std::vector<Examen> examens,std::vector<Soin> soins);
 
@@ -52,6 +57,12 @@ public:
     void ajouterAntecedent(const Antecedant& a);
     void ajouterConsultation(const Consultation& c);
     void ajouterExamen(const Examen& e);
+
+    void chargerSoins();
+    void chargerExamensPourConsultation(Consultation& c);
+    void chargerConsultations();
+    void chargerAntecedants();
+    void chargerInfosDossier();
 
     //destructeur
      ~DossierMedical();

@@ -68,7 +68,7 @@ void Medecin::lire_dossier_medical(const Patient& patient) const
         std::cerr << "Accès refusé : ce patient n'est pas dans votre liste.\n";
     }
 }
-*/
+
 
 bool Medecin::editer_dossier_medical(Patient& patient)
 {
@@ -164,7 +164,7 @@ bool Medecin::editer_dossier_medical(Patient& patient)
 
     return true;
 }
-
+*/
 // Cette méthode est susceptible de modification
 bool Medecin::creer_consultation(
                         Patient& patient,                           // utiliser l'ID une fois qu'on sera en mesure de récupérer le patient dans la base de donnée sur la base de l'ID

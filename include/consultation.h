@@ -10,13 +10,17 @@ class Examen;
 
 class Consultation {
 private:
+    
+
+public:
+
     std::string date_et_heure;
     int pro_id;
     int patient_id;
     std::string motif;
     std::string observations;
+    int id;
 
-public:
     Consultation();
     Consultation(MediPass* mp,sqlite3* db,
                  const Medecin* medecin,

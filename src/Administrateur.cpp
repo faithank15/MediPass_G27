@@ -122,7 +122,22 @@ void Administrateur::creerUtilisateur() {
             sqlite3_free(errMsg);
         } else {
             std::cout << "Patient créé avec succès !" << std::endl;
-    }
+        }
+
+        long patid = sqlite3_last_insert_rowid(db);
+
+        sql = sqlite3_mprintf(
+            "INSERT INTO DOSSIERS_MEDICAUX (patient_id, created_at)"
+            "VALUES ('%d', '%q')",sqlite3_last_insert_rowid(db),mp->getTimeDate()
+        );
+
+        if (sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
+            std::cerr << "Erreur SQL lors de la création du dossier médiacal du patient : " << errMsg << std::endl;
+            sqlite3_free(errMsg);
+        } else {
+            std::cout << "Dossier Médical créé avec succès !" << std::endl;
+        }
+
 }
 
 }

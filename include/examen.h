@@ -5,10 +5,7 @@
 
 class Examen {
 private:
-    std::string date;
-    std::string typeExamen;
-    std::string resultat;
-
+    
 public:
     Examen();
     Examen(const std::string& date,
@@ -26,6 +23,13 @@ public:
     void setResultat(const std::string& r);
 
     void afficher() const;
+
+    std::string date;
+    std::string typeExamen;
+    std::string resultat;
+
+    int id;
+
 };
 
 #endif

@@ -1,4 +1,5 @@
 #include "patient.h"
+#include "MediPass.h"
 #include <iostream>
 
 //Patient::Patient()
@@ -15,10 +16,17 @@ Patient::Patient(MediPass* mp,sqlite3* db,
             int telephone,
             const std::string created_by,
             const std::string created_at)
-    : User(mp, db, firstname,lastname,dateNaissance,"","patient",active,telephone,created_by,created_at,"","")
+    : User(mp, db, firstname,lastname,dateNaissance,"","patient",active,telephone,created_by,created_at,"",""),id(id)
 {
-    dossier = new DossierMedical(db,id); // L'ID du dossier est le même que l'ID du patient pour simplifier
-    this->id = id;
+
+
+    int idDossier = mp->getDossierId(db, id);
+
+    if (idDossier != -1) {
+        this->dossier = new DossierMedical(mp, db, id, idDossier);
+    } else {
+        this->dossier = nullptr; // pas de dossier encore
+    }
 }
 
 // Accesseurs

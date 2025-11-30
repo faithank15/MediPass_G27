@@ -6,6 +6,8 @@
 #include "MediPass.h"
 
 
+Soin::Soin(){}
+
 Soin::Soin(MediPass* mp,sqlite3* db, Infirmier* infirmier,
              int patient_id,
              const std::string& type,

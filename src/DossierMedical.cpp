@@ -3,6 +3,7 @@
 #include <ctime>
 #include <chrono>
 #include "consultation.h"
+#include "MediPass.h"
 
 // M�thode Utilitaires (Interne)
 
@@ -28,14 +29,10 @@ std::string DossierMedical::getCurrentTimeAsString() const {
 
 DossierMedical::DossierMedical(sqlite3* db,int idP)
     : idPatient(idP) {
-
+    this->db=db;
     heureCreation = getCurrentTimeAsString();
 
     int idD = 0;
-
-    sqlite3_exec(db,
-        "INSERT INTO dossiers_medicaux (id_patient, heure_creation) VALUES (?, ?);",
-        nullptr, nullptr, nullptr);
 
 }
 
@@ -43,6 +40,140 @@ DossierMedical::DossierMedical(int idPatient, const std::string& heureCreation,s
     : idPatient(idPatient), heureCreation(heureCreation), antecedants(antecedants), consultations(consultations), examens(examens), soins(soins) {
     // Constructeur avec initialisation de tous les attributs
 }
+
+DossierMedical::DossierMedical(MediPass* mp,sqlite3* db, int patientId, int DossierId){
+    this->mp = mp;
+    this->db = db;
+    this->idPatient = patientId;
+    this->idDossier = DossierId;
+
+    // Charger la date de création du dossier
+    chargerInfosDossier();
+
+    // Charger les antécédants
+    chargerAntecedants();
+
+    // Charger les consultations + examens liés
+    chargerConsultations();
+
+    // Charger les soins
+    chargerSoins();
+}
+
+void DossierMedical::chargerInfosDossier()
+{
+    const char* sql = "SELECT created_at FROM DOSSIERS_MEDICAUX WHERE id = ?;";
+    sqlite3_stmt* stmt = nullptr;
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_int(stmt, 1, idDossier);
+
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            heureCreation = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+        }
+    }
+
+    sqlite3_finalize(stmt);
+}
+
+void DossierMedical::chargerAntecedants()
+{
+    const char* sql =
+        "SELECT id, type, observations FROM ANTECEDANTS WHERE dossier_id = ?;";
+
+    sqlite3_stmt* stmt = nullptr;
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_int(stmt, 1, idDossier);
+
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            Antecedant a;
+            a.id = sqlite3_column_int(stmt, 0);
+            a.type = (const char*)sqlite3_column_text(stmt, 1);
+            a.description = (const char*)sqlite3_column_text(stmt, 2);
+
+            antecedants.push_back(a);
+        }
+    }
+
+    sqlite3_finalize(stmt);
+}
+
+void DossierMedical::chargerConsultations()
+{
+    const char* sql =
+        "SELECT id, notes, date FROM CONSULTATIONS WHERE dossier_id = ?;";
+
+    sqlite3_stmt* stmt = nullptr;
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_int(stmt, 1, idDossier);
+
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            Consultation c;
+            c.id = sqlite3_column_int(stmt, 0);
+            c.observations = (const char*)sqlite3_column_text(stmt, 1);
+            c.date_et_heure = (const char*)sqlite3_column_text(stmt, 2);
+
+            // Charger les examens de cette consultation
+            chargerExamensPourConsultation(c);
+
+            consultations.push_back(c);
+        }
+    }
+
+    sqlite3_finalize(stmt);
+}
+
+void DossierMedical::chargerExamensPourConsultation(Consultation& c)
+{
+    const char* sql =
+        "SELECT id, type, results, date FROM EXAMENS WHERE consultation_id = ?;";
+
+    sqlite3_stmt* stmt = nullptr;
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_int(stmt, 1, c.id);
+
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            Examen e;
+            e.id = sqlite3_column_int(stmt, 0);
+            e.typeExamen = (const char*)sqlite3_column_text(stmt, 1);
+            e.resultat = (const char*)sqlite3_column_text(stmt, 2);
+            e.date = (const char*)sqlite3_column_text(stmt, 3);
+
+            c.ajouter_examen(e);
+        }
+    }
+
+    sqlite3_finalize(stmt);
+}
+
+
+void DossierMedical::chargerSoins()
+{
+    const char* sql =
+        "SELECT id, description, date, infirmier_id FROM SOINS WHERE dossier_id = ?;";
+
+    sqlite3_stmt* stmt = nullptr;
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_int(stmt, 1, idDossier);
+
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            Soin s;
+            s.id = sqlite3_column_int(stmt, 0);
+            s.description = (const char*)sqlite3_column_text(stmt, 1);
+            s.date = (const char*)sqlite3_column_text(stmt, 2);
+            s.infirmier_id = sqlite3_column_int(stmt, 3);
+
+            soins.push_back(s);
+        }
+    }
+
+    sqlite3_finalize(stmt);
+}
+
 
 // Accesseurs
 
