@@ -34,15 +34,17 @@ public:
 
 
     // Actions
-    void lire_dossier_medical(const Patient& patient) const;
-    bool editer_dossier_medical(Patient& patient);
+    void lire_dossier_medical(sqlite3* db, MediPass* mp, const const string& firstname,const string& last_name) const;
+    bool editer_dossier_medical(sqlite3* db, MediPass* mp, const string& firstname, const string& last_name);
 
 
     bool creer_consultation(
-        Patient& patient,
-        const std::string& observations,
-        const std::string& motif,
-        const std::vector<Examen>& examens);
+        sqlite3* db, 
+        MediPass* mp, 
+        const string& firstname, 
+        const string& last_name,                    // utiliser l'ID une fois qu'on sera en mesure de récupérer le patient dans la base de donnée sur la base de l'ID
+        const string& observations,
+        const string& motif);
 
 
     void mettre_disponibilite(const std::vector<std::chrono::system_clock::time_point>& dates);
@@ -56,6 +58,7 @@ public:
     void afficher_disponibilites();
     void ajouter_consultation_interactive();
     void afficher_infos_professionnelles();
+    bool lire_dossier_medical_interactive(); 
 
 private:
     std::string specialite;

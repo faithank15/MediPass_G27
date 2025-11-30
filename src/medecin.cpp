@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <iostream>
 #include <limits>
+#include <sqlite3.h>
 #include "medecin.h"
 #include "patient.h"
 #include "consultation.h"
@@ -53,33 +54,87 @@ Medecin::Medecin(MediPass* mp,sqlite3* db,std::string firstname,
         throw Invalid{};
 }
 
-/*
-void Medecin::lire_dossier_medical(const Patient& patient) const
+
+void Medecin::lire_dossier_medical(sqlite3* db, MediPass* mp, const string& firstname, const string& last_name) const
 {
-    auto it = find(patients_id.begin(), patients_id.end(), patient.getId());
+    vector<string> creds = mp->getUserCreds(db, firstname, last_name);
+    if (creds.empty()) { std::cerr << "Patient introuvable ou inactif.\n"; return; }
+
+    Patient* patient = mp->load_patient(db, creds);
+
+    auto it = find(patients_id.begin(), patients_id.end(), patient->getId());
 
     if(it != patients_id.end()) {
         std::cout << "Accès autorisé. Affichage du dossier médical...\n";
-
-        const DossierMedical& dossier = patient.getDossierMedical();
-        dossier.afficher(autorisation);
+        DossierMedical* dossier = patient->getDossierMedical();
+        dossier->afficher(autorisation);   
 
     } else {
-        std::cerr << "Accès refusé : ce patient n'est pas dans votre liste.\n";
+        std::cerr << "Accès refusé : vous ne prenez pas en charge ce patient.\n";
     }
+    delete patient;
+}
+
+bool Medecin::lire_dossier_medical_interactive()
+{
+    cout << "\n--- Lire le dossier medical d'un patient---\n";
+
+    string fname, last_name;
+
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    cout << "Prenom : ";
+    getline(cin, fname);
+
+    cout << "Nom : ";
+    getline(cin, last_name);
+
+    vector<string> creds = mp->getUserCreds(db, fname, last_name);
+    if (creds.empty()) { 
+        std::cerr << "Patient introuvable ou inactif.\n"; 
+        return false; 
+    }
+
+    Patient* patient = nullptr;
+    try {
+        patient = mp->load_patient(db, creds);                        
+    }
+    catch (const exception& e) {
+        cout << "Erreur : impossible de charger le patient.\n";
+        return false;
+    }
+
+    int id_patient = patient->getId();
+    for(int x: patients_id){
+        if(id_patient == x){
+            patient->getDossierMedical()->afficher(autorisation); 
+            delete patient;
+            return true; 
+        }
+    }
+
+    cout << "Vous n'avez pas accès à ce dossier médical car vous ne suivez pas ce patient.\n";
+    delete patient;
+    return false; 
 }
 
 
-bool Medecin::editer_dossier_medical(Patient& patient)
+
+bool Medecin::editer_dossier_medical(sqlite3* db, MediPass* mp, const string& firstname, const string& last_name)
 {
-    auto it = find(patients_id.begin(), patients_id.end(), patient.getId());
+    vector<string> creds = mp->getUserCreds(db, firstname, last_name);
+    if (creds.empty()) { std::cerr << "Patient introuvable ou inactif.\n"; return; }
+
+    Patient* patient = mp->load_patient(db, creds);
+
+    auto it = find(patients_id.begin(), patients_id.end(), patient->getId());
 
     if(it == patients_id.end()){
         std::cout << "Accès refusé : ce patient n'est pas sous votre responsabilité.\n";
         return false;
     }
 
-    DossierMedical* dossier = patient.getDossierMedical(); // accès modifiable
+    DossierMedical* dossier = patient->getDossierMedical(); // accès modifiable
 
     int choix = -1;
 
@@ -94,7 +149,13 @@ bool Medecin::editer_dossier_medical(Patient& patient)
         switch (choix)
         {
             case 1: {
-                std::string desc, date;
+                std::string desc, date, type;  
+                int id;  
+                // L'attribution de l'ID devrait être automatique pour antecedant. Nous garantissons un code fiable en le faisant - vous savez
+                std::cout << "ID : ";
+                std::cin.ignore();
+                cin >> id; 
+
                 std::cout << "Description de l'antécédent : ";
                 std::cin.ignore();
                 std::getline(std::cin, desc);
@@ -102,12 +163,21 @@ bool Medecin::editer_dossier_medical(Patient& patient)
                 std::cout << "Date : ";
                 std::getline(std::cin, date);
 
-                dossier->ajouterAntecedent(Antecedant(desc, date));
+                std::cout << "Type : ";
+                std::getline(std::cin, type);
+
+                dossier->ajouterAntecedent(Antecedant(id, desc, date, type));
                 break;
             }
 
             case 2: {
                 std::string motif, obs;
+                std::cout << "Souhaitez vous lire le dossier médical d'abord ? Oui(o) ou Non(n) \n";
+                char r = ' ';
+                cin >> r; 
+                if(r == 'o' || r == 'O'){
+                    dossier->afficher(autorisation);
+                }
                 std::cout << "Motif de consultation : ";
                 std::cin.ignore();
                 std::getline(std::cin, motif);
@@ -115,11 +185,11 @@ bool Medecin::editer_dossier_medical(Patient& patient)
                 std::cout << "Observations : ";
                 std::getline(std::cin, obs);
 
-                // Une vraie consultation devrait inclure médecin + examens + BD
+                // Une consultation devrait inclure médecin + examens + BD
                 Consultation c;
                 c.setMotif(motif);
                 c.setObservations(obs);
-                c.setPatientId(patient.getId());
+                c.setPatientId(patient->getId());
                 c.setProId(this->getId());
 
 
@@ -161,45 +231,78 @@ bool Medecin::editer_dossier_medical(Patient& patient)
         }
 
     } while (choix != 0);
-
+    delete patient;
     return true;
 }
-*/
+
+
 // Cette méthode est susceptible de modification
 bool Medecin::creer_consultation(
-                        Patient& patient,                           // utiliser l'ID une fois qu'on sera en mesure de récupérer le patient dans la base de donnée sur la base de l'ID
+                        sqlite3* db, 
+                        MediPass* mp, 
+                        const string& firstname, 
+                        const string& last_name,                   
                         const string& observations,
-                        const string& motif,
-                        const vector<Examen>& examens)
+                        const string& motif)
+    
 {
-    // 1. Vérifier si son ID est dans la liste ids du médecin
-    auto it = find(patients_id.begin(), patients_id.end(), patient.getId());
 
-    if (it == patients_id.end()) {
-        cout << "Erreur : ce patient n'est pas dans la liste des patients du médecin.\n";
-        return false;
-    }
+    vector<string> creds = mp->getUserCreds(db, firstname, last_name);
+    if (creds.empty()) { std::cerr << "Patient introuvable ou inactif.\n"; return; }
+
+    Patient* patient = mp->load_patient(db, creds);
+
+    // 1. Vérifier si son ID est dans la liste ids du médecin
+    auto it = find(patients_id.begin(), patients_id.end(), patient->getId());
 
     // 2. Créer la consultation
     Consultation c(mp, db, this,
-                   patient.getId(),
+                   patient->getId(),
                    motif,
-                   observations,
-                   examens);
+                   observations);
+
+    // --- Ajouter des examens à la consultation ---
+        char choixExamen = 'n';
+        std::cout << "Ajouter un examen ? (o/n) : ";
+        std::cin >> choixExamen;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+        while (choixExamen == 'o' || choixExamen == 'O') {
+            std::string dateExamen, typeExamen, resultat;
+
+            std::cout << "Date de l'examen (JJ/MM/AAAA) : ";
+            std::getline(std::cin, dateExamen);
+
+            std::cout << "Type d'examen : ";
+            std::getline(std::cin, typeExamen);
+
+            std::cout << "Résultat : ";
+            std::getline(std::cin, resultat);
+            Examen examen(dateExamen, typeExamen, resultat);
+
+            c.ajouter_examen(examen);                           // à nécessité une méthode ajouterExamen dans Consultation
+
+                    std::cout << "Ajouter un autre examen ? (o/n) : ";
+                    std::cin >> choixExamen;
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
 
     // 3. Ajouter la consultation au dossier médical du patient
-    patient.getDossierMedical()->ajouterConsultation(c);
-
+    patient->getDossierMedical()->ajouterConsultation(c);
+    delete patient;
     return true;
 }
 
 
-
+// A compléter plus tard 
 void Medecin::mettre_disponibilite(const vector<std::chrono::system_clock::time_point>& dates)
 {
     for(const std::chrono::system_clock::time_point& d : dates)
         liste_disponibilite.push_back(d);
 }
+
+
+
 
 void Medecin::afficher_disponibilites() {
     cout << "\n--- Vos disponibilités ---\n";
@@ -226,13 +329,12 @@ void Medecin::afficher_patients() {
 
     for (int i = 0; i < (int)patients_id.size(); ++i) {
         cout << i + 1 << ". ";
-            //  << [i].getNomComplet() << "\n";                             // En attente de Faith   -   récupération du nombre de patients en relation avec le médécin actuel
+            //  << [i].getNomComplet() << "\n";                             // // En attente de Faith   -   // En attente de Faith   -   Une méthode qui permet de récupérer les informations d'un patient à partir de son id
     }
 }
 
-
 void Medecin::ajouter_consultation_interactive() {
-    /*cout << "\n--- Ajouter une consultation ---\n";
+    cout << "\n--- Ajouter une consultation ---\n";
 
     string motif, observations;
 
@@ -245,31 +347,23 @@ void Medecin::ajouter_consultation_interactive() {
     getline(cin, observations);
 
     // --- Sélection du patient ---
-    int id_patient;
-    cout << "\nID du patient concerné : ";
-    cin >> id_patient;
+    string fname, last_name;
+    cout << "\n Veuillez entrer le nom puis le prenom du patient concerné ";
+    cin >> fname >> last_name; 
 
-    // Vérifier si ce patient est suivi par le médecin
-    auto it = find(patients_id.begin(), patients_id.end(), id_patient);
-    if (it == patients_id.end()) {
-        cout << "Erreur : ce patient n'est pas pris en charge par ce médecin.\n";
-        return;
-    }
+    vector<string> creds = mp->getUserCreds(db, firstname, last_name);
+    if (creds.empty()) { std::cerr << "Patient introuvable ou inactif.\n"; return; }
 
-    // Récupération du patient depuis la base de donnée
-    //J'ai créé une méthode loadPatient qui retourne un pointeur sur l'objet contenant les infos que tu cherche mais il a besoin
-    //du pointeur de la db et et du résultat de la méthode getCreds qui est aussi dans MediPass
-    Patient patient;//
+    Patient* patient = nullptr;
     try {
-        // patient = mp->getPatientById(db, id_patient);                        // En attente de Faith
+        patient = mp->load_patient(db, creds);                        
     }
     catch (const exception& e) {
         cout << "Erreur : impossible de charger le patient.\n";
-        return;
     }
 
     cout << "\n--- Patient sélectionné : "
-         << patient.getNomComplet() << " ---\n";
+         << patient->getNomComplet() << " ---\n";
 
     // --- Ajout éventuel d'examens ---
     vector<Examen> examens;
@@ -284,6 +378,10 @@ void Medecin::ajouter_consultation_interactive() {
 
         cout << "\n--- Nouvel examen ---\n";
 
+        std::cout << "ID : ";
+        std::cin.ignore();
+        cin >> id; 
+
         cout << "Date (jj/mm/aaaa) : ";
         getline(cin, date);
 
@@ -293,7 +391,7 @@ void Medecin::ajouter_consultation_interactive() {
         cout << "Résultat : ";
         getline(cin, resultat);
 
-        examens.emplace_back(date, typeExamen, resultat);
+        examens.emplace_back(date, typeExamen, resultat);     
 
         cout << "Ajouter un autre examen ? (o/n) : ";
         cin >> choix;
@@ -305,7 +403,7 @@ void Medecin::ajouter_consultation_interactive() {
         mp,
         db,
         this,
-        patient.getId(),
+        patient->getId(),
         observations,
         motif,
         examens
@@ -313,12 +411,9 @@ void Medecin::ajouter_consultation_interactive() {
 
     cout << "\nConsultation ajoutée avec succès pour le patient "
 
-         << patient.getNomComplet() << ".\n";
-         */
+         << patient->getNomComplet() << ".\n";
+         
 }
-
-
-
 
 void Medecin::afficher_infos_professionnelles() {
     cout << "\n--- Vos informations professionnelles ---\n";
@@ -342,8 +437,9 @@ void Medecin::menu() {
         cout << "------------------------------\n";
         cout << "1. Voir la liste de mes patients\n";
         cout << "2. Voir mes disponibilités\n";
-        cout << "3. Ajouter une nouvelle consultation\n";
+        cout << "3. Créer une consultation\n";
         cout << "4. Voir mes informations professionnelles\n";
+        cout << "5. Lire le dossier medical d'un patient\n";
         cout << "0. Se déconnecter / Quitter\n";
         cout << "------------------------------\n";
         cout << "Votre choix : ";
@@ -373,6 +469,10 @@ void Medecin::menu() {
 
             case 4:
                 afficher_infos_professionnelles();
+                break;
+
+            case 5:
+                lire_dossier_medical_interactive();
                 break;
 
             case 0:
@@ -481,11 +581,6 @@ void Medecin::menu() {
     return 0;
 }*/
 
-
-
-
-
-
-
-
 //<>
+
+

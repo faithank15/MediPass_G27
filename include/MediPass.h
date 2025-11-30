@@ -43,7 +43,7 @@ class MediPass
         //DossierMedical* load_dossier();
 
         string getTimeDate();
-        vector<string> getUserCreds(sqlite3* db, const string& firstname,const string& last_name,const string& password) const;
+        vector<string> getUserCreds(sqlite3* db, const string& firstname,const string& last_name) const;
         bool must_change_password(sqlite3* db, int user_id,string& current_password );
         void update_password(sqlite3* db, int user_id, const string& newPwd);
         void forceChangePassword(sqlite3* db, int user_id);

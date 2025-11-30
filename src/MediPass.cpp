@@ -394,7 +394,7 @@ int MediPass::login(sqlite3* db)
     } while (num_matches == 0);
 
     // Récupérer les informations complètes de l'utilisateur
-    std::vector<std::string> creds = MediPass::getUserCreds(db, fname, lname, password);
+    std::vector<std::string> creds = MediPass::getUserCreds(db, fname, lname);
 
     // Vérifier si l'utilisateur est actif
     if (creds[6] != "1") {
@@ -589,7 +589,7 @@ string MediPass::getTimeDate()
     return string(buf);
 }
 
-vector<string> MediPass::getUserCreds(sqlite3* db, const string& firstname,const string& last_name,const string& password) const
+vector<string> MediPass::getUserCreds(sqlite3* db, const string& firstname,const string& last_name) const
 {
     /*
     ** This function retrieves user credentials from the database based on the provided firstname, lastname, and password.
@@ -597,7 +597,7 @@ vector<string> MediPass::getUserCreds(sqlite3* db, const string& firstname,const
 
     vector<string> creds;
     char* sql = sqlite3_mprintf("SELECT * FROM users WHERE firstname='%q' AND last_name='%q' AND password='%q' AND is_active=1;",
-                                firstname.c_str(), last_name.c_str(), password.c_str());
+                                firstname.c_str(), last_name.c_str());
 
     sqlite3_exec(db, sql, callbackVector, &creds, NULL);
 
