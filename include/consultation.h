@@ -4,8 +4,8 @@
 
 #include <string>
 #include "MediPass.h"
+#include "medecin.h"
 
-class Medecin;
 class Examen;
 
 class Consultation {

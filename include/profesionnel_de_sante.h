@@ -19,13 +19,15 @@ public:
     virtual void menu()=0;
     Pro_sante(MediPass* mp, sqlite3* db, const std::string& firstname,
               const std::string& last_name,
+              std::string dateNaissance,
               std::string password,
               bool active,
               int telephone,
               std::string created_by,
               std::string created_at,
               std::string autorisation,
-              std::string statut);
+              std::string statut,
+              std::string specialite);
 
     // Acesseurs
     std::string obtenir_autorisation() const{ return autorisation; };

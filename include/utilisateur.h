@@ -14,12 +14,16 @@ public:
     virtual void menu()=0;
     User(MediPass* mp,sqlite3* db, const std::string& firstname,
          const std::string& last_name,
+         const std::string& dateNaissance,
          const std::string& password,
          const std::string& role,
          bool is_active = true,
          int telephone = 00000000,
          const std::string& created_by = "",
-         const std::string& created_at = "");
+         const std::string& created_at = "",
+         const std::string& autorisation = "",
+         const std::string& statut = "",
+         const std::string& sécialité = "");
 
     // Getters
     int getId() const;
@@ -42,6 +46,7 @@ protected:
     int id;
     std::string firstname;
     std::string last_name;
+    std::string dateNaissance;
     std::string password;
     std::string role;
     bool active;
@@ -50,6 +55,9 @@ protected:
     std::string created_at;
     MediPass* mp;
     sqlite3* db;
+    std::string autorisation;
+    std::string statut;
+    std::string speécialité;
 private:
 };
 

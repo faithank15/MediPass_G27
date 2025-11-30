@@ -12,6 +12,7 @@ class Infirmier: public Pro_sante
 public:
     Infirmier(MediPass* mp,sqlite3* db,std::string firstname,
             std::string last_name,
+            std::string dateNaissance,
             std::string password,
             std::string role,
             bool active,
@@ -19,7 +20,7 @@ public:
             std::string created_by,
             std::string created_at,
             const std::string& autorisation = "A1",
-            std::string statut);
+            const std::string& spécialité = "");
     virtual ~Infirmier();
     void administrer_soin();
     void menu();

@@ -39,22 +39,21 @@ bool specialite_est_valide(const string& specialite)
 
 Medecin::Medecin(MediPass* mp,sqlite3* db,std::string firstname,
             std::string last_name,
+            std::string dateNaissance,
             std::string password,
             bool active,
             int telephone,
             std::string created_by,
             std::string created_at,
-            const std::string& autorisation,
-            const std::string& statut,
-            const std::string& specialite)
-     : Pro_sante(mp, db, firstname,last_name,password,active,telephone,created_by,created_at,autorisation,statut),
-      specialite{specialite}
+            std::string autorisation,
+            std::string specialite)
+     : Pro_sante(mp, db, firstname,last_name,dateNaissance,password,active,telephone,created_by,created_at,"A2","medecin",specialite)
 {
     if(!specialite_est_valide(specialite))
         throw Invalid{};
 }
 
-
+/*
 void Medecin::lire_dossier_medical(const Patient& patient) const
 {
     auto it = find(patients_id.begin(), patients_id.end(), patient.getId());
@@ -69,7 +68,7 @@ void Medecin::lire_dossier_medical(const Patient& patient) const
         std::cerr << "Accès refusé : ce patient n'est pas dans votre liste.\n";
     }
 }
-
+*/
 
 bool Medecin::editer_dossier_medical(Patient& patient)
 {
@@ -80,7 +79,7 @@ bool Medecin::editer_dossier_medical(Patient& patient)
         return false;
     }
 
-    DossierMedical& dossier = patient.getDossierMedical(); // accès modifiable
+    DossierMedical* dossier = patient.getDossierMedical(); // accès modifiable
 
     int choix = -1;
 
@@ -103,7 +102,7 @@ bool Medecin::editer_dossier_medical(Patient& patient)
                 std::cout << "Date : ";
                 std::getline(std::cin, date);
 
-                dossier.ajouterAntecedent(Antecedant(desc, date));
+                dossier->ajouterAntecedent(Antecedant(desc, date));
                 break;
             }
 
@@ -141,7 +140,7 @@ bool Medecin::editer_dossier_medical(Patient& patient)
 
                     std::cout << "Résultat : ";
                     std::getline(std::cin, resultat);
-                    Examen examen(dateExamen, typeExamen, resultat); 
+                    Examen examen(dateExamen, typeExamen, resultat);
 
                     c.ajouter_examen(examen);                           // à nécessité une méthode ajouterExamen dans Consultation
 
@@ -150,7 +149,7 @@ bool Medecin::editer_dossier_medical(Patient& patient)
                     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 }
 
-                dossier.ajouterConsultation(c);
+                dossier->ajouterConsultation(c);
                 break;
             }
             case 0:
@@ -189,7 +188,7 @@ bool Medecin::creer_consultation(
                    examens);
 
     // 3. Ajouter la consultation au dossier médical du patient
-    patient.getDossierMedical().ajouterConsultation(c);
+    patient.getDossierMedical()->ajouterConsultation(c);
 
     return true;
 }
@@ -226,14 +225,14 @@ void Medecin::afficher_patients() {
     }
 
     for (int i = 0; i < (int)patients_id.size(); ++i) {
-        cout << i + 1 << ". "; 
+        cout << i + 1 << ". ";
             //  << [i].getNomComplet() << "\n";                             // En attente de Faith   -   récupération du nombre de patients en relation avec le médécin actuel
     }
 }
 
 
 void Medecin::ajouter_consultation_interactive() {
-    cout << "\n--- Ajouter une consultation ---\n";
+    /*cout << "\n--- Ajouter une consultation ---\n";
 
     string motif, observations;
 
@@ -258,7 +257,9 @@ void Medecin::ajouter_consultation_interactive() {
     }
 
     // Récupération du patient depuis la base de donnée
-    Patient patient;
+    //J'ai créé une méthode loadPatient qui retourne un pointeur sur l'objet contenant les infos que tu cherche mais il a besoin
+    //du pointeur de la db et et du résultat de la méthode getCreds qui est aussi dans MediPass
+    Patient patient;//
     try {
         // patient = mp->getPatientById(db, id_patient);                        // En attente de Faith
     }
@@ -267,7 +268,7 @@ void Medecin::ajouter_consultation_interactive() {
         return;
     }
 
-    cout << "\n--- Patient sélectionné : " 
+    cout << "\n--- Patient sélectionné : "
          << patient.getNomComplet() << " ---\n";
 
     // --- Ajout éventuel d'examens ---
@@ -311,7 +312,9 @@ void Medecin::ajouter_consultation_interactive() {
     );
 
     cout << "\nConsultation ajoutée avec succès pour le patient "
+
          << patient.getNomComplet() << ".\n";
+         */
 }
 
 

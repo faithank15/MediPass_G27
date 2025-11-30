@@ -2,8 +2,8 @@
 #define SOIN_H
 #include <sqlite3.h>
 #include <string>
-#include "MediPass.h"
 
+class MediPass;
 class Infirmier;
 
 

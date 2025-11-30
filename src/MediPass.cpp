@@ -5,6 +5,8 @@
 #include "medecin.h"
 #include "infirmier.h"
 #include "Administrateur.h"
+#include "patient.h"
+
 
 
 
@@ -268,6 +270,7 @@ std::string MediPass::create_db(sqlite3* db)
          "id INTEGER PRIMARY KEY AUTOINCREMENT,"
          "firstname TEXT NOT NULL,"
          "last_name TEXT NOT NULL,"
+         "date_of_birth TEXT,"
          "password TEXT NOT NULL,"
          "role TEXT NOT NULL,"
          "is_active INTEGER NOT NULL,"
@@ -284,9 +287,8 @@ std::string MediPass::create_db(sqlite3* db)
         {"PATIENTS",
          "CREATE TABLE IF NOT EXISTS PATIENTS ("
          "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-         "first_name TEXT NOT NULL,"
-         "last_name TEXT NOT NULL,"
-         "date_of_birth DATE"
+         "patient_user_id INTEGER UNIQUE,"
+         "FOREIGN KEY(patient_user_id) REFERENCES USERS(id) ON DELETE CASCADE ON UPDATE CASCADE"
          ");"
         },
         {"DOSSIERS_MEDICAUX",
@@ -384,14 +386,14 @@ int MediPass::login(sqlite3* db)
     std::vector<std::string> creds = MediPass::getUserCreds(db, fname, lname, password);
 
     // Vérifier si l'utilisateur est actif
-    if (creds[5] != "1") {
+    if (creds[6] != "1") {
         std::cout << "[!]: User account is inactive. Contact administrator." << std::endl;
         return 0;
     }
 
     MediPass::load_user(db, creds);
     int user_id = std::stoi(creds[0]);
-    std::string role = creds[4];
+    std::string role = creds[5];
 
     // Vérifier si le mot de passe est par défaut pour admin ou professionnel de santé
     if (role == "admin" || role == "professionnel de sante") {
@@ -437,7 +439,7 @@ void MediPass::load_user(sqlite3* db,vector<string> creds)
     ** This function redirects to the appropriate user loading function based on the current user's role.
     */
 
-    string user_role = creds[4];
+    string user_role = creds[5];
 
     if (user_role == "patient") {
         cout << "[!]: Patient loading not implemented yet." << endl;
@@ -456,11 +458,11 @@ int MediPass::load_sante(sqlite3* db, vector<string> creds)
     ** This function loads healthcare professional details from the database into the provided Sante object.
     */
 
-    string userStatut = creds[10];
+    string userStatut = creds[11];
     if (userStatut == "medecin") {
-        current_user = new Medecin(this,db,creds[1],creds[2],creds[3],creds[4],creds[5]=="1",stoi(creds[6]),creds[7],creds[8],creds[9],creds[10],creds[11]);
+        current_user = new Medecin(this,db,creds[1],creds[2],creds[3],creds[4],creds[6]=="1",stoi(creds[7]),creds[8],creds[9],creds[11],creds[12]);
     } else if (userStatut == "infirmier") {
-        current_user = new Infirmier(this,db,creds[1],creds[2],creds[3],creds[4],creds[5]=="1",stoi(creds[6]),creds[7],creds[8],creds[9]);
+        current_user = new Infirmier(this,db,creds[1],creds[2],creds[3],creds[4],creds[5],creds[6]=="1",stoi(creds[7]),creds[8],creds[9],creds[10],creds[12]);
     } else {
         cout << "[!]: Statut de professionel de sante inconnu." << endl;
     }
@@ -474,12 +476,25 @@ int MediPass::load_admin(sqlite3* db,vector<string> creds)
     ** This function loads admin details from the database into the provided Admin object.
     */
 
-    current_user = new Administrateur(this,db,creds[1],creds[2],creds[3]);
+    current_user = new Administrateur(this,db,creds[1],creds[2],creds[3],creds[4],stoi(creds[7]),creds[8],creds[9]);
 
     cout << "[+]: Admin user loaded successfully." << endl;
 
 
     return 0;
+}
+
+Patient* MediPass::load_patient(sqlite3* db, vector<string> creds) {
+
+    /*
+    **
+    */
+
+    Patient* p = new Patient(this,db,stoi(creds[0]),creds[1],creds[2],creds[3],creds[6]=="1",stoi(creds[7]),creds[8],creds[9]);
+
+    //vecto
+
+
 }
 
 // Modifiée pour retourner vrai si l'utilisateur a été créé, faux sinon

@@ -12,6 +12,10 @@ class User;
 
 class Administrateur;   // forward declaration
 
+class Patient;   // forward declaration
+
+class DossierMedical;
+
 using namespace std;
 
 class MediPass
@@ -34,6 +38,9 @@ class MediPass
         void load_user(sqlite3* db,vector<string> creds);
         int load_sante(sqlite3* db,vector<string> creds);
         int load_admin(sqlite3* db,vector<string> creds);
+        Patient* load_patient(sqlite3* db,vector<string> creds);
+        //DossierMedical* load_dossier();
+
         string getTimeDate();
         vector<string> getUserCreds(sqlite3* db, const string& firstname,const string& last_name,const string& password) const;
         bool must_change_password(sqlite3* db, int user_id,string& current_password );

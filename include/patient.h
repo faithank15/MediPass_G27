@@ -4,29 +4,27 @@
 #include <string>
 #include "DossierMedical.h"
 #include "utilisateur.h"
-#include "DossierMedical.h"
+
+class DossierMedical;
 
 class Patient : public User
 
 {
-public: 
+public:
 
-    Patient(); 
+    //Patient();
     Patient(MediPass* mp,sqlite3* db,
             int id,
             const std::string& firstname,
             const std::string& lastname,
+            const std::string& dateNaissance,
             bool active,
             int telephone,
             const std::string created_by,
-            const std::string created_at,
-            const std::string autorisation,
-            const std::string statut, 
-            const std::string& dateNaissance
-            ); 
+            const std::string created_at);
 
     int getId() const { return id; }
-    std::string getNomComplet() const { return firstname + " " + lastname; }
+    std::string getNomComplet() const { return this->firstname + " " + this->last_name; }
     std::string getDateNaissance() const { return dateNaissance; }
 
     // Surcharge d'opérateur == (surtout ne pas supprimer)
@@ -34,17 +32,16 @@ public:
         return this->getNomComplet() == other.getNomComplet();
     }
 
-    const DossierMedical& getDossierMedical() const { return dossier; }
-    DossierMedical& getDossierMedical() { return dossier; }
+    DossierMedical* getDossierMedical() { return dossier; }
+
+    void menu();
 
 private:
     int id;
-    std::string firstname;
-    std::string lastname;
-    std::string dateNaissance;
-    DossierMedical dossier;
+    DossierMedical* dossier = nullptr;
     MediPass* mp;
     sqlite3* db;
+
 };
 
 #endif

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <ctime>
 #include <chrono>
+#include "consultation.h"
 
 // M�thode Utilitaires (Interne)
 
@@ -25,11 +26,22 @@ std::string DossierMedical::getCurrentTimeAsString() const {
 // Constructeur
 
 
-DossierMedical::DossierMedical(int idD, int idP)
-    : idDossier(idD), idPatient(idP) {
+DossierMedical::DossierMedical(sqlite3* db,int idP)
+    : idPatient(idP) {
 
-    // Initialisation automatique de l'heure de cr�ation lors de l'instanciation du dossier
     heureCreation = getCurrentTimeAsString();
+
+    int idD = 0;
+
+    sqlite3_exec(db,
+        "INSERT INTO dossiers_medicaux (id_patient, heure_creation) VALUES (?, ?);",
+        nullptr, nullptr, nullptr);
+
+}
+
+DossierMedical::DossierMedical(int idPatient, const std::string& heureCreation,std::vector<Antecedant> antecedants,std::vector<Consultation> consultations,std::vector<Examen> examens,std::vector<Soin> soins)
+    : idPatient(idPatient), heureCreation(heureCreation), antecedants(antecedants), consultations(consultations), examens(examens), soins(soins) {
+    // Constructeur avec initialisation de tous les attributs
 }
 
 // Accesseurs
@@ -82,7 +94,7 @@ void DossierMedical::ajouterExamen(const Examen& e) {
     examens.push_back(e);
 }
 
-void DossierMedical::afficher(string autorisation) const {
+int DossierMedical::afficher(std::string autorisation){
     using std::cout;
     using std::cin;
     using std::endl;
@@ -103,7 +115,7 @@ void DossierMedical::afficher(string autorisation) const {
             cout << "----------------------------------\n";
         }
         cout << "===== Fin du dossier médical =====\n";
-        return;
+        return 0;
     }
 
     // --------------------------------------------------------------------
@@ -166,7 +178,7 @@ void DossierMedical::afficher(string autorisation) const {
         }
 
         cout << "===== Fin du dossier médical =====\n";
-        return;
+        return 0;
     }
 
     // -----------------------------------------------------------
@@ -201,6 +213,8 @@ void DossierMedical::afficher(string autorisation) const {
     cout << "(Simulation – classe non encore implémentée.)\n";
 
     cout << "\n===== Fin du dossier médical =====\n\n";
+
+    return 0;
 }
 
 

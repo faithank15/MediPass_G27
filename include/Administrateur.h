@@ -14,7 +14,11 @@ class Administrateur :virtual public User{
 public:
     Administrateur(MediPass* mp, sqlite3* db, const std::string& firstname,
                    const std::string& last_name,
-                   const std::string& password);
+                   const std::string& dateNaissance,
+                   const std::string& password,
+                   const int telephone,
+                   const std::string& created_by,
+                   const std::string& created_at);
 
     // Gestion des utilisateurs
     void creerUtilisateur();

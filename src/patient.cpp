@@ -1,8 +1,8 @@
 #include "patient.h"
 #include <iostream>
 
-Patient::Patient()
-    : id(0), firstname(""), lastname(""), dateNaissance("01/01/1900"), dossier(0, 0) {}
+//Patient::Patient()
+//    : firstname(""), last_name(""), dateNaissance("01/01/1900"), dossier(0, 0) {}
 
 
 //Constructeur
@@ -10,41 +10,30 @@ Patient::Patient(MediPass* mp,sqlite3* db,
             int id,
             const std::string& firstname,
             const std::string& lastname,
+            const std::string& dateNaissance,
             bool active,
             int telephone,
             const std::string created_by,
-            const std::string created_at,
-            const std::string autorisation,
-            const std::string statut, 
-            const std::string& dateNaissance)
-    : User(mp, db, firstname,last_name,password,role), dateNaissance(dateNaissance), dossier(id, id)
+            const std::string created_at)
+    : User(mp, db, firstname,lastname,dateNaissance,"","patient",active,telephone,created_by,created_at,"","")
 {
+    dossier = new DossierMedical(db,id); // L'ID du dossier est le même que l'ID du patient pour simplifier
+    this->id = id;
 }
 
 // Accesseurs
-int Patient::getId() const {
-    return id;
-}
 
-std::string Patient::getNomComplet() const {
-    return firstname + " " + lastname;
-}
 
-std::string Patient::getDateNaissance() const {
-    return dateNaissance;
-}
+
+void Patient::menu(){}
+
 
 // Surcharge opérateur ==
-bool Patient::operator==(const Patient& other) const {
-    return this->getNomComplet() == other.getNomComplet();
-}
 
 // Dossier médical (accès en lecture seule)
-const DossierMedical& Patient::getDossierMedical() const {
-    return dossier;
-}
+//const DossierMedical& Patient::getDossierMedical() const {
+//    return dossier;
+//}
 
 // Dossier médical (accès modifiable)
-DossierMedical& Patient::getDossierMedical() {
-    return dossier;
-}
+

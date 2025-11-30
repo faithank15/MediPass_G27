@@ -10,29 +10,29 @@ User::User()
 
 User::User(MediPass* mp, sqlite3* db, const std::string& firstname,
          const std::string& last_name,
+         const std::string& dateNaissance,
          const std::string& password,
          const std::string& role,
          bool is_active,
          int telephone,
          const std::string& created_by,
-         const std::string& created_at)
+         const std::string& created_at,
+         const std::string& autorisation,
+         const std::string& statut,
+         const std::string& specialite)
     : firstname(firstname),
       last_name(last_name),
       password(password),
+      dateNaissance(dateNaissance),
       role(role),
       active(is_active),
       telephone(telephone),
       created_by(created_by),
       created_at(created_at),
       mp(mp),
-      db(db) {
-        sqlite3_exec(db,
-            sqlite3_mprintf("INSERT INTO users (firstname, last_name, password, role, is_active, telephone, created_by, created_at) "
-                            "VALUES ('%q', '%q', '%q', '%q', %d, %d, '%q', '%q');",
-                            firstname.c_str(), last_name.c_str(), password.c_str(), role.c_str(),
-                            is_active ? 1 : 0, telephone, created_by.c_str(), created_at.c_str()),
-            nullptr, nullptr, nullptr);
-        id = sqlite3_last_insert_rowid(db);
+      db(db), autorisation(autorisation), statut(statut), speécialité(specialite)
+      {
+        
       }
 
 // Getters

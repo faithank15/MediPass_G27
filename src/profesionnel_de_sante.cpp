@@ -29,14 +29,16 @@ bool est_valide(const string& autorisation, const string& role, const string& st
 
 Pro_sante::Pro_sante(MediPass* mp, sqlite3* db, const std::string& firstname,
               const std::string& last_name,
+              std::string dateNaissance,
               std::string password,
               bool active,
               int telephone,
               std::string created_by,
               std::string created_at,
               std::string autorisation,
-              std::string statut)
-:    User(mp, db, firstname,last_name,password,role), role{role}, statut{statut}
+              std::string statut,
+              std::string spécialité)
+:    User(mp, db, firstname,last_name,dateNaissance,password,"professionnel de sante",active,telephone,created_by,created_at,autorisation,statut,speécialité)
 {
     if(!est_valide(autorisation, role, statut))
         throw Invalid{};

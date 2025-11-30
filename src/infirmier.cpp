@@ -8,15 +8,16 @@ class Soin; // Forward declaration
 
 Infirmier::Infirmier(MediPass* mp,sqlite3* db,std::string firstname,
             std::string last_name,
+            std::string dateNaissance,
             std::string password,
             std::string role,
             bool active,
             int telephone,
             std::string created_by,
             std::string created_at,
-            const std::string& autorisation, 
-            std::string statut)
-     : Pro_sante(mp, db, firstname,last_name,password,active,telephone,created_by,created_at,autorisation,statut)
+            const std::string& autorisation,
+            const std::string& spécialité)
+     : Pro_sante(mp, db, firstname,last_name,dateNaissance,password,active,telephone,created_by,created_at,autorisation,"infirmier",spécialité)
 {
 }
 

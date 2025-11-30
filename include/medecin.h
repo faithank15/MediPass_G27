@@ -20,14 +20,14 @@ public:
 
     Medecin(MediPass* mp,sqlite3* db,std::string firstname,
             std::string last_name,
+            std::string dateNaissance,
             std::string password,
             bool active,
             int telephone,
             std::string created_by,
             std::string created_at,
-            const std::string& autorisation="A1",
-            const std::string& statut,
-            const std::string& specialite);
+            std::string autorisation = "A2",
+            std::string specialite = "");
 
 
     Medecin(const Medecin& original);

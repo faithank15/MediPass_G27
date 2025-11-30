@@ -1,13 +1,14 @@
 #ifndef DOSSIERMEDICAL_H
 #define DOSSIERMEDICAL_H
-
+#include <sqlite3.h>
 #include <vector>
 #include <string>
 #include <chrono> // Pour la gestion automatique du temps (heure de cr�ation)
 #include "antecedant.h"
-#include "consultation.h"
 #include "examen.h"
 #include "Soin.h"
+
+class Consultation;
 
 class DossierMedical {
 
@@ -27,7 +28,9 @@ private:
 public:
     // Constructeur
     // Prend l'ID du dossier et l'ID du patient. L'heure de cr�ation est automatique.
-    DossierMedical(int idD, int idP);
+    DossierMedical(sqlite3* db,int idP);
+
+    DossierMedical(int idPatient, const std::string& heureCreation,std::vector<Antecedant> antecedants,std::vector<Consultation> consultations,std::vector<Examen> examens,std::vector<Soin> soins);
 
     // Accesseurs
     int getIdDossier() const;
@@ -54,7 +57,7 @@ public:
      ~DossierMedical();
 
      // afficher le dossier medical
-     void afficher(std::string autorisation) const;
+     int afficher(std::string autorisation);
 
 };
 

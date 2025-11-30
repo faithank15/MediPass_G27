@@ -26,13 +26,12 @@ public:
               int telephone,
               std::string created_by,
               std::string created_at,
-              std::string autorisation="A2",
-              std::string statut);
+              std::string autorisation="A2");
 
     void recommander();
     void lire_dossier_medical(int patient_id);
     void menu();
-    
+
 };
 
 #endif

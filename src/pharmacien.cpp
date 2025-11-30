@@ -16,9 +16,8 @@ Pharmacien::Pharmacien(MediPass* mp, sqlite3* db, const std::string& firstname,
               int telephone,
               std::string created_by,
               std::string created_at,
-              std::string autorisation,
-              std::string statut)
-     : Pro_sante(mp, db, firstname,last_name,password,active,telephone,created_by,created_at,autorisation,statut)
+              std::string autorisation)
+     : Pro_sante(mp, db, firstname,last_name,password,active,telephone,created_by,created_at,autorisation,"pharmacien","pharmacie")
 {
 }
 
