@@ -12,8 +12,8 @@
 using namespace std;
 
 static const vector<string> AUTORISATIONS = {"A1", "A2", "A3"};                                 // Les différentes autorisations possibles, j'ai mis "ob" pour autorisations basique - nous allons compléter
-static const vector<string> ROLES = {"professionnel de santé", "admin", "patient"};             // Les différents status
-static const vector<string> STATUTS = {"Infirmier", "médecin"};                                 // les différents rôles hiérarchique et organisationnelle. Peut être que ce ,'est pas exactement à cette fin que nous avons créer cet attribut mais je l'ai interprété de cette façon pour staisfaire la dépendance
+static const vector<string> ROLES = {"professionnel de sante", "admin", "patient"};             // Les différents status
+static const vector<string> STATUTS = {"infirmier", "medecin"};                                 // les différents rôles hiérarchique et organisationnelle. Peut être que ce ,'est pas exactement à cette fin que nous avons créer cet attribut mais je l'ai interprété de cette façon pour staisfaire la dépendance
 
 
 

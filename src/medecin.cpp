@@ -67,7 +67,7 @@ void Medecin::lire_dossier_medical(sqlite3* db, MediPass* mp, const string& firs
     if(it != patients_id.end()) {
         std::cout << "Accès autorisé. Affichage du dossier médical...\n";
         DossierMedical* dossier = patient->getDossierMedical();
-        dossier->afficher(autorisation);   
+        dossier->afficher(autorisation);
 
     } else {
         std::cerr << "Accès refusé : vous ne prenez pas en charge ce patient.\n";
@@ -90,14 +90,14 @@ bool Medecin::lire_dossier_medical_interactive()
     getline(cin, last_name);
 
     vector<string> creds = mp->getUserCreds(db, fname, last_name);
-    if (creds.empty()) { 
-        std::cerr << "Patient introuvable ou inactif.\n"; 
-        return false; 
+    if (creds.empty()) {
+        std::cerr << "Patient introuvable ou inactif.\n";
+        return false;
     }
 
     Patient* patient = nullptr;
     try {
-        patient = mp->load_patient(db, creds);                        
+        patient = mp->load_patient(db, creds);
     }
     catch (const exception& e) {
         cout << "Erreur : impossible de charger le patient.\n";
@@ -107,15 +107,15 @@ bool Medecin::lire_dossier_medical_interactive()
     int id_patient = patient->getId();
     for(int x: patients_id){
         if(id_patient == x){
-            patient->getDossierMedical()->afficher(autorisation); 
+            patient->getDossierMedical()->afficher(autorisation);
             delete patient;
-            return true; 
+            return true;
         }
     }
 
     cout << "Vous n'avez pas accès à ce dossier médical car vous ne suivez pas ce patient.\n";
     delete patient;
-    return false; 
+    return false;
 }
 
 
@@ -123,7 +123,7 @@ bool Medecin::lire_dossier_medical_interactive()
 bool Medecin::editer_dossier_medical(sqlite3* db, MediPass* mp, const string& firstname, const string& last_name)
 {
     vector<string> creds = mp->getUserCreds(db, firstname, last_name);
-    if (creds.empty()) { std::cerr << "Patient introuvable ou inactif.\n"; return; }
+    if (creds.empty()) { std::cerr << "Patient introuvable ou inactif.\n"; return false; }
 
     Patient* patient = mp->load_patient(db, creds);
 
@@ -149,12 +149,12 @@ bool Medecin::editer_dossier_medical(sqlite3* db, MediPass* mp, const string& fi
         switch (choix)
         {
             case 1: {
-                std::string desc, date, type;  
-                int id;  
+                std::string desc, date, type;
+                int id;
                 // L'attribution de l'ID devrait être automatique pour antecedant. Nous garantissons un code fiable en le faisant - vous savez
                 std::cout << "ID : ";
                 std::cin.ignore();
-                cin >> id; 
+                cin >> id;
 
                 std::cout << "Description de l'antécédent : ";
                 std::cin.ignore();
@@ -174,7 +174,7 @@ bool Medecin::editer_dossier_medical(sqlite3* db, MediPass* mp, const string& fi
                 std::string motif, obs;
                 std::cout << "Souhaitez vous lire le dossier médical d'abord ? Oui(o) ou Non(n) \n";
                 char r = ' ';
-                cin >> r; 
+                cin >> r;
                 if(r == 'o' || r == 'O'){
                     dossier->afficher(autorisation);
                 }
@@ -238,17 +238,17 @@ bool Medecin::editer_dossier_medical(sqlite3* db, MediPass* mp, const string& fi
 
 // Cette méthode est susceptible de modification
 bool Medecin::creer_consultation(
-                        sqlite3* db, 
-                        MediPass* mp, 
-                        const string& firstname, 
-                        const string& last_name,                   
+                        sqlite3* db,
+                        MediPass* mp,
+                        const string& firstname,
+                        const string& last_name,
                         const string& observations,
                         const string& motif)
-    
+
 {
 
     vector<string> creds = mp->getUserCreds(db, firstname, last_name);
-    if (creds.empty()) { std::cerr << "Patient introuvable ou inactif.\n"; return; }
+    if (creds.empty()) { std::cerr << "Patient introuvable ou inactif.\n"; return false; }
 
     Patient* patient = mp->load_patient(db, creds);
 
@@ -294,7 +294,7 @@ bool Medecin::creer_consultation(
 }
 
 
-// A compléter plus tard 
+// A compléter plus tard
 void Medecin::mettre_disponibilite(const vector<std::chrono::system_clock::time_point>& dates)
 {
     for(const std::chrono::system_clock::time_point& d : dates)
@@ -349,14 +349,14 @@ void Medecin::ajouter_consultation_interactive() {
     // --- Sélection du patient ---
     string fname, last_name;
     cout << "\n Veuillez entrer le nom puis le prenom du patient concerné ";
-    cin >> fname >> last_name; 
+    cin >> fname >> last_name;
 
     vector<string> creds = mp->getUserCreds(db, firstname, last_name);
     if (creds.empty()) { std::cerr << "Patient introuvable ou inactif.\n"; return; }
 
     Patient* patient = nullptr;
     try {
-        patient = mp->load_patient(db, creds);                        
+        patient = mp->load_patient(db, creds);
     }
     catch (const exception& e) {
         cout << "Erreur : impossible de charger le patient.\n";
@@ -380,7 +380,7 @@ void Medecin::ajouter_consultation_interactive() {
 
         std::cout << "ID : ";
         std::cin.ignore();
-        cin >> id; 
+        cin >> id;
 
         cout << "Date (jj/mm/aaaa) : ";
         getline(cin, date);
@@ -391,7 +391,7 @@ void Medecin::ajouter_consultation_interactive() {
         cout << "Résultat : ";
         getline(cin, resultat);
 
-        examens.emplace_back(date, typeExamen, resultat);     
+        examens.emplace_back(date, typeExamen, resultat);
 
         cout << "Ajouter un autre examen ? (o/n) : ";
         cin >> choix;
@@ -412,7 +412,7 @@ void Medecin::ajouter_consultation_interactive() {
     cout << "\nConsultation ajoutée avec succès pour le patient "
 
          << patient->getNomComplet() << ".\n";
-         
+
 }
 
 void Medecin::afficher_infos_professionnelles() {

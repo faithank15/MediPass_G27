@@ -121,9 +121,9 @@ void MediPass::update_password(sqlite3* db, int user_id, const std::string& newP
 
 void MediPass::forceChangePassword(sqlite3* db, int user_id) {
     std::string newPwd;
+    std::cin.ignore();
     do {
         std::cout << "[!] Votre mot de passe est encore par défaut. Veuillez le changer : ";
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::getline(std::cin, newPwd);
         if(newPwd.empty()) {
             std::cout << "[!]: Mot de passe invalide, réessayez." << std::endl;
@@ -323,7 +323,7 @@ std::string MediPass::create_db(sqlite3* db)
          "CREATE TABLE IF NOT EXISTS EXAMENS ("
          "id INTEGER PRIMARY KEY AUTOINCREMENT,"
          "consultation_id INTEGER NOT NULL,"
-         "dossier_id INTEGER NOT NULL"
+         "dossier_id INTEGER NOT NULL,"
          "type TEXT NOT NULL,"
          "results TEXT,"
          "date DATETIME DEFAULT CURRENT_TIMESTAMP,"
@@ -363,15 +363,17 @@ int MediPass::login(sqlite3* db)
     int num_matches = 0;
     std::string fname, lname, password;
     int count = 0;
+    std::cin.ignore();
 
     do {
         std::cout << "====== LOGIN ======" << std::endl;
+
         std::cout << "[ ]: Enter your firstname : ";
-        std::cin >> fname;
+        std::getline(cin ,fname);
         std::cout << "[ ]: Enter your lastname : ";
-        std::cin >> lname;
+        std::getline(cin ,lname);
         std::cout << "[ ]: Enter your password : ";
-        std::cin >> password;
+        std::getline(cin, password);
 
         char* sql = sqlite3_mprintf(
             "SELECT COUNT(*) FROM users "
@@ -468,10 +470,11 @@ int MediPass::load_sante(sqlite3* db, vector<string> creds)
     /*
     ** This function loads healthcare professional details from the database into the provided Sante object.
     */
-
+    std::cout << "[!]: Load Santé atteint" << endl;
     string userStatut = creds[11];
     if (userStatut == "medecin") {
-        current_user = new Medecin(this,db,creds[1],creds[2],creds[3],creds[4],creds[6]=="1",stoi(creds[7]),creds[8],creds[9],creds[11],creds[12]);
+        std::cout << "[!]: Load medecin atteint" << endl;
+        current_user = new Medecin(this,db,creds[1],creds[2],creds[3],creds[4],creds[6]=="1",stoi(creds[7]),creds[8],creds[9],creds[10],creds[12]);
     } else if (userStatut == "infirmier") {
         current_user = new Infirmier(this,db,creds[1],creds[2],creds[3],creds[4],creds[5],creds[6]=="1",stoi(creds[7]),creds[8],creds[9],creds[10],creds[12]);
     } else {
@@ -545,8 +548,8 @@ bool MediPass::create_user(sqlite3* db, const string& firstname,
 
     // Insère l'utilisateur
     sqlite3_stmt* insert_stmt;
-    const char* insert_sql = "INSERT INTO users (firstname, last_name, password, role, is_active, telephone, created_by, is_default_password) "
-                             "VALUES (?, ?, ?, ?, ?, ?, ?, 1);";
+    const char* insert_sql = "INSERT INTO users (firstname, last_name, password, role, is_active, telephone, created_by, autorisation,statut,is_default_password) "
+                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1);";
 
     if (sqlite3_prepare_v2(db, insert_sql, -1, &insert_stmt, nullptr) != SQLITE_OK) {
         std::cerr << "[ERROR] Failed to prepare insert statement: " << sqlite3_errmsg(db) << std::endl;
@@ -560,6 +563,8 @@ bool MediPass::create_user(sqlite3* db, const string& firstname,
     sqlite3_bind_int(insert_stmt, 5, is_active ? 1 : 0);
     sqlite3_bind_int(insert_stmt, 6, telephone);
     sqlite3_bind_text(insert_stmt, 7, created_by.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(insert_stmt, 8, "A1",-1 , SQLITE_STATIC);
+    sqlite3_bind_text(insert_stmt, 9, "admin",-1,SQLITE_STATIC);
 
     if (sqlite3_step(insert_stmt) != SQLITE_DONE) {
         std::cerr << "[ERROR] Creating user: " << sqlite3_errmsg(db) << std::endl;
@@ -596,7 +601,7 @@ vector<string> MediPass::getUserCreds(sqlite3* db, const string& firstname,const
     */
 
     vector<string> creds;
-    char* sql = sqlite3_mprintf("SELECT * FROM users WHERE firstname='%q' AND last_name='%q' AND password='%q' AND is_active=1;",
+    char* sql = sqlite3_mprintf("SELECT * FROM users WHERE firstname='%q' AND last_name='%q'AND is_active=1;",
                                 firstname.c_str(), last_name.c_str());
 
     sqlite3_exec(db, sql, callbackVector, &creds, NULL);

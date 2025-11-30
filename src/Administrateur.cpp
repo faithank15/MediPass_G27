@@ -38,7 +38,7 @@ void Administrateur::creerUtilisateur() {
         }
     } while(type != "admin" && type != "patient" && type != "professionnel de sante");
 
-    std::string prenom="", nom="", passw="", role="", autorisation="",statut="",specialite="",dateN="";
+    std::string prenom="", nom="", passw="user", role="", autorisation="",statut="",specialite="",dateN="";
     int telephone=0;
     bool is_active=true;
 
@@ -46,10 +46,11 @@ void Administrateur::creerUtilisateur() {
         std::cout << "Prenom : "; std::getline(std::cin, prenom);
         std::cout << "Nom : "; std::getline(std::cin, nom);
         std::cout << "Date de naissance (AAAA-MM-JJ) : "; std::string dateNaissance; std::getline(std::cin, dateNaissance);
-        std::cout << "Statut : "; std::getline(std::cin, statut);
+        std::cout << "Statut (medecin / infirmier) : "; std::getline(std::cin, statut);
         std::cout << "Spécialité : "; std::getline(std::cin, specialite);
         std::cout << "Téléphone : "; std::cin >> telephone;
-        std::cout << "Autorisation (laisser vide pour l'autorisation par défaut): ";  std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); std::getline(std::cin, autorisation);
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Autorisation (laisser vide pour l'autorisation par défaut): ";   std::getline(std::cin, autorisation);
 
         if(autorisation.empty()){
             autorisation = defaultAut[statut];
@@ -79,11 +80,15 @@ void Administrateur::creerUtilisateur() {
         std::cout << "Nom : "; std::getline(cin, nom);
         std::cout << "Date de naissance (AAAA-MM-JJ) : "; std::string dateNaissance; std::getline(std::cin, dateNaissance);
         std::cout << "Téléphone : "; std::cin >> telephone;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        autorisation=defaultAut["admin"];
+        statut="admin";
     }else if(type=="patient"){
         std::cout << "Prénom : "; std::getline(std::cin, prenom);
         std::cout << "Nom : "; std::getline(std::cin, nom);
         std::cout << "Date de naissance (AAAA-MM-JJ) : "; std::string dateNaissance; std::getline(std::cin, dateNaissance);
         std::cout << "Téléphone : "; std::cin >> telephone;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
     if(password.empty()) {
     password = "temp123"; // mot de passe par défaut
@@ -96,7 +101,7 @@ void Administrateur::creerUtilisateur() {
         prenom.c_str(), nom.c_str(), dateN.c_str(),passw.c_str(),
         type.c_str(),
         is_active ? 1 : 0, telephone,
-        this->getFirstname().c_str(), "CURRENT_TIMESTAMP",
+        this->getFirstname().c_str(),
         mp->getTimeDate().c_str(),
         autorisation.c_str(), statut.c_str(), specialite.c_str()
     );
