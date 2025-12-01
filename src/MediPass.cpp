@@ -6,6 +6,7 @@
 #include "infirmier.h"
 #include "Administrateur.h"
 #include "patient.h"
+#include "Secretaire.h"
 
 
 
@@ -291,6 +292,28 @@ std::string MediPass::create_db(sqlite3* db)
          "FOREIGN KEY(patient_user_id) REFERENCES USERS(id) ON DELETE CASCADE ON UPDATE CASCADE"
          ");"
         },
+        {"RENDEZVOUS",
+         "CREATE TABLE IF NOT EXISTS RENDEZVOUS ("
+         "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+         "patient_id INTEGER NOT NULL,"
+         "professionnel_id INTEGER NOT NULL,"
+         "date DATETIME NOT NULL,"
+         "time TEXT NOT NULL,"
+         "status TEXT NOT NULL,"
+         "FOREIGN KEY(patient_id) REFERENCES PATIENTS(id) ON DELETE CASCADE ON UPDATE CASCADE,"
+         "FOREIGN KEY(professionnel_id) REFERENCES USERS(id) ON DELETE SET NULL ON UPDATE CASCADE"
+         ");"
+        },
+        {"DISPONIBILITES",
+         "CREATE TABLE IF NOT EXISTS DISPONIBILITES ("
+         "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+         "professionnel_id INTEGER NOT NULL,"
+         "day INTEGER NOT NULL,"
+         "heure_start TEXT NOT NULL,"
+         "heure_end TEXT NOT NULL,"
+         "FOREIGN KEY(professionnel_id) REFERENCES USERS(id) ON DELETE SET NULL ON UPDATE CASCADE"
+         ");"
+        },
         {"DOSSIERS_MEDICAUX",
          "CREATE TABLE IF NOT EXISTS DOSSIERS_MEDICAUX ("
          "id INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -460,7 +483,10 @@ void MediPass::load_user(sqlite3* db,vector<string> creds)
         MediPass::load_sante(db, creds);
     } else if (user_role == "admin") {
         MediPass::load_admin(db, creds);
-    } else {
+    }else if (user_role == "secretaire") {
+        MediPass::load_secretaire(db, creds);
+    }
+     else {
         cout << "[!]: Unknown user role." << endl;
     }
 }
@@ -511,7 +537,19 @@ Patient* MediPass::load_patient(sqlite3* db, vector<string> creds) {
 
 }
 
-// Modifiée pour retourner vrai si l'utilisateur a été créé, faux sinon
+int MediPass::load_secretaire(sqlite3* db,vector<string> creds)
+{
+    /*
+    ** This function loads secretary details from the database into the provided Secretaire object.
+    */
+
+    current_user = new Secretaire(this,db,creds[1],creds[2],creds[3],creds[4],stoi(creds[7]),creds[8],creds[9]);
+
+    cout << "[+]: Secretaire user loaded successfully." << endl;
+
+    return 0;
+}
+
 bool MediPass::create_user(sqlite3* db, const string& firstname,
                            const string& last_name,
                            const string& password,

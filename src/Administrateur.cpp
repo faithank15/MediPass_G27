@@ -27,16 +27,17 @@ void Administrateur::creerUtilisateur() {
         {"admin", "A1"},
         {"patient", ""},
         {"medecin", "A2"},
-        {"infirmier", "A3"}
+        {"infirmier", "A3"},
+        {"secretaire", "A4"}
     };
 
     do {
-    std::cout << "Type d'utilisateur a creer (admin / patient / professionnel de sante) :  ";
+    std::cout << "Type d'utilisateur a creer (admin / patient / secretaire / professionnel de sante) :  ";
     std::getline(std::cin, type);
-    if(type != "admin" && type != "patient" && type != "professionnel de sante"){
+    if(type != "admin" && type != "patient" && type != "secretaire" && type != "professionnel de sante"){
         std::cout << "[!]: Type invalide. Veuillez reessayer." << std::endl;
         }
-    } while(type != "admin" && type != "patient" && type != "professionnel de sante");
+    } while(type != "admin" && type != "patient" && type != "secretaire" && type != "professionnel de sante");
 
     std::string prenom="", nom="", passw="user", role="", autorisation="",statut="",specialite="",dateN="";
     int telephone=0;
@@ -89,6 +90,14 @@ void Administrateur::creerUtilisateur() {
         std::cout << "Date de naissance (AAAA-MM-JJ) : "; std::string dateNaissance; std::getline(std::cin, dateNaissance);
         std::cout << "Téléphone : "; std::cin >> telephone;
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }else if(type=="secretaire"){
+        std::cout << "Prénom : "; std::getline(std::cin, prenom);
+        std::cout << "Nom : "; std::getline(std::cin, nom);
+        std::cout << "Date de naissance (AAAA-MM-JJ) : "; std::string dateNaissance; std::getline(std::cin, dateNaissance);
+        std::cout << "Téléphone : "; std::cin >> telephone;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        autorisation="A4";
+        statut="secretaire";
     }
     if(password.empty()) {
     password = "temp123"; // mot de passe par défaut

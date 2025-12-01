@@ -43,3 +43,19 @@
 # SQLite database files
 *.db
 *.sqlite
+
+# Temporary files
+*~
+*.swp
+*.tmp
+*.bak
+*.log
+
+# IDE files
+.vscode/
+.idea/
+*.code-workspace    
+*.iml
+
+#executable
+MediPass

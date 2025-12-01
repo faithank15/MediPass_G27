@@ -12,7 +12,7 @@ class Patient : public User
 {
 public:
 
-    //Patient();
+    Patient(MediPass* mp,sqlite3* db, int id);
     Patient(MediPass* mp,sqlite3* db,
             int id,
             const std::string& firstname,

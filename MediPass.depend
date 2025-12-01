@@ -23,7 +23,7 @@
 	"MediPass.h"
 	<iostream>
 
-1764488067 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/patient.h
+1764614424 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/patient.h
 	<string>
 	"DossierMedical.h"
 	"utilisateur.h"
@@ -61,7 +61,7 @@
 	<iostream>
 	"MediPass.h"
 
-1764533236 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/MediPass.h
+1764609898 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/MediPass.h
 	<string>
 	<sqlite3.h>
 	"patient.h"
@@ -103,7 +103,7 @@
 
 1763933504 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/globals.h
 
-1764540680 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/MediPass.cpp
+1764610116 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/MediPass.cpp
 	"MediPass.h"
 	<iostream>
 	<sqlite3.h>
@@ -112,6 +112,7 @@
 	"infirmier.h"
 	"Administrateur.h"
 	"patient.h"
+	"Secretaire.h"
 
 1764439534 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/Administrateur.h
 	<string>
@@ -120,7 +121,7 @@
 	"patient.h"
 	<sqlite3.h>
 
-1764442832 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/profesionnel_de_sante.cpp
+1764542337 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/profesionnel_de_sante.cpp
 	<iostream>
 	<vector>
 	<string>
@@ -131,7 +132,7 @@
 	"patient.h"
 	"utilisateur.h"
 
-1764542298 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/Administrateur.cpp
+1764609793 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/Administrateur.cpp
 	"Administrateur.h"
 	<iostream>
 	<string>
@@ -404,4 +405,82 @@
 
 1764369856 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/sqlite3.h
 	<stdarg.h>
+
+1764610421 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/Secretaire.h
+	<sqlite3.h>
+	<string>
+	<vector>
+	"utilisateur.h"
+
+1764614124 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/Secretaire.cpp
+	"Secretaire.h"
+	<iostream>
+	<ctime>
+	<vector>
+	<map>
+
+1764369856 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/sqlite3.c
+	<vxWorks.h>
+	<pthread.h>
+	"mingw.h"
+	"_mingw.h"
+	<stdarg.h>
+	"sqlite_cfg.h"
+	<stdint.h>
+	<inttypes.h>
+	<intrin.h>
+	<cmnintrin.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<assert.h>
+	<stddef.h>
+	<ctype.h>
+	<TargetConditionals.h>
+	<time.h>
+	<sys/sysctl.h>
+	<malloc/malloc.h>
+	<libkern/OSAtomic.h>
+	<malloc.h>
+	<pthread.h>
+	"windows.h"
+	<sys/cygwin.h>
+	<sys/stat.h>
+	<unistd.h>
+	<errno.h>
+	<process.h>
+	<math.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<unistd.h>
+	<sys/time.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<fcntl.h>
+	<sys/ioctl.h>
+	<unistd.h>
+	<sys/time.h>
+	<errno.h>
+	<sys/mman.h>
+	<sys/file.h>
+	<sys/param.h>
+	<semaphore.h>
+	<limits.h>
+	<sys/mount.h>
+	<utime.h>
+	<sys/dcmd_blk.h>
+	<sys/statvfs.h>
+	<dlfcn.h>
+	<Windows.h>
+	"tclsqlite.h"
+	"sqlite3rtree.h"
+	<ctype.h>
+	<unicode/utypes.h>
+	<unicode/uregex.h>
+	<unicode/ustring.h>
+	<unicode/ucol.h>
+	<unicode/ubrk.h>
+	<unicode/utf16.h>
+	<sys/uio.h>
+	<math.h>
 
