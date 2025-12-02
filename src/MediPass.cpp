@@ -146,13 +146,10 @@ void MediPass::load_db(sqlite3* db)
     // Créer les tables si elles n'existent pas
     create_db(db);
 
-    // Vérifie s'il existe déjà un admin par défaut
-    int admin_count = 0;
+    // Vérifie s'il existe déjà un admin
+    int count = 0;
     sqlite3_stmt* stmt;
-    const char* sql = "SELECT COUNT(*) FROM users "
-                  "WHERE LOWER(firstname)='admin' "
-                  "AND LOWER(last_name)='admin' "
-                  "AND LOWER(role)='admin';";
+    const char* sql = "SELECT COUNT(*) FROM users WHERE role='admin';";
 
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
         std::cerr << "[ERROR] Failed to prepare admin check: " << sqlite3_errmsg(db) << std::endl;
@@ -160,21 +157,21 @@ void MediPass::load_db(sqlite3* db)
     }
 
     if (sqlite3_step(stmt) == SQLITE_ROW) {
-        admin_count = sqlite3_column_int(stmt, 0);
+        count = sqlite3_column_int(stmt, 0);
     }
     sqlite3_finalize(stmt);
 
     //std::cout << "[DEBUG] admin_count = " << admin_count << std::endl;
 
-    if (admin_count == 0) {
+    if (count == 0) {
         // Crée l'admin par défaut une seule fois
-        if (create_user(db, "admin", "admin", "admin", "admin", true, 0, "")) {
-            std::cout << "[+]: Default admin created." << std::endl;
+        if (create_user()) {
+            std::cout << "[+]: Admin created." << std::endl;
         } else {
             std::cerr << "[ERROR]: Failed to create default admin." << std::endl;
         }
     } else {
-        std::cout << "[+]: Database loaded successfully with " << admin_count << " admin(s)." << std::endl;
+        std::cout << "[+]: Database loaded successfully with " << count << " admin(s)." << std::endl;
     }
 }
 
@@ -551,68 +548,57 @@ int MediPass::load_secretaire(sqlite3* db,vector<string> creds)
     return 0;
 }
 
-bool MediPass::create_user(sqlite3* db, const string& firstname,
-                           const string& last_name,
-                           const string& password,
-                           const string& role,
-                           const bool& is_active,
-                           const int& telephone,
-                           const string& created_by)
+bool MediPass::create_user(sqlite3* db)
 {
-    // Vérifie si l'utilisateur existe déjà
-    sqlite3_stmt* stmt;
-    const char* check_sql = "SELECT COUNT(*) FROM users WHERE firstname=? AND last_name=? AND role=?;";
+    // Récupérer les infos utilsateur pour créer l'administrateur
+    std::string firstname, last_name, password, dateN,role="admin",autorisation="A0",statut="admin";
+    bool is_active = true;
+    int telephone = 0;
+    
+    std::string created_by = "system";
 
-    if (sqlite3_prepare_v2(db, check_sql, -1, &stmt, nullptr) != SQLITE_OK) {
-        std::cerr << "[ERROR] Failed to prepare check statement: " << sqlite3_errmsg(db) << std::endl;
+    cout << "[+]: Etant donne l'absence d'administrateur, veuillez creer un compte administrateur." << endl;
+    cout << endl;
+    cout << "[!]: Le compte admin qui sera creer aura les droits complets d'adminitrations sur le systeme soit un super administrateur." << endl;
+    cout << endl;
+    cout << "[ ]: Enter votre prenom : ";
+    std::getline(cin ,firstname);
+    cout << endl;
+    cout << "[ ]: Enter votre nom : ";
+    std::getline(cin ,last_name);
+    cout << endl;
+    cout << "[ ]: Enter votre mot de passe : ";
+    std::getline(cin ,password);
+    cout << endl;
+    cout << "[ ]: Enter votre date de naissance (YYYY-MM-DD) : ";
+    std::getline(cin ,dateN);
+    cout << endl;
+    cout << "[ ]: Enter votre numero de telephone (entier) : ";
+    std::cin >> telephone;
+    std::cin.ignore();
+    cout << endl;
+
+
+
+    // Insérer l'utilisateur dans la base de données
+    char* sql = sqlite3_mprintf(
+        "INSERT INTO users (firstname, last_name, date_of_birth, password, role, is_active, telephone, created_by, autorisation, statut) "
+        "VALUES ('%q', '%q', '%q', '%q', '%q', %d, %d, '%q', '%q', '%q');",
+        firstname.c_str(), last_name.c_str(), dateN.c_str(), password.c_str(), role.c_str(),
+        is_active ? 1 : 0, telephone, created_by.c_str(), autorisation.c_str(), statut.c_str()
+    );
+
+    char* errmsg = nullptr;
+    int rc = sqlite3_exec(db, sql, NULL, NULL, &errmsg);
+    if (rc != SQLITE_OK) {
+        std::cerr << "[ERROR] Creating default admin user: " << errmsg << std::endl;
+        sqlite3_free(errmsg);
         return false;
     }
+    sqlite3_free(sql);
 
-    sqlite3_bind_text(stmt, 1, firstname.c_str(), -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 2, last_name.c_str(), -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 3, role.c_str(), -1, SQLITE_STATIC);
+    cout << "[+]: Sueper admin user created successfully." << endl;
 
-    int exists = 0;
-    if (sqlite3_step(stmt) == SQLITE_ROW) {
-        exists = sqlite3_column_int(stmt, 0);
-    }
-
-    sqlite3_finalize(stmt);
-
-    if (exists > 0) {
-        std::cout << "[!]: User " << firstname << " " << last_name
-                  << " with role " << role << " already exists. Creation refused." << std::endl;
-        return false;
-    }
-
-    // Insère l'utilisateur
-    sqlite3_stmt* insert_stmt;
-    const char* insert_sql = "INSERT INTO users (firstname, last_name, password, role, is_active, telephone, created_by, autorisation,statut,is_default_password) "
-                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1);";
-
-    if (sqlite3_prepare_v2(db, insert_sql, -1, &insert_stmt, nullptr) != SQLITE_OK) {
-        std::cerr << "[ERROR] Failed to prepare insert statement: " << sqlite3_errmsg(db) << std::endl;
-        return false;
-    }
-
-    sqlite3_bind_text(insert_stmt, 1, firstname.c_str(), -1, SQLITE_STATIC);
-    sqlite3_bind_text(insert_stmt, 2, last_name.c_str(), -1, SQLITE_STATIC);
-    sqlite3_bind_text(insert_stmt, 3, password.c_str(), -1, SQLITE_STATIC);
-    sqlite3_bind_text(insert_stmt, 4, role.c_str(), -1, SQLITE_STATIC);
-    sqlite3_bind_int(insert_stmt, 5, is_active ? 1 : 0);
-    sqlite3_bind_int(insert_stmt, 6, telephone);
-    sqlite3_bind_text(insert_stmt, 7, created_by.c_str(), -1, SQLITE_STATIC);
-    sqlite3_bind_text(insert_stmt, 8, "A1",-1 , SQLITE_STATIC);
-    sqlite3_bind_text(insert_stmt, 9, "admin",-1,SQLITE_STATIC);
-
-    if (sqlite3_step(insert_stmt) != SQLITE_DONE) {
-        std::cerr << "[ERROR] Creating user: " << sqlite3_errmsg(db) << std::endl;
-        sqlite3_finalize(insert_stmt);
-        return false;
-    }
-
-    sqlite3_finalize(insert_stmt);
-    std::cout << "[+]: User " << firstname << " " << last_name << " created successfully." << std::endl;
     return true;
 }
 

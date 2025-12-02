@@ -28,7 +28,7 @@ void Administrateur::creerUtilisateur() {
 
     std::map<std::string, std::string> defaultAut = {
         {"admin", "A1"},
-        {"patient", ""},
+        {"patient", "A4"},
         {"medecin", "A2"},
         {"infirmier", "A3"},
         {"secretaire", "A4"}
@@ -169,6 +169,62 @@ void Administrateur::creerUtilisateur() {
     }
 }
 
+void Administrateur::creerSuperAdministrateur() {
+
+    std::string prenom = "", nom = "", passw = "admin",dateN="";
+    int telephone = 0;
+
+    std::cout << "[!] Creation d'un super administrateur :" << std::endl;
+    std::cout << std::endl;
+    std::cout << "Le super administrateur aura les droits complets d'administration sur le systeme." << std::endl;
+    std::cout << std::endl;
+
+    std::cout << "Vous confirmez la creation d'un super administrateur ? (o/n) : ";
+    char confirm;
+    std::cin >> confirm;
+    std::cin.ignore();
+
+    if (confirm != 'o' && confirm != 'O') {
+        std::cout << "[!]: Creation annulee." << std::endl;
+        return;
+    }
+
+    std::cout << "Prénom : "; std::getline(std::cin, prenom);
+    std::cout << "Nom : "; std::getline(std::cin, nom);
+    try
+    {
+        std::cout << "Téléphone : "; std::cin >> telephone;
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << "[!]: Entrée invalide pour le téléphone. Abandon de la création." << std::endl;
+        return;
+    }
+    
+    std::cin.ignore();
+    std::cout << "Date de naissance (AAAA-MM-JJ) : "; std::getline(std::cin, dateN);
+    
+
+    std::string sql = sqlite3_mprintf(
+        "INSERT INTO users (firstname, last_name, password, role, is_active, telephone, created_by, created_at, autorisation, statut) "
+        "VALUES('%q','%q','%q','%q',%d,%d,'%q','%q','%q','%q');",
+        prenom.c_str(), nom.c_str(), passw.c_str(),
+        "admin",
+        1, telephone,
+        this->getFirstname().c_str(),
+        mp->getTimeDate().c_str(),
+        "A0", "super admin"
+    );
+
+    char* errMsg = nullptr;
+    if (sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
+        std::cerr << "Erreur SQL : " << errMsg << std::endl;
+        sqlite3_free(errMsg);
+        return;
+    }
+
+    std::cout << "[+] Super admin user created successfully." << std::endl;
+}
 
 
 // ------------------------------------------------------
@@ -325,18 +381,34 @@ void Administrateur::menu() {
     int choix = 0;
 
     do {
-        std::cout << "\n=== Menu Administrateur ===\n"
-                  << "1. Créer un utilisateur\n"
+        if(this->autorisation!="A0"&&this->autorisation!="A1"){
+            std::cout << "[!]: Vous n'avez pas les autorisations necessaires pour acceder a l'administration.\n";
+            choix=6;
+            continue;
+        }
+        std::cout << "====================================================\n"
+                  << "             Menu Administrateur (" << this->getFirstname() << ")           \n"
+                  << "====================================================\n";
+        if(this->autorisation=="A0"){
+            std::cout << "0. Creer un super administrateur\n";
+        }
+        std::cout << "1. Creer un utilisateur\n"
                   << "2. Modifier autorisation d'un utilisateur\n"
-                  << "3. Activer/Désactiver un utilisateur\n"
-                  << "4. Statistiques détaillées\n"
-                  << "5. Déconnexion\n"
-                  << "6. Liste des utilisateurs\n#> ";
+                  << "3. Activer/Desactiver un utilisateur\n"
+                  << "4. Statistiques detaillees\n"
+                  << "5. Liste des utilisateurs\n"
+                  << "6. Deconnexion\n#> ";
 
         std::cin >> choix;
         std::cin.ignore();
 
         switch (choix) {
+        
+        case 0:
+            if(this->autorisation=="A0"){
+                creerSuperAdministrateur();
+                break;
+            }
 
         case 1: creerUtilisateur(); break;
 
@@ -364,16 +436,16 @@ void Administrateur::menu() {
 
         case 4: afficherStatistiques(); break;
 
-        case 5:
+        case 6:
             mp->logout();
             std::cout << "[+]: Déconnexion réussie.\n";
             break;
 
-        case 6: listerUtilisateurs(); break;
+        case 5: listerUtilisateurs(); break;
 
         default:
             std::cout << "[!]: Choix invalide.\n";
         }
 
-    } while (choix != 5);
+    } while (choix != 6);
 }

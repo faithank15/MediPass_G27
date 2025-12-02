@@ -33,7 +33,7 @@ User::User(MediPass* mp, sqlite3* db, const std::string& firstname,
       mp(mp),
       db(db), autorisation(autorisation), statut(statut), specialite(specialite)
       {
-
+        
       }
 
 // Getters

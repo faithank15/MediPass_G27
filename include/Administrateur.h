@@ -22,6 +22,7 @@ public:
 
     // Gestion des utilisateurs
     void creerUtilisateur();
+    void creerSuperAdministrateur();
     void modifierAutorisation(int userId, const std::string& nouvelleAutorisation);
     void desactiverCompte(int userId);
     void activerCompte(int userId);

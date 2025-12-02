@@ -54,8 +54,7 @@ class MediPass
         User* current_user=nullptr;
 
     private:
-        bool create_user(sqlite3* db, const string& firstname,const string& last_name, const string& password, const string& role, const bool& is_active, const int& telephone, const string& created_by);
-
-};
+        bool create_user(sqlite33* db);
+    };
 
 #endif // MEDIPASS_H

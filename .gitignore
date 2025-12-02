@@ -57,5 +57,6 @@
 *.code-workspace    
 *.iml
 
+
 #executable
-MediPass
+./bin/Debug/MediPass
