@@ -15,9 +15,9 @@ Consultation::Consultation(MediPass* mp,sqlite3* db,
                           const std::vector<Examen> examens)
     :  patient_id(id_patient),
       motif(motif), observations(observations), examens(examens) {
-      
+
       this->date_et_heure = mp->getTimeDate();
-      
+
       professionnel_info.push_back(medecin->getFirstname());
       professionnel_info.push_back(medecin->getLast_name());
 
@@ -43,7 +43,7 @@ void Consultation::setPatientId(const int& p) { patient_id = p; }
 void Consultation::setMotif(const std::string& m) { motif = m; }
 void Consultation::setObservations(const std::string& o) { observations = o; }
 
-void Consultation::ajouter_examen(Examen& examen) {return examens.push_back(examen); };
+void Consultation::ajouter_examen(const Examen& examen) {return examens.push_back(examen); };
 
 // Affichage
 void Consultation::afficher() const {

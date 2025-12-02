@@ -254,8 +254,6 @@ bool Medecin::creer_consultation(
 
     Patient* patient = mp->load_patient(db, creds);
 
-    // 1. Vérifier si son ID est dans la liste ids du médecin
-    auto it = find(patients_id.begin(), patients_id.end(), patient->getId());
 
     // 2. Créer la consultation
     Consultation c(mp, db, this,

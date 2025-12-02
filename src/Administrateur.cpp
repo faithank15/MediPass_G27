@@ -8,16 +8,19 @@
 #include <limits>
 
 
-
 Administrateur::Administrateur(MediPass* mp, sqlite3* db, const std::string& firstname,
                                const std::string& last_name,
                                const std::string& dateNaissance,
                                const std::string& password,
                                const int telephone,
                                const std::string& created_by,
-                               const std::string& created_at) : User(mp, db, firstname, last_name, dateNaissance, password, "admin", true,telephone,created_by,created_at,"A1","admin") {}
+                               const std::string& created_at)
+    : User(mp, db, firstname, last_name, dateNaissance, password, "admin", true,
+           telephone, created_by, created_at, "A1", "admin") {}
+
+
 // ------------------------------------------------------
-// Creer un utilisateur (admin / sante / patient)
+// Création d'un utilisateur
 // ------------------------------------------------------
 void Administrateur::creerUtilisateur() {
 
@@ -32,82 +35,88 @@ void Administrateur::creerUtilisateur() {
     };
 
     do {
-    std::cout << "Type d'utilisateur a creer (admin / patient / secretaire / professionnel de sante) :  ";
-    std::getline(std::cin, type);
-    if(type != "admin" && type != "patient" && type != "secretaire" && type != "professionnel de sante"){
-        std::cout << "[!]: Type invalide. Veuillez reessayer." << std::endl;
+        std::cout << "Type d'utilisateur a creer (admin / patient / secretaire / professionnel de sante) : ";
+        std::getline(std::cin, type);
+
+        if (type != "admin" && type != "patient" &&
+            type != "secretaire" && type != "professionnel de sante") {
+            std::cout << "[!]: Type invalide. Veuillez reessayer." << std::endl;
         }
-    } while(type != "admin" && type != "patient" && type != "secretaire" && type != "professionnel de sante");
 
-    std::string prenom="", nom="", passw="user", role="", autorisation="",statut="",specialite="",dateN="";
-    int telephone=0;
-    bool is_active=true;
+    } while (type != "admin" && type != "patient" &&
+             type != "secretaire" && type != "professionnel de sante");
 
-    if(type=="professionnel de sante") {
-        std::cout << "Prenom : "; std::getline(std::cin, prenom);
+
+    // Variables communes
+    std::string prenom = "", nom = "", passw = "user";
+    std::string statut = "", specialite = "", autorisation = "", dateNaissance = "";
+    int telephone = 0;
+    bool is_active = true;
+
+    // -----------------------------
+    // Professionnel de santé
+    // -----------------------------
+    if (type == "professionnel de sante") {
+
+        std::cout << "Prénom : "; std::getline(std::cin, prenom);
         std::cout << "Nom : "; std::getline(std::cin, nom);
-        std::cout << "Date de naissance (AAAA-MM-JJ) : "; std::string dateNaissance; std::getline(std::cin, dateNaissance);
+        std::cout << "Date de naissance (AAAA-MM-JJ) : "; std::getline(std::cin, dateNaissance);
         std::cout << "Statut (medecin / infirmier) : "; std::getline(std::cin, statut);
-        std::cout << "Spécialité : "; std::getline(std::cin, specialite);
+        std::cout << "Specialite : "; std::getline(std::cin, specialite);
         std::cout << "Téléphone : "; std::cin >> telephone;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::cout << "Autorisation (laisser vide pour l'autorisation par défaut): ";   std::getline(std::cin, autorisation);
+        std::cin.ignore();
 
-        if(autorisation.empty()){
-            autorisation = defaultAut[statut];
-        }else if(autorisation != "A3" && autorisation != "A2"){
-            std::cout << "[!]: Autorisation invalide. Attribution de l'autorisation par défaut." << std::endl;
-            autorisation = defaultAut[statut];
-        }else if(autorisation == "A3"){
-            std::cout << "[!]: L'utilisateur pourra consulter les antécedents et l'historique de soins des patients. Il pourra aussi ajouter des soins." << std::endl;
-            std::cout << "[!]: Il ne pourra pas créer/modifier/supprimer des dossiers médicaux ni créer des utilisateurs." << std::endl;
-            std::cout << "[!]: Vous confirmer le niveau d'autorisation (O/N) ? ";
-            char confirmation;
-            std::cin >> confirmation;
-            if (confirmation != 'O' && confirmation != 'o') {
-                autorisation = defaultAut[statut];
-            }
-        }else if(autorisation == "A2"){
-            std::cout << "[!]: L'utilisateur pourra tout faire sauf créer des utilisateurs." << std::endl;
-            std::cout << "[!]: Vous confirmer le niveau d'autorisation (O/N) ? ";
-            char confirmation;
-            std::cin >> confirmation;
-            if (confirmation != 'O' && confirmation != 'o') {
-                autorisation = defaultAut[statut];
-            }
-        } std::cin.ignore();
-    }else if(type=="admin"){
-        std::cout << "Prénom : "; std::getline(cin, prenom);
-        std::cout << "Nom : "; std::getline(cin, nom);
-        std::cout << "Date de naissance (AAAA-MM-JJ) : "; std::string dateNaissance; std::getline(std::cin, dateNaissance);
-        std::cout << "Téléphone : "; std::cin >> telephone;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        autorisation=defaultAut["admin"];
-        statut="admin";
-    }else if(type=="patient"){
-        std::cout << "Prénom : "; std::getline(std::cin, prenom);
-        std::cout << "Nom : "; std::getline(std::cin, nom);
-        std::cout << "Date de naissance (AAAA-MM-JJ) : "; std::string dateNaissance; std::getline(std::cin, dateNaissance);
-        std::cout << "Téléphone : "; std::cin >> telephone;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    }else if(type=="secretaire"){
-        std::cout << "Prénom : "; std::getline(std::cin, prenom);
-        std::cout << "Nom : "; std::getline(std::cin, nom);
-        std::cout << "Date de naissance (AAAA-MM-JJ) : "; std::string dateNaissance; std::getline(std::cin, dateNaissance);
-        std::cout << "Téléphone : "; std::cin >> telephone;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        autorisation="A4";
-        statut="secretaire";
+        autorisation = defaultAut[statut];
     }
-    if(password.empty()) {
-    password = "temp123"; // mot de passe par défaut
-}
 
-    // Construire la requête SQL
+    // -----------------------------
+    // Admin
+    // -----------------------------
+    else if (type == "admin") {
+        std::cout << "Prénom : "; std::getline(std::cin, prenom);
+        std::cout << "Nom : "; std::getline(std::cin, nom);
+        std::cout << "Date de naissance (AAAA-MM-JJ) : "; std::getline(std::cin, dateNaissance);
+        std::cout << "Téléphone : "; std::cin >> telephone;
+        std::cin.ignore();
+
+        statut = "admin";
+        autorisation = defaultAut["admin"];
+    }
+
+    // -----------------------------
+    // Patient
+    // -----------------------------
+    else if (type == "patient") {
+        std::cout << "Prénom : "; std::getline(std::cin, prenom);
+        std::cout << "Nom : "; std::getline(std::cin, nom);
+        std::cout << "Date de naissance (AAAA-MM-JJ) : "; std::getline(std::cin, dateNaissance);
+        std::cout << "Téléphone : "; std::cin >> telephone;
+        std::cin.ignore();
+    }
+
+    // -----------------------------
+    // Secrétaire
+    // -----------------------------
+    else if (type == "secretaire") {
+        std::cout << "Prénom : "; std::getline(std::cin, prenom);
+        std::cout << "Nom : "; std::getline(std::cin, nom);
+        std::cout << "Date de naissance (AAAA-MM-JJ) : "; std::getline(std::cin, dateNaissance);
+        std::cout << "Téléphone : "; std::cin >> telephone;
+        std::cin.ignore();
+
+        statut = "secretaire";
+        autorisation = "A4";
+    }
+
+
+    // ------------------------------------------------------
+    // INSERT utilisateur
+    // ------------------------------------------------------
+
     std::string sql = sqlite3_mprintf(
-        "INSERT INTO users (firstname, last_name, date_of_birth,password, role, is_active, telephone,created_by,created_at, autorisation, statut, specialite) "
-        "VALUES ('%q', '%q', '%q','%q', '%q', %d, %d, '%q', '%q', '%q', '%q', '%q');",
-        prenom.c_str(), nom.c_str(), dateN.c_str(),passw.c_str(),
+        "INSERT INTO users (firstname, last_name, date_of_birth, password, role, is_active, telephone, created_by, created_at, autorisation, statut, specialite) "
+        "VALUES('%q','%q','%q','%q','%q',%d,%d,'%q','%q','%q','%q','%q');",
+        prenom.c_str(), nom.c_str(), dateNaissance.c_str(), passw.c_str(),
         type.c_str(),
         is_active ? 1 : 0, telephone,
         this->getFirstname().c_str(),
@@ -115,66 +124,86 @@ void Administrateur::creerUtilisateur() {
         autorisation.c_str(), statut.c_str(), specialite.c_str()
     );
 
-
-
     char* errMsg = nullptr;
     if (sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
         std::cerr << "Erreur SQL : " << errMsg << std::endl;
         sqlite3_free(errMsg);
-    } else {
-        std::cout << "Utilisateur créé avec succès !" << std::endl;
+        return;
     }
 
-    if(type=="patient"){
-        sql = sqlite3_mprintf(
-        "INSERT INTO PATIENTS (patient_user_id)"
-        "VALUES ('%d');", sqlite3_last_insert_rowid(db)
-    );
+    std::cout << "[+] Utilisateur créé avec succès !" << std::endl;
 
-        if (sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
-            std::cerr << "Erreur SQL lors de la création du patient : " << errMsg << std::endl;
-            sqlite3_free(errMsg);
-        } else {
-            std::cout << "Patient créé avec succès !" << std::endl;
-        }
+    long newUserId = sqlite3_last_insert_rowid(db);
 
-        long patid = sqlite3_last_insert_rowid(db);
 
-        sql = sqlite3_mprintf(
-            "INSERT INTO DOSSIERS_MEDICAUX (patient_id, created_at)"
-            "VALUES ('%d', '%q')",sqlite3_last_insert_rowid(db),mp->getTimeDate()
+    // ------------------------------------------------------
+    // Création patient → ajouter patient + dossier
+    // ------------------------------------------------------
+    if (type == "patient") {
+
+        std::string sql2 = sqlite3_mprintf(
+            "INSERT INTO patients (patient_user_id) VALUES(%d);",
+            newUserId
         );
 
-        if (sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
-            std::cerr << "Erreur SQL lors de la création du dossier médiacal du patient : " << errMsg << std::endl;
+        if (sqlite3_exec(db, sql2.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
+            std::cerr << "Erreur lors de la création du patient : " << errMsg << std::endl;
             sqlite3_free(errMsg);
         } else {
-            std::cout << "Dossier Médical créé avec succès !" << std::endl;
+            std::cout << "[+] Patient créé." << std::endl;
         }
 
-}
+        long patId = sqlite3_last_insert_rowid(db);
 
-}
-// ------------------------------------------------------
-// Modifier le role d un utilisateur
-// ------------------------------------------------------
-void Administrateur::modifierRole(int userId, const std::string& nouveauRole) {
-    std::string sql = "UPDATE users SET role='" + nouveauRole + "' WHERE id=" + std::to_string(userId) + ";";
-    char* errMsg = nullptr;
-    if (sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
-        std::cerr << "Erreur SQL: " << errMsg << std::endl;
-        sqlite3_free(errMsg);
-    } else {
-        std::cout << "Role de l'utilisateur " << userId << " modifie en " << nouveauRole << std::endl;
+        std::string sql3 = sqlite3_mprintf(
+            "INSERT INTO dossiers_medicaux (patient_id, created_at) VALUES(%d,'%q');",
+            patId, mp->getTimeDate().c_str()
+        );
+
+        if (sqlite3_exec(db, sql3.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
+            std::cerr << "Erreur dossier médical : " << errMsg << std::endl;
+            sqlite3_free(errMsg);
+        } else {
+            std::cout << "[+] Dossier médical créé." << std::endl;
+        }
     }
 }
 
+
+
+// ------------------------------------------------------
+// Modifier autorisation
+// ------------------------------------------------------
+void Administrateur::modifierAutorisation(int userId, const std::string& nouvelleAutorisation) {
+
+    // Construire la requête SQL
+    std::string sql = "UPDATE users SET autorisation='" + nouvelleAutorisation +
+                      "' WHERE id=" + std::to_string(userId) + ";";
+
+    char* errMsg = nullptr;
+
+    // Exécuter la requête
+    if (sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
+        std::cerr << "[!] Erreur SQL : " << errMsg << std::endl;
+        sqlite3_free(errMsg);
+    } else {
+        std::cout << "[+] Autorisation modifiée avec succès." << std::endl;
+    }
+}
+
+
+
+
+// ------------------------------------------------------
+// Liste utilisateurs
+// ------------------------------------------------------
 void Administrateur::listerUtilisateurs() {
     const char* sql = "SELECT id, firstname, last_name, role, is_active FROM users;";
     sqlite3_stmt* stmt;
 
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
-        std::cerr << "[ERROR] Impossible de préparer la requête : " << sqlite3_errmsg(db) << std::endl;
+        std::cerr << "[ERROR] Impossible de préparer la requête : "
+                  << sqlite3_errmsg(db) << std::endl;
         return;
     }
 
@@ -184,94 +213,167 @@ void Administrateur::listerUtilisateurs() {
 
     while (sqlite3_step(stmt) == SQLITE_ROW) {
         int id = sqlite3_column_int(stmt, 0);
-        const unsigned char* prenom = sqlite3_column_text(stmt, 1);
-        const unsigned char* nom = sqlite3_column_text(stmt, 2);
-        const unsigned char* role = sqlite3_column_text(stmt, 3);
+        const char* prenom = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+        const char* nom = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+        const char* role = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
         int actif = sqlite3_column_int(stmt, 4);
 
-        std::cout << id << " | "
-                  << (prenom ? reinterpret_cast<const char*>(prenom) : "") << " | "
-                  << (nom ? reinterpret_cast<const char*>(nom) : "") << " | "
-                  << (role ? reinterpret_cast<const char*>(role) : "") << " | "
-                  << (actif ? "Oui" : "Non") << "\n";
+        std::cout << id << " | " << prenom << " | " << nom
+                  << " | " << role << " | " << (actif ? "Oui" : "Non") << "\n";
     }
 
     sqlite3_finalize(stmt);
 }
 
+
+
 // ------------------------------------------------------
-// D�sactiver / activer compte
+// Activation / désactivation
 // ------------------------------------------------------
 void Administrateur::desactiverCompte(int userId) {
-    std::string sql = "UPDATE users SET is_active=0 WHERE id=" + std::to_string(userId) + ";";
-    char* errMsg = nullptr;
-    sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg);
-    std::cout << "Compte " << userId << " desactive." << std::endl;
+    sqlite3_exec(db, ("UPDATE users SET is_active=0 WHERE id="+std::to_string(userId)).c_str(),
+                 nullptr, nullptr, nullptr);
+
+    std::cout << "[+] Compte désactivé.\n";
 }
 
 void Administrateur::activerCompte(int userId) {
-    std::string sql = "UPDATE users SET is_active=1 WHERE id=" + std::to_string(userId) + ";";
-    char* errMsg = nullptr;
-    sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg);
-    std::cout << "Compte " << userId << " active." << std::endl;
+    sqlite3_exec(db, ("UPDATE users SET is_active=1 WHERE id="+std::to_string(userId)).c_str(),
+                 nullptr, nullptr, nullptr);
+
+    std::cout << "[+] Compte activé.\n";
 }
 
+
+
 // ------------------------------------------------------
-// Statistiques globales
+// Statistiques détaillées
 // ------------------------------------------------------
 void Administrateur::afficherStatistiques() {
-    int nbUsers = 0, nbPatients = 0;
-    sqlite3_exec(db, "SELECT COUNT(*) FROM users;", MediPass::callback, &nbUsers, nullptr);
-    sqlite3_exec(db, "SELECT COUNT(*) FROM patients;", MediPass::callback, &nbPatients, nullptr);
-    std::cout << "Nombre total d'utilisateurs: " << nbUsers << std::endl;
-    std::cout << "Nombre total de patients: " << nbPatients << std::endl;
+    std::cout << "\n===== STATISTIQUES DU SYSTÈME =====\n";
+
+    auto getInt = [&](const std::string& query) {
+        int value = 0;
+        sqlite3_exec(db, query.c_str(), MediPass::callback, &value, nullptr);
+        return value;
+    };
+
+    // ---- STATISTIQUES GLOBALES ----
+    int nbUsers      = getInt("SELECT COUNT(*) FROM users;");
+    int nbActive     = getInt("SELECT COUNT(*) FROM users WHERE is_active = 1;");
+    int nbInactive   = getInt("SELECT COUNT(*) FROM users WHERE is_active = 0;");
+    int nbPatients   = getInt("SELECT COUNT(*) FROM patients;");
+    int nbDocs       = getInt("SELECT COUNT(*) FROM users WHERE statut = 'medecin';");
+    int nbInf        = getInt("SELECT COUNT(*) FROM users WHERE statut = 'infirmier';");
+    int nbSec        = getInt("SELECT COUNT(*) FROM users WHERE statut = 'secretaire';");
+    int nbAdmin      = getInt("SELECT COUNT(*) FROM users WHERE role = 'admin';");
+    int nbConsult    = getInt("SELECT COUNT(*) FROM CONSULTATIONS;");
+    int nbDossiers   = getInt("SELECT COUNT(*) FROM DOSSIERS_MEDICAUX;");
+
+    // Moyenne consultations par patient
+    double moyConsult = 0;
+    if (nbPatients > 0) moyConsult = (double)nbConsult / nbPatients;
+
+    std::cout << "\n--- Comptes Utilisateurs ---\n";
+    std::cout << "Total d'utilisateurs : " << nbUsers << "\n";
+    std::cout << "Actifs : " << nbActive << "\n";
+    std::cout << "Inactifs : " << nbInactive << "\n";
+
+    std::cout << "\n--- Répartition par rôles ---\n";
+    std::cout << "Administrateurs : " << nbAdmin << "\n";
+    std::cout << "Médecins : " << nbDocs << "\n";
+    std::cout << "Infirmiers : " << nbInf << "\n";
+    std::cout << "Secrétaires : " << nbSec << "\n";
+    std::cout << "Patients : " << nbPatients << "\n";
+
+    std::cout << "\n--- Données médicales ---\n";
+    std::cout << "Nombre total de consultations : " << nbConsult << "\n";
+    std::cout << "Nombre total de dossiers médicaux : " << nbDossiers << "\n";
+    std::cout << "Consultations moyennes par patient : " << moyConsult << "\n";
+
+    // ---- STATISTIQUES PAR SPÉCIALITÉ ----
+    std::cout << "\n--- Spécialités médicales ---\n";
+
+    const char* sql =
+        "SELECT specialite, COUNT(*) "
+        "FROM users WHERE statut = 'medecin' "
+        "GROUP BY specialite;";
+
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            const unsigned char* spec = sqlite3_column_text(stmt, 0);
+            int nb = sqlite3_column_int(stmt, 1);
+
+            std::cout << (spec ? (const char*)spec : "Non spécifié")
+                      << " : " << nb << " médecin(s)\n";
+        }
+    }
+    sqlite3_finalize(stmt);
+
+    std::cout << "\n===== FIN DES STATISTIQUES =====\n";
 }
 
+
+
+
 // ------------------------------------------------------
-// Menu de l'administrateur
+// Menu
 // ------------------------------------------------------
 void Administrateur::menu() {
     int choix = 0;
+
     do {
         std::cout << "\n=== Menu Administrateur ===\n"
                   << "1. Créer un utilisateur\n"
-                  << "2. Modifier rôle d'un utilisateur\n"
+                  << "2. Modifier autorisation d'un utilisateur\n"
                   << "3. Activer/Désactiver un utilisateur\n"
-                  << "4. Statistiques globales\n"
+                  << "4. Statistiques détaillées\n"
                   << "5. Déconnexion\n"
-                  << "6. Liste Utilisateur\n#> ";
+                  << "6. Liste des utilisateurs\n#> ";
 
         std::cin >> choix;
         std::cin.ignore();
 
-        switch(choix) {
-            case 1: creerUtilisateur(); break;
-            case 2: {
-                int id; std::string role;
-                std::cout << "ID utilisateur: "; std::cin >> id;
-                std::cout << "Nouveau rôle: "; std::cin >> role;
-                modifierRole(id, role);
-                break;
-            }
-            case 3: {
-                int id; char act;
-                std::cout << "ID utilisateur: "; std::cin >> id;
-                std::cout << "Activer(a)/Désactiver(d)? "; std::cin >> act;
-                if (act == 'a') activerCompte(id);
-                else desactiverCompte(id);
-                break;
-            }
-            case 4: afficherStatistiques(); break;
-            case 5:
-                mp->logout();  // <-- Déconnexion effective
-                std::cout << "[+]: Déconnexion réussie.\n";
-                break;
-            case 6: listerUtilisateurs(); break;
-            default:
-                std::cout << "[!]: Choix invalide.\n";
-                break;
+        switch (choix) {
 
+        case 1: creerUtilisateur(); break;
+
+        case 2: {
+            int id;
+            std::string nouvelleAutorisation;
+            std::cout << "ID utilisateur: ";
+            std::cin >> id;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // nettoyer le buffer
+            std::cout << "Nouvelle autorisation (ex: A1, A2, A3, A4) : ";
+            std::getline(std::cin, nouvelleAutorisation);
+            modifierAutorisation(id, nouvelleAutorisation);
+            break;
         }
 
-    } while(choix != 5);
+
+        case 3: {
+            int id; char act;
+            std::cout << "ID utilisateur: "; std::cin >> id;
+            std::cout << "Activer(a)/Désactiver(d)? "; std::cin >> act;
+            if (act == 'a') activerCompte(id);
+            else desactiverCompte(id);
+            break;
+        }
+
+        case 4: afficherStatistiques(); break;
+
+        case 5:
+            mp->logout();
+            std::cout << "[+]: Déconnexion réussie.\n";
+            break;
+
+        case 6: listerUtilisateurs(); break;
+
+        default:
+            std::cout << "[!]: Choix invalide.\n";
+        }
+
+    } while (choix != 5);
 }

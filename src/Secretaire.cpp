@@ -3,6 +3,7 @@
 #include <ctime>
 #include <vector>
 #include <map>
+#include <iomanip>
 
 using namespace std;
 
@@ -23,6 +24,7 @@ Secretaire::~Secretaire()
 {
     //dtor
 }
+
 
 vector<string> Secretaire::getDocSpecialites(sqlite3* db, const std::string& specialite){
     vector<string> docNames;
@@ -102,14 +104,21 @@ void Secretaire::consulterDisponibilites(sqlite3* db){
 
 }
 
-int Secretaire::findDay(std::string date){
+int Secretaire::findDay(std::string date) {
     struct tm time_in = {};
-    strptime(date.c_str(), "%Y-%m-%d", &time_in);
-    mktime(&time_in);
+    std::istringstream ss(date);
+    ss >> std::get_time(&time_in, "%Y-%m-%d");
 
+    if (ss.fail()) {
+        std::cerr << "[!]: Format de date invalide, utilisez YYYY-MM-DD." << std::endl;
+        return -1; // valeur d'erreur
+    }
+
+    mktime(&time_in); // remplit tm_wday
     int wday = time_in.tm_wday;  // 0 = dimanche
     return (wday == 0 ? 6 : wday - 1); // lundi = 0, mardi = 1, ...
 }
+
 
 bool Secretaire::timeValide(sqlite3* db, const std::string& time, int doc_id, const std::string& date){
     // Vérifie si l'heure est au format HH:MM et entre 08:00 et 18:00
