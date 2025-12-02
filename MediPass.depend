@@ -28,7 +28,7 @@
 	"DossierMedical.h"
 	"utilisateur.h"
 
-1764694824 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/utilisateur.cpp
+1764696916 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/utilisateur.cpp
 	"utilisateur.h"
 	"globals.h"
 	<sqlite3.h>
@@ -45,7 +45,7 @@
 1764516092 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/examen.h
 	<string>
 
-1764369856 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/consultation.cpp
+1764695492 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/consultation.cpp
 	"consultation.h"
 	<iostream>
 	<sqlite3.h>
@@ -62,7 +62,7 @@
 	<iostream>
 	"MediPass.h"
 
-1764609898 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/MediPass.h
+1764708136 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/MediPass.h
 	<string>
 	<sqlite3.h>
 	"patient.h"
@@ -76,7 +76,7 @@
 	"utilisateur.h"
 	"MediPass.h"
 
-1764666562 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/DossierMedical.cpp
+1764708064 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/DossierMedical.cpp
 	"DossierMedical.h"
 	<iostream>
 	<ctime>
@@ -104,7 +104,7 @@
 
 1763933504 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/globals.h
 
-1764674078 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/MediPass.cpp
+1764708851 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/MediPass.cpp
 	"MediPass.h"
 	<iostream>
 	<sqlite3.h>
@@ -115,7 +115,7 @@
 	"patient.h"
 	"Secretaire.h"
 
-1764695492 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/Administrateur.h
+1764708803 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/Administrateur.h
 	<string>
 	<vector>
 	"utilisateur.h"
@@ -133,7 +133,7 @@
 	"patient.h"
 	"utilisateur.h"
 
-1764609793 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/Administrateur.cpp
+1764707291 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/Administrateur.cpp
 	"Administrateur.h"
 	<iostream>
 	<string>
@@ -143,17 +143,20 @@
 	<map>
 	<limits>
 
-1764674225 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/medecin.cpp
+1764708064 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/medecin.cpp
 	<algorithm>
 	<iostream>
 	<limits>
+	<fstream>
+	<sstream>
 	<sqlite3.h>
 	"medecin.h"
 	"patient.h"
 	"consultation.h"
 	"DossierMedical.h"
+	<filesystem>
 
-1764672010 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/medecin.h
+1764708064 /home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/include/medecin.h
 	<string>
 	<chrono>
 	<vector>
@@ -411,12 +414,13 @@
 	<vector>
 	"utilisateur.h"
 
-1764614124 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/Secretaire.cpp
+1764695492 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/Secretaire.cpp
 	"Secretaire.h"
 	<iostream>
 	<ctime>
 	<vector>
 	<map>
+	<iomanip>
 
 1764369856 source:/home/faithan15/Documents/Developpement/Projet/C++/MediPass_G27/src/sqlite3.c
 	<vxWorks.h>

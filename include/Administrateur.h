@@ -18,7 +18,9 @@ public:
                    const std::string& password,
                    const int telephone,
                    const std::string& created_by,
-                   const std::string& created_at);
+                   const std::string& created_at,
+                   const std::string& autorisation,
+                   const std::string& statut);
 
     // Gestion des utilisateurs
     void creerUtilisateur();

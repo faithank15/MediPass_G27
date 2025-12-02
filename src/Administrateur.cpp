@@ -14,9 +14,11 @@ Administrateur::Administrateur(MediPass* mp, sqlite3* db, const std::string& fir
                                const std::string& password,
                                const int telephone,
                                const std::string& created_by,
-                               const std::string& created_at)
+                               const std::string& created_at,
+                               const std::string& autorisation,
+                               const std::string& statut)
     : User(mp, db, firstname, last_name, dateNaissance, password, "admin", true,
-           telephone, created_by, created_at, "A1", "admin") {}
+           telephone, created_by, created_at, autorisation, statut) {}
 
 
 // ------------------------------------------------------
@@ -79,7 +81,7 @@ void Administrateur::creerUtilisateur() {
         std::cout << "Téléphone : "; std::cin >> telephone;
         std::cin.ignore();
 
-        statut = "admin";
+        statut = "admin basique";
         autorisation = defaultAut["admin"];
     }
 
@@ -386,7 +388,7 @@ void Administrateur::menu() {
             choix=6;
             continue;
         }
-        std::cout << "====================================================\n"
+        std::cout << "\n====================================================\n"
                   << "             Menu Administrateur (" << this->getFirstname() << ")           \n"
                   << "====================================================\n";
         if(this->autorisation=="A0"){

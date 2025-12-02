@@ -122,7 +122,6 @@ void MediPass::update_password(sqlite3* db, int user_id, const std::string& newP
 
 void MediPass::forceChangePassword(sqlite3* db, int user_id) {
     std::string newPwd;
-    std::cin.ignore();
     do {
         std::cout << "[!] Votre mot de passe est encore par défaut. Veuillez le changer : ";
         std::getline(std::cin, newPwd);
@@ -165,8 +164,7 @@ void MediPass::load_db(sqlite3* db)
 
     if (count == 0) {
         // Crée l'admin par défaut une seule fois
-        if (create_user()) {
-            std::cout << "[+]: Admin created." << std::endl;
+        if (create_user(db)) {
         } else {
             std::cerr << "[ERROR]: Failed to create default admin." << std::endl;
         }
@@ -514,9 +512,9 @@ int MediPass::load_admin(sqlite3* db,vector<string> creds)
     ** This function loads admin details from the database into the provided Admin object.
     */
 
-    current_user = new Administrateur(this,db,creds[1],creds[2],creds[3],creds[4],stoi(creds[7]),creds[8],creds[9]);
+    current_user = new Administrateur(this,db,creds[1],creds[2],creds[3],creds[4],stoi(creds[7]),creds[8],creds[9],creds[10],creds[11]);
 
-    cout << "[+]: Admin user loaded successfully." << endl;
+    cout << "\n[+]: Admin user loaded successfully." << endl;
 
 
     return 0;
@@ -551,10 +549,10 @@ int MediPass::load_secretaire(sqlite3* db,vector<string> creds)
 bool MediPass::create_user(sqlite3* db)
 {
     // Récupérer les infos utilsateur pour créer l'administrateur
-    std::string firstname, last_name, password, dateN,role="admin",autorisation="A0",statut="admin";
+    std::string firstname, last_name, password, dateN,role="admin",auth="A0",statut="super admin";
     bool is_active = true;
     int telephone = 0;
-    
+
     std::string created_by = "system";
 
     cout << "[+]: Etant donne l'absence d'administrateur, veuillez creer un compte administrateur." << endl;
@@ -582,10 +580,10 @@ bool MediPass::create_user(sqlite3* db)
 
     // Insérer l'utilisateur dans la base de données
     char* sql = sqlite3_mprintf(
-        "INSERT INTO users (firstname, last_name, date_of_birth, password, role, is_active, telephone, created_by, autorisation, statut) "
-        "VALUES ('%q', '%q', '%q', '%q', '%q', %d, %d, '%q', '%q', '%q');",
+        "INSERT INTO users (firstname, last_name, date_of_birth, password, role, is_active, telephone, created_by, autorisation, statut, is_default_password) "
+        "VALUES ('%q', '%q', '%q', '%q', '%q', %d, %d, '%q', '%q', '%q', 1);",
         firstname.c_str(), last_name.c_str(), dateN.c_str(), password.c_str(), role.c_str(),
-        is_active ? 1 : 0, telephone, created_by.c_str(), autorisation.c_str(), statut.c_str()
+        is_active ? 1 : 0, telephone, created_by.c_str(), auth.c_str(), statut.c_str()
     );
 
     char* errmsg = nullptr;
@@ -597,7 +595,7 @@ bool MediPass::create_user(sqlite3* db)
     }
     sqlite3_free(sql);
 
-    cout << "[+]: Sueper admin user created successfully." << endl;
+    cout << "[+]: Super admin user created successfully." << endl;
 
     return true;
 }
