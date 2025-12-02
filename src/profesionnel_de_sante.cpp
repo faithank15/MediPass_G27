@@ -37,9 +37,11 @@ Pro_sante::Pro_sante(MediPass* mp, sqlite3* db, const std::string& firstname,
               std::string created_at,
               std::string autorisation,
               std::string statut,
-              std::string spécialité)
-:    User(mp, db, firstname,last_name,dateNaissance,password,"professionnel de sante",active,telephone,created_by,created_at,autorisation,statut,speécialité)
+              std::string specialite)
+:    User(mp, db, firstname,last_name,dateNaissance,password,"professionnel de sante",active,telephone,created_by,created_at,autorisation,statut,specialite)
 {
+                std::cout << "[!]: Constructeur pro medecin atteint" << std::endl;
+
     if(!est_valide(autorisation, role, statut))
         throw Invalid{};
 }

@@ -10,7 +10,7 @@ class Examen;
 
 class Consultation {
 private:
-    
+
 
 public:
 
@@ -43,7 +43,9 @@ public:
     void setPatientId(const int& p);
     void setMotif(const std::string& m);
     void setObservations(const std::string& o);
-    void ajouter_examen(Examen& examen);
+    void ajouter_examen(const Examen&);
+
+
 
     // Affichage
     void afficher() const;

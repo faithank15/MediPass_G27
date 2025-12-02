@@ -475,6 +475,7 @@ void MediPass::load_user(sqlite3* db,vector<string> creds)
     ** This function redirects to the appropriate user loading function based on the current user's role.
     */
 
+
     string user_role = creds[5];
 
     if (user_role == "patient") {
@@ -496,10 +497,10 @@ int MediPass::load_sante(sqlite3* db, vector<string> creds)
     /*
     ** This function loads healthcare professional details from the database into the provided Sante object.
     */
-    std::cout << "[!]: Load Santé atteint" << endl;
+
     string userStatut = creds[11];
     if (userStatut == "medecin") {
-        std::cout << "[!]: Load medecin atteint" << endl;
+
         current_user = new Medecin(this,db,creds[1],creds[2],creds[3],creds[4],creds[6]=="1",stoi(creds[7]),creds[8],creds[9],creds[10],creds[12]);
     } else if (userStatut == "infirmier") {
         current_user = new Infirmier(this,db,creds[1],creds[2],creds[3],creds[4],creds[5],creds[6]=="1",stoi(creds[7]),creds[8],creds[9],creds[10],creds[12]);

@@ -35,12 +35,10 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
-		<Linker>
-			<Add library="sqlite3" />
-		</Linker>
 		<Unit filename="include/Administrateur.h" />
 		<Unit filename="include/DossierMedical.h" />
 		<Unit filename="include/MediPass.h" />
+		<Unit filename="include/Secretaire.h" />
 		<Unit filename="include/Soin.h" />
 		<Unit filename="include/antecedant.h" />
 		<Unit filename="include/consultation.h" />
@@ -54,6 +52,7 @@
 		<Unit filename="src/Administrateur.cpp" />
 		<Unit filename="src/DossierMedical.cpp" />
 		<Unit filename="src/MediPass.cpp" />
+		<Unit filename="src/Secretaire.cpp" />
 		<Unit filename="src/Soin.cpp" />
 		<Unit filename="src/antecedant.cpp" />
 		<Unit filename="src/consultation.cpp" />
@@ -62,6 +61,9 @@
 		<Unit filename="src/medecin.cpp" />
 		<Unit filename="src/patient.cpp" />
 		<Unit filename="src/profesionnel_de_sante.cpp" />
+		<Unit filename="src/sqlite3.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="src/utilisateur.cpp" />
 		<Extensions />
 	</Project>
