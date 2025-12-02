@@ -9,16 +9,24 @@
 #include "profesionnel_de_sante.h"
 #include "patient.h"
 
-
 class Medecin : public Pro_sante
 {
 public:
 
+    // --- Structure pour gérer les disponibilités ---
+    struct Disponibilite {
+        int id;
+        int day;
+        std::string heure_start;
+        std::string heure_end;
+    };
+
+    // --- Exceptions ---
     class Invalid {};
 
-    virtual void menu();
-
-    Medecin(MediPass* mp,sqlite3* db,std::string firstname,
+    // --- Constructeurs ---
+    Medecin(MediPass* mp, sqlite3* db,
+            std::string firstname,
             std::string last_name,
             std::string dateNaissance,
             std::string password,
@@ -29,36 +37,47 @@ public:
             std::string autorisation = "A2",
             std::string specialite = "");
 
-
     Medecin(const Medecin& original);
 
+    // --- Interface utilisateur ---
+    virtual void menu();
 
-    // Actions
-    void lire_dossier_medical(sqlite3* db, MediPass* mp, const string& firstname,const string& last_name) const;
-    bool editer_dossier_medical(sqlite3* db, MediPass* mp, const string& firstname, const string& last_name);
+    // --- Actions principales ---
+    void lire_dossier_medical(sqlite3* db, MediPass* mp,
+                              const std::string& firstname,
+                              const std::string& last_name) const;
 
+    bool editer_dossier_medical(sqlite3* db, MediPass* mp,
+                                const std::string& firstname,
+                                const std::string& last_name);
 
-    bool creer_consultation(
-        sqlite3* db,
-        MediPass* mp,
-        const string& firstname,
-        const string& last_name,                    // utiliser l'ID une fois qu'on sera en mesure de récupérer le patient dans la base de donnée sur la base de l'ID
-        const string& observations,
-        const string& motif);
+    bool creer_consultation(sqlite3* db, MediPass* mp,
+                            const std::string& firstname,
+                            const std::string& last_name,
+                            const std::string& observations,
+                            const std::string& motif);
 
-
-    void mettre_disponibilite(const std::vector<std::chrono::system_clock::time_point>& dates);
-
-
-    // Accesseur
-
-    std::string obtenir_specialite() const { return specialite; };
-
-    void afficher_patients();
-    void afficher_disponibilites();
+    void programmer_consultation();
     void ajouter_consultation_interactive();
+
+    // --- Gestion des disponibilités ---
+    void mettre_disponibilite();
+    bool ajouter_disponibilite(sqlite3* db,
+                               int id_medecin,
+                               int day,
+                               const std::string& heure_start,
+                               const std::string& heure_end);
+
+    std::vector<Disponibilite> charger_disponibilites(sqlite3* db, int id_medecin);
+    void afficher_disponibilites();
+
+    // --- Affichage des informations ---
+    void afficher_patients();
     void afficher_infos_professionnelles();
     bool lire_dossier_medical_interactive();
+
+    // --- Accesseurs ---
+    std::string obtenir_specialite() const { return specialite; };
 
 private:
     std::string specialite;

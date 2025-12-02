@@ -236,7 +236,7 @@ bool Medecin::editer_dossier_medical(sqlite3* db, MediPass* mp, const string& fi
 }
 
 
-// Cette méthode est susceptible de modification
+// Cette méthode a été achevé
 bool Medecin::creer_consultation(
                         sqlite3* db,
                         MediPass* mp,
@@ -293,31 +293,97 @@ bool Medecin::creer_consultation(
     return true;
 }
 
-
-// A compléter plus tard
-void Medecin::mettre_disponibilite(const vector<std::chrono::system_clock::time_point>& dates)
+bool Medecin::ajouter_disponibilite(sqlite3* db,
+                                    int id_medecin,
+                                    int day,
+                                    const std::string& heure_start,
+                                    const std::string& heure_end)
 {
-    for(const std::chrono::system_clock::time_point& d : dates)
-        liste_disponibilite.push_back(d);
+    const char* sql =
+        "INSERT INTO DISPONIBILITES (professionnel_id, day, heure_start, heure_end) "
+        "VALUES (?, ?, ?, ?);";
+
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+
+    if(rc != SQLITE_OK){
+        std::cerr << "Erreur prepare: " << sqlite3_errmsg(db) << std::endl;
+        return false;
+    }
+
+    
+    sqlite3_bind_int(stmt, 1, id_medecin);
+    sqlite3_bind_int(stmt, 2, day);
+    sqlite3_bind_text(stmt, 3, heure_start.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 4, heure_end.c_str(), -1, SQLITE_TRANSIENT);
+
+    rc = sqlite3_step(stmt);
+
+    if(rc != SQLITE_DONE){
+        std::cerr << "Erreur insert: " << sqlite3_errmsg(db) << std::endl;
+        sqlite3_finalize(stmt);
+        return false;
+    }
+
+    sqlite3_finalize(stmt);
+    return true;
 }
 
+std::vector<Medecin::Disponibilite> Medecin::charger_disponibilites(sqlite3* db, int id_medecin)
+{
+    std::vector<Disponibilite> result;
 
+    const char* sql =
+        "SELECT id, day, heure_start, heure_end "
+        "FROM DISPONIBILITES "
+        "WHERE professionnel_id = ? "
+        "ORDER BY day, heure_start;";
 
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
 
-void Medecin::afficher_disponibilites() {
-    cout << "\n--- Vos disponibilités ---\n";
+    if(rc != SQLITE_OK){
+        std::cerr << "Erreur prepare select: " << sqlite3_errmsg(db) << std::endl;
+        return result;
+    }
 
-    if (obtenir_disponibilite().empty()) {
-        cout << "Aucune disponibilité enregistrée.\n";
+    sqlite3_bind_int(stmt, 1, id_medecin);
+
+    while(sqlite3_step(stmt) == SQLITE_ROW){
+        Disponibilite d;
+
+        d.id          = sqlite3_column_int(stmt, 0);
+        d.day         = sqlite3_column_int(stmt, 1);
+        d.heure_start = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+        d.heure_end   = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+
+        result.push_back(d);
+    }
+
+    sqlite3_finalize(stmt);
+    return result;
+}
+
+void Medecin::afficher_disponibilites()
+{
+    auto dispos = charger_disponibilites(this->db, this->getId());
+
+    if(dispos.empty()){
+        std::cout << "Aucune disponibilité enregistrée.\n";
         return;
     }
 
-    for (const auto& d : obtenir_disponibilite()) {
-        time_t t = chrono::system_clock::to_time_t(d);                      // ici je convertis le type chrono en time_t (un format classique lisible par c_time)
-        cout << " - " << ctime(&t);                                         // ctime retourne une chaine de caractère correspondant à la date associé à l'objet de type time_t
+    std::cout << "\n--- Disponibilités de " 
+              << firstname << " " << last_name << " ---\n";
+
+    for(const auto& d : dispos){
+        std::cout << "ID: " << d.id
+                  << " | Jour: " << d.day
+                  << " | De: " << d.heure_start
+                  << " à " << d.heure_end
+                  << "\n";
     }
 }
-
 
 void Medecin::afficher_patients() {
     cout << "\n--- Liste des patients suivis ---\n";
@@ -328,8 +394,14 @@ void Medecin::afficher_patients() {
     }
 
     for (int i = 0; i < (int)patients_id.size(); ++i) {
-        cout << i + 1 << ". ";
-            //  << [i].getNomComplet() << "\n";                             // // En attente de Faith   -   // En attente de Faith   -   Une méthode qui permet de récupérer les informations d'un patient à partir de son id
+        int patientId = patients_id[i];
+
+        // Construire un patient à partir de son ID
+        Patient p(this->mp, this->db, patientId);
+
+        // Affichage lisible 
+        cout << i + 1 << ". "
+             << p.getNomComplet() << "\n";
     }
 }
 

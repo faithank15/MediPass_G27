@@ -313,37 +313,10 @@ int DossierMedical::afficher(std::string autorisation){
     }
 
     // -----------------------------------------------------------
-    // A1 → accès maximal : Afficher TOUT sans poser de questions
+    // A1 → N'as pas accès au dossier Médical
     // -----------------------------------------------------------
 
-    cout << "--- ANTÉCÉDENTS (" << antecedants.size() << ") ---\n";
-    for (const auto& a : antecedants) {
-        a.afficher();
-        cout << "----------------------------------\n";
-    }
-
-    cout << "\n--- CONSULTATIONS (" << consultations.size() << ") ---\n";
-    for (const auto& c : consultations) {
-        c.afficher();
-        cout << "----------------------------------\n";
-    }
-
-    cout << "\n--- EXAMENS (" << examens.size() << ") ---\n";
-    for (const auto& e : examens) {
-        e.afficher();
-        cout << "----------------------------------\n";
-    }
-
-    cout << "\n--- SOINS (" << soins.size() << ") ---\n";
-    for (const auto& s : soins) {
-        s.afficher();
-        cout << "----------------------------------\n";
-    }
-
-    cout << "\n--- PRESCRIPTIONS ---\n";
-    cout << "(Simulation – classe non encore implémentée.)\n";
-
-    cout << "\n===== Fin du dossier médical =====\n\n";
+    std::cout << "Vous n'avez pas accès au dossier médical.\n";
 
     return 0;
 }
