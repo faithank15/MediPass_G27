@@ -406,68 +406,90 @@ void Medecin::afficher_patients() {
 }
 
 void Medecin::ajouter_consultation_interactive() {
-    cout << "\n--- Ajouter une consultation ---\n";
-
-    string motif, observations;
-
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-    cout << "Motif : ";
-    getline(cin, motif);
-
-    cout << "Observations : ";
-    getline(cin, observations);
 
     // --- Sélection du patient ---
-    string fname, last_name;
-    cout << "\n Veuillez entrer le nom puis le prenom du patient concerné ";
-    cin >> fname >> last_name;
+    std::string fname, last_name;
+    std::cout << "\nVeuillez entrer le prénom du patient : ";
+    std::getline(std::cin, fname);
 
-    vector<string> creds = mp->getUserCreds(db, firstname, last_name);
-    if (creds.empty()) { std::cerr << "Patient introuvable ou inactif.\n"; return; }
+    std::cout << "Veuillez entrer le nom du patient : ";
+    std::getline(std::cin, last_name);
+
+    // Récupération des infos du patient
+    vector<string> creds = mp->getUserCreds(db, fname, last_name);
+    if (creds.empty()) {
+        std::cerr << "Patient introuvable ou inactif.\n";
+        return;
+    }
 
     Patient* patient = nullptr;
     try {
         patient = mp->load_patient(db, creds);
     }
-    catch (const exception& e) {
-        cout << "Erreur : impossible de charger le patient.\n";
+    catch (...) {
+        std::cout << "Erreur : impossible de charger le patient.\n";
+        return;
     }
 
-    cout << "\n--- Patient sélectionné : "
-         << patient->getNomComplet() << " ---\n";
+    if (!patient) {
+        std::cout << "Erreur interne : patient null.\n";
+        return;
+    }
+
+    std::cout << "\n--- Patient sélectionné : "
+              << patient->getNomComplet() << " ---\n";
+
+    // Demander au médecin s'il souhaite consulter le dossier medical
+    std::cout << "Souhaitez-vous consulter le dossier médical du patient ? (o/n) : ";
+    char choix;
+    std::cin >> choix;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    if (choix == 'o' || choix == 'O') {
+        DossierMedical* dossier = patient->getDossierMedical();
+        if (dossier)
+            dossier->afficher(autorisation);
+        else
+            std::cout << "Aucun dossier médical trouvé.\n";
+    }
+
+    // --- Saisie des infos de la consultation ---
+    std::cout << "\n--- Ajouter une consultation ---\n";
+
+    std::string motif, observations;
+
+    std::cout << "Motif : ";
+    std::getline(std::cin, motif);
+
+    std::cout << "Observations : ";
+    std::getline(std::cin, observations);
 
     // --- Ajout éventuel d'examens ---
-    vector<Examen> examens;
-
-    char choix;
-    cout << "\nAjouter un examen ? (o/n) : ";
-    cin >> choix;
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    std::vector<Examen> examens;
+    std::cout << "\nAjouter un examen ? (o/n) : ";
+    std::cin >> choix;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
     while (choix == 'o' || choix == 'O') {
-        string date, typeExamen, resultat;
 
-        cout << "\n--- Nouvel examen ---\n";
+        std::string date, typeExamen, resultat;
 
-        std::cout << "ID : ";
-        std::cin.ignore();
-        cin >> id;
+        std::cout << "\n--- Nouvel examen ---\n";
 
-        cout << "Date (jj/mm/aaaa) : ";
-        getline(cin, date);
+        std::cout << "Date (jj/mm/aaaa) : ";
+        std::getline(std::cin, date);
 
-        cout << "Type d'examen : ";
-        getline(cin, typeExamen);
+        std::cout << "Type d'examen : ";
+        std::getline(std::cin, typeExamen);
 
-        cout << "Résultat : ";
-        getline(cin, resultat);
+        std::cout << "Résultat : ";
+        std::getline(std::cin, resultat);
 
         examens.emplace_back(date, typeExamen, resultat);
 
-        cout << "Ajouter un autre examen ? (o/n) : ";
-        cin >> choix;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        std::cout << "Ajouter un autre examen ? (o/n) : ";
+        std::cin >> choix;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
 
     // --- Création de la consultation ---
@@ -481,11 +503,10 @@ void Medecin::ajouter_consultation_interactive() {
         examens
     );
 
-    cout << "\nConsultation ajoutée avec succès pour le patient "
-
-         << patient->getNomComplet() << ".\n";
-
+    std::cout << "\nConsultation ajoutée avec succès pour le patient "
+              << patient->getNomComplet() << ".\n";
 }
+
 
 void Medecin::afficher_infos_professionnelles() {
     cout << "\n--- Vos informations professionnelles ---\n";
@@ -558,100 +579,6 @@ void Medecin::menu() {
     }
 }
 
-
-
-/*int main() {
-
-    try {
-        cout << "\n===== TEST : Création d'un médecin =====\n";
-
-        Medecin med(
-            1,                      // id
-            "drfaith",              // username
-            "pass123",              // password
-            "Directeur Médical",    // role
-            true,                   // active
-            229998877,              // telephone
-            "admin",                // created_by
-            "2024-12-01",           // created_at
-            "A1",                   // autorisation
-            "Actif",                // statut
-            "Cardiologie"           // spécialité
-        );
-
-        cout << "Médecin créé avec succès.\n";
-        cout << "Nom d'utilisateur : " << med.getUsername() << "\n";
-        cout << "Spécialité : " << med.obtenir_specialite() << "\n\n";
-
-        // ------------------------------
-        cout << "===== TEST : Création de patients =====\n";
-
-        Patient p1(1, "Aimane", "Diallo", "12/03/2004");
-        Patient p2(2, "Madi", "Soglo", "21/08/2003");
-
-        cout << "Patient 1 : " << p1.getNomComplet() << "\n";
-        cout << "Patient 2 : " << p2.getNomComplet() << "\n\n";
-
-        // ------------------------------
-        cout << "===== TEST : Ajout de disponibilités =====\n";
-
-        vector<chrono::system_clock::time_point> dispo;
-        dispo.push_back(chrono::system_clock::now());
-
-        med.mettre_disponibilite(dispo);
-
-        cout << "Disponibilité ajoutée.\n\n";
-
-        // ------------------------------
-        cout << "===== TEST : Création d'examens =====\n";
-
-        vector<Examen> examens{
-            Examen("01/01/2025", "ECG", "Normal"),
-            Examen("02/01/2025", "Scanner Thoracique", "RAS")
-        };
-
-        cout << "2 examens créés.\n\n";
-
-        // ------------------------------
-        cout << "===== TEST : Création consultation =====\n";
-
-        auto now = chrono::system_clock::now();
-
-        bool ok = med.creer_consultation(
-            now,
-            p1,
-            "Douleur thoracique",
-            "Suspicion angine de poitrine",
-            examens
-        );
-
-        if(ok)
-            cout << "Consultation créée avec succès.\n";
-        else
-            cout << "Échec : le médecin n'était pas disponible.\n";
-
-        cout << "\n===== DISPONIBILITÉS =====\n";
-        med.afficher_disponibilites();
-
-        cout << "\n===== PATIENTS SUIVIS =====\n";
-        med.afficher_patients();
-
-        cout << "\n===== INFORMATIONS PROFESSIONNELLES =====\n";
-        med.afficher_infos_professionnelles();
-
-    }
-    catch (const Pro_sante::Invalid&) {
-        cout << "\nERREUR : Paramètres invalides pour Pro_sante.\n";
-    }
-    catch (const Medecin::Invalid&) {
-        cout << "\nERREUR : Spécialité invalide.\n";
-    }
-    catch (...) {
-        cout << "\nERREUR INCONNUE.\n";
-    }
-
-    return 0;
-}*/
 
 //<>
 

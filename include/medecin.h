@@ -61,7 +61,6 @@ public:
     void ajouter_consultation_interactive();
 
     // --- Gestion des disponibilités ---
-    void mettre_disponibilite();
     bool ajouter_disponibilite(sqlite3* db,
                                int id_medecin,
                                int day,
