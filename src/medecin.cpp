@@ -412,6 +412,7 @@ void Medecin::ajouter_consultation_interactive() {
 
     // --- Sélection du patient ---
     std::string fname, last_name;
+    std::cin.ignore();
     std::cout << "\nVeuillez entrer le prénom du patient : ";
     std::getline(std::cin, fname);
 
