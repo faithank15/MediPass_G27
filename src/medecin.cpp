@@ -1,11 +1,14 @@
 #include <algorithm>
 #include <iostream>
 #include <limits>
+#include <fstream>
+#include <sstream>
 #include <sqlite3.h>
 #include "medecin.h"
 #include "patient.h"
 #include "consultation.h"
 #include "DossierMedical.h"
+#include <filesystem>
 
 using namespace std;
 
@@ -509,6 +512,157 @@ void Medecin::ajouter_consultation_interactive() {
 }
 
 
+void Medecin::exportDossiersCSV(const std::string& filename, const std::vector<int>& dossierIds ) {
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "[!] Impossible d'ouvrir le fichier pour l'écriture.\n";
+        return;
+    }
+
+    file << "DossierID,CreatedAt,Antecedants,Consultations,Examens,Soins\n";
+
+    std::string sql = "SELECT id, patient_id, created_at FROM DOSSIERS_MEDICAUX";
+
+    if (!dossierIds.empty()) {
+        // Construire la clause WHERE id IN (...)
+        sql += " WHERE id IN (";
+        for (size_t i = 0; i < dossierIds.size(); ++i) {
+            sql += std::to_string(dossierIds[i]);
+            if (i != dossierIds.size() - 1) sql += ",";
+        }
+        sql += ")";
+    }
+    sql += ";";
+
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+        std::cerr << "Erreur SQL : " << sqlite3_errmsg(db) << std::endl;
+        return;
+    }
+
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        int dossierId = sqlite3_column_int(stmt, 0);
+        std::string created_at = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+
+        auto concatChamp = [&](const char* table, const char* champ) {
+            sqlite3_stmt* s;
+            std::string result;
+            std::string q = "SELECT " + std::string(champ) + " FROM " + std::string(table) +
+                            " WHERE dossier_id=" + std::to_string(dossierId) + ";";
+            if (sqlite3_prepare_v2(db, q.c_str(), -1, &s, nullptr) == SQLITE_OK) {
+                while (sqlite3_step(s) == SQLITE_ROW) {
+                    const unsigned char* txt = sqlite3_column_text(s, 0);
+                    if (txt) result += std::string(reinterpret_cast<const char*>(txt)) + "|";
+                }
+            }
+            sqlite3_finalize(s);
+            if (!result.empty()) result.pop_back();
+            return result;
+        };
+
+        std::string antecedants   = concatChamp("ANTECEDANTS", "type");
+        std::string consultations = concatChamp("CONSULTATIONS", "notes");
+        std::string examens       = concatChamp("EXAMENS", "type");
+        std::string soins         = concatChamp("SOINS", "description");
+
+        file << dossierId << "," << created_at << ","
+             << "\"" << antecedants << "\","
+             << "\"" << consultations << "\","
+             << "\"" << examens << "\","
+             << "\"" << soins << "\"\n";
+    }
+
+    sqlite3_finalize(stmt);
+    file.close();
+    std::cout << "[+] Export terminé : " << filename << std::endl;
+}
+
+
+
+void Medecin::importDossiersCSV(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "[!] Impossible d'ouvrir le fichier pour lecture.\n";
+        return;
+    }
+
+    std::string line;
+    std::getline(file, line); // ignorer l'entête
+
+    // Demander le patient
+    int patientId;
+    std::cout << "Entrez l'ID du patient pour lequel importer les dossiers : ";
+    std::cin >> patientId;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    // Vérifier que le patient existe
+    std::string checkPatientSql = "SELECT COUNT(*) FROM PATIENTS WHERE id = " + std::to_string(patientId) + ";";
+    sqlite3_stmt* stmtCheck;
+    if (sqlite3_prepare_v2(db, checkPatientSql.c_str(), -1, &stmtCheck, nullptr) != SQLITE_OK) {
+        std::cerr << "Erreur SQL lors de la vérification du patient.\n";
+        return;
+    }
+    int count = 0;
+    if (sqlite3_step(stmtCheck) == SQLITE_ROW) {
+        count = sqlite3_column_int(stmtCheck, 0);
+    }
+    sqlite3_finalize(stmtCheck);
+
+    if (count == 0) {
+        std::cerr << "Patient introuvable. Import annulé.\n";
+        return;
+    }
+
+    while (std::getline(file, line)) {
+        std::stringstream ss(line);
+        std::string dummyPatientIdStr, dossierIdStr, created_at, antecedants, consultations, examens, soins;
+
+        std::getline(ss, dummyPatientIdStr, ','); // Ignorer l'ID du patient du CSV
+        std::getline(ss, dossierIdStr, ',');
+        std::getline(ss, created_at, ',');
+        std::getline(ss, antecedants, ',');
+        std::getline(ss, consultations, ',');
+        std::getline(ss, examens, ',');
+        std::getline(ss, soins, ',');
+
+
+
+        // Créer un nouveau dossier (toujours auto-increment pour éviter les conflits)
+        std::string sql = "INSERT INTO DOSSIERS_MEDICAUX (patient_id, created_at) VALUES (" +
+                          std::to_string(patientId) + ", '" + created_at + "');";
+        char* errMsg = nullptr;
+        if (sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
+            std::cerr << "Erreur SQL : " << errMsg << std::endl;
+            sqlite3_free(errMsg);
+            continue;
+        }
+
+        int dossierId = (int)sqlite3_last_insert_rowid(db);
+
+        auto insererLignes = [&](const std::string& table, const std::string& champ, const std::string& valeurs) {
+            std::stringstream ss_val(valeurs);
+            std::string item;
+            while (std::getline(ss_val, item, '|')) {
+                if (!item.empty()) {
+                    std::string sql2 = "INSERT INTO " + table + " (dossier_id, " + champ + ") VALUES (" +
+                        std::to_string(dossierId) + ", '" + item + "');";
+                    sqlite3_exec(db, sql2.c_str(), nullptr, nullptr, nullptr);
+                }
+            }
+        };
+
+        insererLignes("ANTECEDANTS", "type", antecedants);
+        insererLignes("CONSULTATIONS", "notes", consultations);
+        insererLignes("EXAMENS", "type", examens);
+        insererLignes("SOINS", "description", soins);
+    }
+
+    file.close();
+    std::cout << "[+] Import terminé pour le patient ID " << patientId << std::endl;
+}
+
+
+
 void Medecin::afficher_infos_professionnelles() {
     cout << "\n--- Vos informations professionnelles ---\n";
     cout << "Nom d'utilisateur : " << Medecin::getLast_name() << "\n";
@@ -534,6 +688,8 @@ void Medecin::menu() {
         cout << "3. Créer une consultation\n";
         cout << "4. Voir mes informations professionnelles\n";
         cout << "5. Lire le dossier medical d'un patient\n";
+        cout << "6. Export CSV des dossiers médicaux\n";
+        cout << "7. Import CSV des dossiers médicaux\n";
         cout << "0. Se déconnecter / Quitter\n";
         cout << "------------------------------\n";
         cout << "Votre choix : ";
@@ -568,6 +724,43 @@ void Medecin::menu() {
             case 5:
                 lire_dossier_medical_interactive();
                 break;
+            case 6: {
+                std::string f;
+                std::cout << "Nom du fichier export: ";
+                std::cin >> f;
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+                std::cout << "Voulez-vous exporter des dossiers spécifiques ? (o/n) : ";
+                char choix;
+                std::cin >> choix;
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+                std::vector<int> ids;
+                if (choix == 'o' || choix == 'O') {
+                    std::string input;
+                    std::cout << "Entrez les IDs des dossiers séparés par des virgules (ex: 1,5,7) : ";
+                    std::getline(std::cin, input);
+
+                    std::stringstream ss(input);
+                    std::string token;
+                    while (std::getline(ss, token, ',')) {
+                        try {
+                            ids.push_back(std::stoi(token));
+                        } catch (...) {
+                            std::cerr << "ID invalide ignoré : " << token << "\n";
+                        }
+                    }
+                }
+
+                exportDossiersCSV(f, ids);
+                break;
+            }
+
+            case 7: {
+                std::string f; std::cout << "Nom fichier import: "; std::cin >> f;
+                importDossiersCSV(f);
+                break;
+                }
 
             case 0:
                 cout << "Déconnexion...\n";
