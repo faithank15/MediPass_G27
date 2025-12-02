@@ -76,8 +76,8 @@ public:
     bool lire_dossier_medical_interactive();
 
     // --- Import / Export CSV des dossiers médicaux ---
-    void exportDossiersCSV(const std::string& filename, const std::vector<int>& dossierIds = {});
-    void importDossiersCSV(const std::string& filename);
+    void exportDossiersCSV();
+    void importDossiersCSV();
 
 
     // --- Accesseurs ---

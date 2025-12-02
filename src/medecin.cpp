@@ -11,6 +11,7 @@
 #include <filesystem>
 
 using namespace std;
+namespace fs = std::filesystem;
 
 
 static const vector<string> specialites_medicales = {
@@ -511,7 +512,42 @@ void Medecin::ajouter_consultation_interactive() {
 }
 
 
-void Medecin::exportDossiersCSV(const std::string& filename, const std::vector<int>& dossierIds ) {
+void Medecin::exportDossiersCSV() {
+
+    std::string path = "./exported";  // Dossier d'exportation
+    // Créer le dossier s'il n'existe pas
+    if (!fs::exists(path)) {
+        fs::create_directory(path);
+    }
+
+    std::cout << "Veuillez renseigner l'ID du patient dont vous souhaitez exporter le dossier medical : ";
+    int patientId;
+    std::cin >> patientId;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    std::vector<string> patientNames;
+    string sql = "SELECT firstname, last_name FROM USERS WHERE id = " + std::to_string(patientId) + " AND is_active = 1;";
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+        std::cerr << "Erreur SQL : " << sqlite3_errmsg(db) << std::endl;
+        return;
+    }
+
+    patientNames.push_back(""); // firstname
+    patientNames.push_back(""); // last_name
+    sqlite3_step(stmt);
+    patientNames[0] = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+    patientNames[1] = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+    sqlite3_finalize(stmt);
+    sqlite3_reset(stmt);
+
+    std::vector<string> creds = mp->getUserCreds(db, patientNames[0], patientNames[1]);
+    if (creds.empty()) {
+        std::cerr << "Patient introuvable ou inactif.\n";
+        return;
+    }
+
+    std::string filename = path + "/dossiers_export_" + std::to_string(patientId) + ".csv";
     std::ofstream file(filename);
     if (!file.is_open()) {
         std::cerr << "[!] Impossible d'ouvrir le fichier pour l'écriture.\n";
@@ -520,20 +556,10 @@ void Medecin::exportDossiersCSV(const std::string& filename, const std::vector<i
 
     file << "DossierID,CreatedAt,Antecedants,Consultations,Examens,Soins\n";
 
-    std::string sql = "SELECT id, patient_id, created_at FROM DOSSIERS_MEDICAUX";
+    sql = "SELECT id, patient_id, created_at FROM DOSSIERS_MEDICAUX"
+          " WHERE patient_id = " + std::to_string(patientId) + ";";
 
-    if (!dossierIds.empty()) {
-        // Construire la clause WHERE id IN (...)
-        sql += " WHERE id IN (";
-        for (size_t i = 0; i < dossierIds.size(); ++i) {
-            sql += std::to_string(dossierIds[i]);
-            if (i != dossierIds.size() - 1) sql += ",";
-        }
-        sql += ")";
-    }
-    sql += ";";
 
-    sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
         std::cerr << "Erreur SQL : " << sqlite3_errmsg(db) << std::endl;
         return;
@@ -578,7 +604,46 @@ void Medecin::exportDossiersCSV(const std::string& filename, const std::vector<i
 
 
 
-void Medecin::importDossiersCSV(const std::string& filename) {
+void Medecin::importDossiersCSV() {
+
+    std::string path = "./import";  // Chemin du dossier à lire
+
+    // Vérifier si le dossier existe
+    if (!fs::exists(path) || !fs::is_directory(path)) {
+        std::cout << "Dossier introuvable !" << std::endl;
+        return;
+    }
+    // Lister les fichiers CSV dans le dossier
+    std::vector<fs::path> csvFiles;
+    for (const auto& entry : fs::directory_iterator(path)) {
+        if (entry.path().extension() == ".csv") {
+            csvFiles.push_back(entry.path());
+        }
+    }
+
+    if (csvFiles.empty()) {
+        std::cout << "Aucun fichier CSV trouvé dans le dossier." << std::endl;
+        return;
+    }
+
+    std::cout << "Fichiers CSV disponibles pour l'importation :\n";
+    for (size_t i = 0; i < csvFiles.size(); ++i) {
+        std::cout << i + 1 << ". " << csvFiles[i].filename().string() << "\n";
+    }
+
+    int choice;
+    std::cout << "Choisissez un fichier à importer (entrez le numéro) : ";
+    std::cin >> choice;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+
+    if (choice < 1 || choice > static_cast<int>(csvFiles.size())) {
+        std::cerr << "Choix invalide. Import annulé." << std::endl;
+        return;
+    }
+
+    std::string filename = csvFiles[choice - 1].string();
+
     std::ifstream file(filename);
     if (!file.is_open()) {
         std::cerr << "[!] Impossible d'ouvrir le fichier pour lecture.\n";
@@ -590,25 +655,30 @@ void Medecin::importDossiersCSV(const std::string& filename) {
 
     // Demander le patient
     int patientId;
-    std::cout << "Entrez l'ID du patient pour lequel importer les dossiers : ";
+    std::cout << "Entrez le matricule (ID du patient) pour lequel importer les dossiers : ";
     std::cin >> patientId;
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-    // Vérifier que le patient existe
-    std::string checkPatientSql = "SELECT COUNT(*) FROM PATIENTS WHERE id = " + std::to_string(patientId) + ";";
-    sqlite3_stmt* stmtCheck;
-    if (sqlite3_prepare_v2(db, checkPatientSql.c_str(), -1, &stmtCheck, nullptr) != SQLITE_OK) {
-        std::cerr << "Erreur SQL lors de la vérification du patient.\n";
+    std::vector<string> patientNames;
+    string sql = "SELECT firstname, last_name FROM USERS WHERE id = " + std::to_string(patientId) + " AND is_active = 1;";
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+        std::cerr << "Erreur SQL : " << sqlite3_errmsg(db) << std::endl;
         return;
     }
-    int count = 0;
-    if (sqlite3_step(stmtCheck) == SQLITE_ROW) {
-        count = sqlite3_column_int(stmtCheck, 0);
-    }
-    sqlite3_finalize(stmtCheck);
 
-    if (count == 0) {
-        std::cerr << "Patient introuvable. Import annulé.\n";
+    patientNames.push_back(""); // firstname
+    patientNames.push_back(""); // last_name
+    sqlite3_step(stmt);
+    patientNames[0] = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+    patientNames[1] = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+    sqlite3_finalize(stmt);
+
+
+    // Vérifier qu'il s'agit du bon patient
+    std::vector<string> creds = mp->getUserCreds(db, patientNames[0], patientNames[1]);
+    if (creds.empty()) {
+        std::cerr << "Patient introuvable ou inactif.\n";
         return;
     }
 
@@ -627,8 +697,8 @@ void Medecin::importDossiersCSV(const std::string& filename) {
 
 
         // Créer un nouveau dossier (toujours auto-increment pour éviter les conflits)
-        std::string sql = "INSERT INTO DOSSIERS_MEDICAUX (patient_id, created_at) VALUES (" +
-                          std::to_string(patientId) + ", '" + created_at + "');";
+        std::string sql = sqlite3_mprintf("INSERT INTO DOSSIERS_MEDICAUX (patient_id, created_at) VALUES (%d, '%q');",
+                          patientId, created_at.c_str());
         char* errMsg = nullptr;
         if (sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
             std::cerr << "Erreur SQL : " << errMsg << std::endl;
@@ -655,6 +725,8 @@ void Medecin::importDossiersCSV(const std::string& filename) {
         insererLignes("EXAMENS", "type", examens);
         insererLignes("SOINS", "description", soins);
     }
+
+    fs::remove(filename); // Supprimer le fichier après importation
 
     file.close();
     std::cout << "[+] Import terminé pour le patient ID " << patientId << std::endl;
@@ -723,43 +795,14 @@ void Medecin::menu() {
             case 5:
                 lire_dossier_medical_interactive();
                 break;
-            case 6: {
-                std::string f;
-                std::cout << "Nom du fichier export: ";
-                std::cin >> f;
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-                std::cout << "Voulez-vous exporter des dossiers spécifiques ? (o/n) : ";
-                char choix;
-                std::cin >> choix;
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-                std::vector<int> ids;
-                if (choix == 'o' || choix == 'O') {
-                    std::string input;
-                    std::cout << "Entrez les IDs des dossiers séparés par des virgules (ex: 1,5,7) : ";
-                    std::getline(std::cin, input);
-
-                    std::stringstream ss(input);
-                    std::string token;
-                    while (std::getline(ss, token, ',')) {
-                        try {
-                            ids.push_back(std::stoi(token));
-                        } catch (...) {
-                            std::cerr << "ID invalide ignoré : " << token << "\n";
-                        }
-                    }
-                }
-
-                exportDossiersCSV(f, ids);
+            case 6:
+                exportDossiersCSV();
                 break;
-            }
 
-            case 7: {
-                std::string f; std::cout << "Nom fichier import: "; std::cin >> f;
-                importDossiersCSV(f);
+            case 7:
+                importDossiersCSV();
                 break;
-                }
+
 
             case 0:
                 cout << "Déconnexion...\n";
