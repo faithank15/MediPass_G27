@@ -63,11 +63,14 @@ void Infirmier::administrer_soin()
     std::string description;
     std::string firstname;
     std::string lastname;
+    std::cin.ignore();
+
 
     std::cout << "======= ADMINISTRATION DE SOIN =======\n";
 
     std::cout << "Prénom du patient: ";
     std::getline(std::cin, firstname);
+
 
     std::cout << "Nom du patient: ";
     std::getline(std::cin, lastname);

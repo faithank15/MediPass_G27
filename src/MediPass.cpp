@@ -160,8 +160,6 @@ void MediPass::load_db(sqlite3* db)
     }
     sqlite3_finalize(stmt);
 
-    //std::cout << "[DEBUG] admin_count = " << admin_count << std::endl;
-
     if (count == 0) {
         // Crée l'admin par défaut une seule fois
         if (create_user(db)) {
@@ -426,8 +424,8 @@ int MediPass::login(sqlite3* db)
     int user_id = std::stoi(creds[0]);
     std::string role = creds[5];
 
-    // Vérifier si le mot de passe est par défaut pour admin ou professionnel de santé
-    if (role == "admin" || role == "professionnel de sante") {
+    // Vérifier si le mot de passe est par défaut pour admin ou professionnel de santé ou sécrétaire
+    if (role == "admin" || role == "professionnel de sante" || role == "secretaire" ) {
         std::string current_password;
         if (must_change_password(db, user_id, current_password)) {
             forceChangePassword(db, user_id);
@@ -581,7 +579,7 @@ bool MediPass::create_user(sqlite3* db)
     // Insérer l'utilisateur dans la base de données
     char* sql = sqlite3_mprintf(
         "INSERT INTO users (firstname, last_name, date_of_birth, password, role, is_active, telephone, created_by, autorisation, statut, is_default_password) "
-        "VALUES ('%q', '%q', '%q', '%q', '%q', %d, %d, '%q', '%q', '%q', 1);",
+        "VALUES ('%q', '%q', '%q', '%q', '%q', %d, %d, '%q', '%q', '%q', 0);",
         firstname.c_str(), last_name.c_str(), dateN.c_str(), password.c_str(), role.c_str(),
         is_active ? 1 : 0, telephone, created_by.c_str(), auth.c_str(), statut.c_str()
     );
