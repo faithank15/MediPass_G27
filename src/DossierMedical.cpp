@@ -32,7 +32,7 @@ DossierMedical::DossierMedical(sqlite3* db,int idP)
     this->db=db;
     heureCreation = getCurrentTimeAsString();
 
-    int idD = 0;
+
 
 }
 

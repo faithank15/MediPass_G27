@@ -533,7 +533,7 @@
 	"utilisateur.h"
 	"MediPass.h"
 
-1764693002 source:c:\users\dell\desktop\plang\medipass_g27\src\administrateur.cpp
+1764694422 source:c:\users\dell\desktop\plang\medipass_g27\src\administrateur.cpp
 	"Administrateur.h"
 	<iostream>
 	<string>
@@ -567,7 +567,7 @@
 	"MediPass.h"
 	"medecin.h"
 
-1764693605 c:\users\dell\desktop\plang\medipass_g27\include\medecin.h
+1764699379 c:\users\dell\desktop\plang\medipass_g27\include\medecin.h
 	<string>
 	<chrono>
 	<vector>
@@ -575,7 +575,7 @@
 	"profesionnel_de_sante.h"
 	"patient.h"
 
-1764668403 source:c:\users\dell\desktop\plang\medipass_g27\src\dossiermedical.cpp
+1764695444 source:c:\users\dell\desktop\plang\medipass_g27\src\dossiermedical.cpp
 	"DossierMedical.h"
 	<iostream>
 	<ctime>
@@ -598,15 +598,18 @@
 	<string>
 	"profesionnel_de_sante.h"
 
-1764693810 source:c:\users\dell\desktop\plang\medipass_g27\src\medecin.cpp
+1764699304 source:c:\users\dell\desktop\plang\medipass_g27\src\medecin.cpp
 	<algorithm>
 	<iostream>
 	<limits>
+	<fstream>
+	<sstream>
 	<sqlite3.h>
 	"medecin.h"
 	"patient.h"
 	"consultation.h"
 	"DossierMedical.h"
+	<filesystem>
 
 1764692336 source:c:\users\dell\desktop\plang\medipass_g27\src\medipass.cpp
 	"MediPass.h"
