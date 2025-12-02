@@ -65,7 +65,7 @@
 
     <section id="intro">
       <h2>Introduction</h2>
-      <p class="lead">Ce guide détaille le comportement attendu de MediPass, en particulier le scénario où l'application est lancée sans base de données existante. Il explique aussi comment les mots de passe par défaut sont gérés, comment sécuriser le système et donne des snippets SQL/C++ pratiques.</p>
+      <p class="lead">Ce guide détaille le comportement attendu de MediPass, en particulier le scénario où l'application est lancée sans base de données existante. Il explique aussi comment les mots de passe par défaut sont gérés.</p>
     </section>
 
     <section id="first-run">
@@ -82,9 +82,10 @@
       </ol>
 
       <h3>Compte administrateur par défaut (first-run)</h3>
-      <p class="warn"><strong>Comportement par défaut :</strong> si la DB n'existe pas, MediPass crée un admin par défaut dont les identifiants sont — <em>tels qu'ils ont été définis pour ton projet</em> — :</p>
+      <p class="warn"><strong>Comportement par défaut :</strong> si la DB n'existe pas, MediPass crée un admin par défaut dont les identifiants sont :</p>
       <ul>
-        <li><strong>username</strong> : <code>admin</code></li>
+        <li><strong>firstname</strong> : <code>admin</code></li>
+        <li><strong>lastname</strong> : <code>admin</code></li>
         <li><strong>password</strong> : <code>admin</code></li>
         <li><strong>role/statut</strong> : <code>admin</code></li>
       </ul>
@@ -96,7 +97,6 @@
 // création table users (extrait)
 CREATE TABLE IF NOT EXISTS USERS (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  username TEXT UNIQUE,
   firstname TEXT,
   lastname TEXT,
   password TEXT,

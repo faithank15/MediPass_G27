@@ -50,7 +50,6 @@ Medecin::Medecin(MediPass* mp,sqlite3* db,std::string firstname,
             std::string specialite)
      : Pro_sante(mp, db, firstname,last_name,dateNaissance,password,active,telephone,created_by,created_at,"A2","medecin",specialite)
 {
-            std::cout << "[!]: Constructeur medecin atteint" << std::endl;
 
     if(!specialite_est_valide(specialite))
         throw Invalid{};
