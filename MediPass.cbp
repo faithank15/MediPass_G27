@@ -48,7 +48,6 @@
 		<Unit filename="include/infirmier.h" />
 		<Unit filename="include/medecin.h" />
 		<Unit filename="include/patient.h" />
-		<Unit filename="include/pharmacien.h" />
 		<Unit filename="include/profesionnel_de_sante.h" />
 		<Unit filename="include/utilisateur.h" />
 		<Unit filename="main.cpp" />
@@ -62,7 +61,6 @@
 		<Unit filename="src/infirmier.cpp" />
 		<Unit filename="src/medecin.cpp" />
 		<Unit filename="src/patient.cpp" />
-		<Unit filename="src/pharmacien.cpp" />
 		<Unit filename="src/profesionnel_de_sante.cpp" />
 		<Unit filename="src/utilisateur.cpp" />
 		<Extensions />
