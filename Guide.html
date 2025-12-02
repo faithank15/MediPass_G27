@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Guide d'utilisation étendu — MediPass</title>
+<style>
+  :root{
+    --bg:#f7fafc; --card:#fff; --muted:#6b7280; --accent:#2563eb; --accent-2:#0ea5a4; --hr:#e6eaf0;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+  body{margin:0;background:var(--bg);color:#0f172a;line-height:1.5}
+  header{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;padding:28px 20px}
+  header h1{margin:0;font-size:20px}
+  header p{margin:6px 0 0;color:rgba(255,255,255,0.95);font-size:13px}
+  .container{max-width:1000px;margin:20px auto;padding:0 16px}
+  nav.toc{background:var(--card);border:1px solid var(--hr);padding:14px;border-radius:10px;margin-bottom:16px;box-shadow:0 6px 20px rgba(2,6,23,0.04)}
+  nav.toc h2{margin:0 0 8px;font-size:16px}
+  nav.toc ul{margin:0;padding:0 0 0 18px;color:var(--muted)}
+  article.card{background:var(--card);border:1px solid var(--hr);padding:20px;border-radius:10px;box-shadow:0 6px 20px rgba(2,6,23,0.04)}
+  h2{color:#0f172a;margin-top:18px}
+  h3{margin-top:14px;color:#111827}
+  p.lead{color:var(--muted)}
+  pre, code{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; font-size:13px}
+  pre{background:#0b1220;color:#e6eef8;padding:12px;border-radius:8px;overflow:auto}
+  table{width:100%;border-collapse:collapse;margin:10px 0}
+  th,td{border:1px solid var(--hr);padding:8px;text-align:left}
+  .muted{color:var(--muted);font-size:14px}
+  .btn{display:inline-block;background:var(--accent);color:white;padding:8px 12px;border-radius:8px;text-decoration:none}
+  footer{margin:18px 0;color:var(--muted);font-size:13px}
+  @media (min-width:900px){
+    .layout{display:grid;grid-template-columns:260px 1fr;gap:16px}
+    nav.toc{position:sticky;top:18px;height:fit-content}
+  }
+  .warn {background:#fff7e6;border-left:4px solid #ffb020;padding:8px;border-radius:6px}
+  .ok {background:#ecfdf5;border-left:4px solid #10b981;padding:8px;border-radius:6px}
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <h1>MediPass — Guide d'utilisation étendu</h1>
+    <p>Mode d'emploi et procédures pour l'installation, le premier démarrage (DB absente), gestion des utilisateurs et bonnes pratiques.</p>
+  </div>
+</header>
+
+<div class="container layout">
+  <nav class="toc" aria-label="Table des matières">
+    <h2>Sommaire</h2>
+    <ul>
+      <li><a href="#intro">Introduction</a></li>
+      <li><a href="#first-run">Premier démarrage (DB manquante)</a></li>
+      <li><a href="#default-creds">Comportement mots de passe par défaut</a></li>
+      <li><a href="#roles">Fonctionnalités par rôle</a></li>
+      <li><a href="#dossier">Chargement des dossiers médicaux</a></li>
+      <li><a href="#sqlite-tips">Tips SQLite (foreign keys, last id, préparées)</a></li>
+      <li><a href="#security">Sécurité & bonnes pratiques</a></li>
+      <li><a href="#cross">Portabilité Windows / Linux</a></li>
+      <li><a href="#troubleshoot">Dépannage courant</a></li>
+      <li><a href="#support">Support</a></li>
+    </ul>
+  </nav>
+
+  <article class="card" role="article">
+
+    <section id="intro">
+      <h2>Introduction</h2>
+      <p class="lead">Ce guide détaille le comportement attendu de MediPass, en particulier le scénario où l'application est lancée sans base de données existante. Il explique aussi comment les mots de passe par défaut sont gérés, comment sécuriser le système et donne des snippets SQL/C++ pratiques.</p>
+    </section>
+
+    <section id="first-run">
+      <h2>Premier démarrage — base absente</h2>
+
+      <p>Lorsque MediPass démarre, il tente d'ouvrir la base SQLite configurée (par défaut : <code>medipass.db</code> ou chemin défini). Si le fichier de base n'existe pas ou si l'initialisation échoue, le comportement par défaut est :</p>
+
+      <ol>
+        <li>Créer la base SQLite et exécuter les scripts de création de tables (toutes les tables nécessaires : <code>USERS</code>, <code>DOSSIERS_MEDICAUX</code>, <code>CONSULTATIONS</code>, <code>EXAMENS</code>, <code>SOINS</code>, etc.).</li>
+        <li>Activer les contraintes de foreign key immédiatement :  
+          <pre>sqlite3_exec(db, "PRAGMA foreign_keys = ON;", NULL, NULL, NULL);</pre>
+        </li>
+        <li>Créer automatiquement un **compte administrateur par défaut** pour permettre la première connexion et configuration.</li>
+      </ol>
+
+      <h3>Compte administrateur par défaut (first-run)</h3>
+      <p class="warn"><strong>Comportement par défaut :</strong> si la DB n'existe pas, MediPass crée un admin par défaut dont les identifiants sont — <em>tels qu'ils ont été définis pour ton projet</em> — :</p>
+      <ul>
+        <li><strong>username</strong> : <code>admin</code></li>
+        <li><strong>password</strong> : <code>admin</code></li>
+        <li><strong>role/statut</strong> : <code>admin</code></li>
+      </ul>
+
+      <p>Le compte est créé avec des droits administrateurs complets. <span class="warn">Changez immédiatement ce mot de passe au premier login.</span></p>
+
+      <h3>Exemple SQL d'initialisation (pseudocode)</h3>
+      <pre>
+// création table users (extrait)
+CREATE TABLE IF NOT EXISTS USERS (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT UNIQUE,
+  firstname TEXT,
+  lastname TEXT,
+  password TEXT,
+  role TEXT,
+  active INTEGER DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+// si pas d'utilisateur admin existant -> créer admin par défaut
+INSERT INTO USERS (username, firstname, lastname, password, role)
+VALUES ('admin', 'Admin', 'Default', 'admin', 'admin');
+      </pre>
+
+      <p class="muted">Dans ton code, vérifie que le mot de passe est stocké de façon sécurisée (hashé). L'exemple ci-dessus est illustratif — il ne doit pas être utilisé en production tel quel.</p>
+    </section>
+
+    <section id="default-creds">
+      <h2>Comportement des mots de passe par défaut pour les nouveaux utilisateurs</h2>
+
+      <p>Règles opérationnelles configurées dans l'application :</p>
+      <ul>
+        <li>Quand un administrateur crée un nouvel utilisateur via l'interface, **le mot de passe par défaut attribué** est : <code>user</code>.</li>
+        <li>L'utilisateur doit être informé du mot de passe initial par l'admin (par exemple par email interne/secure message) et **forcé à changer** son mot de passe au premier login.</li>
+        <li>Procédure recommandée : lors du premier login, vérifier un flag <code>must_change_password</code> et envoyer l'utilisateur sur l'écran de changement de mot de passe avant tout autre accès.</li>
+      </ul>
+
+      <h3>Exemple : SQL pour créer un utilisateur avec mot de passe par défaut</h3>
+      <pre>
+INSERT INTO USERS (username, firstname, lastname, password, role, must_change_password)
+VALUES ('jdoe', 'John', 'Doe', 'user', 'patient', 1);
+      </pre>
+
+      <p class="warn">Important : <strong>ne stocke jamais les mots de passe en clair</strong>. Utilise bcrypt/Argon2 ou au minimum un sha256+salt adapté. Le guide ci-dessus utilise des valeurs "admin"/"user" pour l'exemple uniquement.</p>
+    </section>
+
+    <section id="roles">
+      <h2>Fonctionnalités par rôle (rappel)</h2>
+      <p class="muted">Synopsis rapide, plus détaillé dans la version précédente du guide.</p>
+      <ul>
+        <li><strong>Admin</strong> : gestion complète des utilisateurs, rôles, logs, création sauvegardes.</li>
+        <li><strong>Médecin</strong> : accès aux dossiers patients, ajouter consultations/examens.</li>
+        <li><strong>Infirmier</strong> : ajouter soins, observations.</li>
+        <li><strong>Secrétaire</strong> : gestion RDV, disponibilités.</li>
+        <li><strong>Patient</strong> : consultation de son dossier / RDV.</li>
+      </ul>
+    </section>
+
+    <section id="dossier">
+      <h2>Chargement dynamique du DossierMedical (implémentation)</h2>
+      <p>Comportement attendu : le constructeur <code>DossierMedical(MediPass* mp, sqlite3* db, int patientId, int dossierId)</code> charge automatiquement :</p>
+      <ul>
+        <li>heureCréation (colonne <code>created_at</code> dans <code>DOSSIERS_MEDICAUX</code>),</li>
+        <li>tous les <code>ANTECEDANTS</code> (vector),</li>
+        <li>toutes les <code>CONSULTATIONS</code> et pour chacune ses <code>EXAMENS</code>,</li>
+        <li>tous les <code>SOINS</code>.</li>
+      </ul>
+
+      <h3>Extraits C++ (utiliser prepared statements)</h3>
+      <pre>
+// récupérer created_at
+const char* sql = "SELECT created_at FROM DOSSIERS_MEDICAUX WHERE id = ?;";
+sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+sqlite3_bind_int(stmt, 1, dossierId);
+if (sqlite3_step(stmt) == SQLITE_ROW) {
+    heureCreation = reinterpret_cast<const char*>(sqlite3_column_text(stmt,0));
+}
+sqlite3_finalize(stmt);
+
+// récupérer antécédants
+const char* sql2 = "SELECT id, type, observations FROM ANTECEDANTS WHERE dossier_id = ?;";
+sqlite3_prepare_v2(db, sql2, -1, &stmt, NULL);
+sqlite3_bind_int(stmt, 1, dossierId);
+while (sqlite3_step(stmt) == SQLITE_ROW) {
+    Antecedant a;
+    a.id = sqlite3_column_int(stmt,0);
+    a.type = (const char*)sqlite3_column_text(stmt,1);
+    a.observations = (const char*)sqlite3_column_text(stmt,2);
+    antecedants.push_back(a);
+}
+sqlite3_finalize(stmt);
+      </pre>
+
+      <p class="muted">Utilise toujours <code>sqlite3_finalize()</code> après chaque <code>prepare</code> et vérifie le code de retour des appels SQLite.</p>
+    </section>
+
+    <section id="sqlite-tips">
+      <h2>Tips SQLite importants</h2>
+
+      <h3>Activer foreign keys</h3>
+      <pre>
+sqlite3_exec(db, "PRAGMA foreign_keys = ON;", NULL, NULL, NULL);
+      </pre>
+      <p class="muted">Doit être exécuté juste après <code>sqlite3_open()</code> sur chaque connexion.</p>
+
+      <h3>Récupérer l'ID de la dernière insertion</h3>
+      <pre>
+long id = sqlite3_last_insert_rowid(db);
+      </pre>
+      <p>Renvoie l'INTEGER PRIMARY KEY de la dernière insertion sur cette connexion.</p>
+
+      <h3>Préférer requêtes préparées</h3>
+      <p>Plutôt que de concaténer des strings SQL, utilisez :</p>
+      <pre>
+sqlite3_prepare_v2(db, "INSERT INTO users(username, password) VALUES(?,?);", -1, &stmt, NULL);
+sqlite3_bind_text(stmt,1, username.c_str(), -1, SQLITE_TRANSIENT);
+sqlite3_bind_text(stmt,2, hash.c_str(), -1, SQLITE_TRANSIENT);
+sqlite3_step(stmt);
+sqlite3_finalize(stmt);
+      </pre>
+
+      <h3>Utiliser sqlite3_mprintf en dernier recours</h3>
+      <pre>
+char* q = sqlite3_mprintf("INSERT INTO logs(msg) VALUES('%q');", message.c_str());
+sqlite3_exec(db, q, NULL, NULL, NULL);
+sqlite3_free(q);
+      </pre>
+      <p class="muted">%q échappe les apostrophes automatiquement.</p>
+    </section>
+
+    <section id="security">
+      <h2>Sécurité & bonnes pratiques</h2>
+
+      <h3>Mots de passe</h3>
+      <ul>
+        <li>Ne stocke jamais de mots de passe en clair : utilise hashing (bcrypt/Argon2 sinon PBKDF2+salt).</li>
+        <li>Forcer le changement du mot de passe par défaut au premier login (<code>must_change_password</code>).</li>
+      </ul>
+
+      <h3>Protections initiales</h3>
+      <ul>
+        <li>Après la première connexion admin, crée un compte administrateur réel et supprime/renomme le compte par défaut si tu l'as utilisé.</li>
+        <li>Limiter l'accès physiques/SSH au serveur contenant la DB.</li>
+      </ul>
+
+      <h3>Sauvegardes</h3>
+      <ul>
+        <li>Faire des dumps réguliers : <code>sqlite3 medipass.db .dump &gt; backup.sql</code></li>
+        <li>Conserver au moins 3 sauvegardes rotations (quotidienne/hebdo/mensuelle).</li>
+      </ul>
+
+      <h3>Autres recommandations techniques</h3>
+      <ul>
+        <li>Activer <code>PRAGMA foreign_keys = ON;</code> sur chaque connexion.</li>
+        <li>Utiliser des transactions (`BEGIN` / `COMMIT`) pour opérations multi-updates.</li>
+        <li>Vérifier les tailles et indices pour performances (indexer <code>patient_id</code>, <code>dossier_id</code>, <code>medecin_id</code>).</li>
+      </ul>
+    </section>
+
+    <section id="cross">
+      <h2>Portabilité Windows / Linux (Code::Blocks)</h2>
+
+      <h3>Include SQLite</h3>
+      <p>Dans le code :<br><code>#include &lt;sqlite3.h&gt;</code> — identique sur Linux et Windows.</p>
+
+      <h3>Linkage</h3>
+      <ul>
+        <li>Linux : installer <code>libsqlite3-dev</code> et linker avec <code>-lsqlite3</code>.</li>
+        <li>Windows : tu peux intégrer <code>sqlite3.c</code> + <code>sqlite3.h</code> directement au projet pour une portabilité maximale (pas besoin d'installer la lib).</li>
+      </ul>
+
+      <h3>Code::Blocks (conseil)</h3>
+      <ul>
+        <li>Ajoute le dossier <code>include/</code> dans « Search directories » → Compiler.</li>
+        <li>Si tu fournis <code>sqlite3.c</code> dans ton projet, ajoute-le aux sources (compile time).</li>
+      </ul>
+    </section>
+
+    <section id="troubleshoot">
+      <h2>Dépannage courant (extraits de l'historique du projet)</h2>
+
+      <h3>Problèmes SQL — syntax error near "NULLtype"</h3>
+      <p>Souvent dû à une virgule manquante entre deux colonnes. Exemple corrigé :</p>
+      <pre>
+"dossier_id INTEGER NOT NULL,"  -- note la virgule
+"type TEXT NOT NULL,"
+      </pre>
+
+      <h3>dynamic_cast échoue (source type is not polymorphic)</h3>
+      <p>Assure-toi que la classe de base a au moins une méthode virtuelle (par exemple <code>virtual ~User(){}</code>).</p>
+
+      <h3>Référence indéfinie au link time (undefined reference)</h3>
+      <p>Vérifie que la définition d'une méthode membre corresponde exactement à la déclaration (mêmes const, refs, ordre). Exemple :</p>
+      <pre>
+-- header :
+void getDisponibilites(sqlite3* db, int doc_id, const std::string& f, const std::string& l);
+
+// cpp :
+void Secretaire::getDisponibilites(sqlite3* db, int doc_id, const std::string& f, const std::string& l) { ... }
+      </pre>
+
+      <h3>Crash à l'instanciation de Medecin / Pro_sante (exception Invalid)</h3>
+      <p>Vérifie les index du tableau <code>creds</code> chargé depuis la DB : utiliser <code>creds.at(i)</code> et valider la taille <code>creds.size()</code> avant d'accéder aux éléments. Les erreurs de mapping champ → index sont la cause la plus fréquente.</p>
+
+      <h3>DB absent → création admin par défaut</h3>
+      <p>Si tu veux connaître l'endroit où le programme crée l'admin par défaut, recherche la routine d'initialisation qui exécute les scripts SQL de création puis vérifie la présence d'au moins un utilisateur admin ; si absent, INSERT admin par défaut.</p>
+
+    </section>
+
+    <section id="support">
+      <h2>Support & checklist avant mise en production</h2>
+      <ol>
+        <li>Changer immédiatement le mot de passe du compte admin par défaut.</li>
+        <li>Activer hashing sécurisé pour les mots de passe.</li>
+        <li>Configurer sauvegardes automatiques (cron ou service).</li>
+        <li>Limiter accès base via ACL / chiffrement disque si nécessaire.</li>
+        <li>Tester les migrations : s'assurer que la création automatique de tables couvre toutes les versions (migration scripts versionnés).</li>
+      </ol>
+
+      <p class="muted">Version du guide : 1.1 — mis à jour pour inclure le scénario "DB absente" et mots de passe par défaut.</p>
+    </section>
+
+    <footer>
+      <p class="muted">Ce guide est généré pour le projet MediPass (MediPass_G27). Adapte les exemples SQL/C++ à ta base réelle et remplace les mots de passe d'exemple par un système de hash sécurisé.</p>
+    </footer>
+  </article>
+</div>
+</body>
+</html>

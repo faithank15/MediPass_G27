@@ -79,7 +79,7 @@ public:
     std::string obtenir_specialite() const { return specialite; };
 
 private:
-    std::string specialite;
+
 };
 
 #endif

@@ -57,7 +57,7 @@ protected:
     sqlite3* db;
     std::string autorisation;
     std::string statut;
-    std::string speécialité;
+    std::string specialite;
 private:
 };
 

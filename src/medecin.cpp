@@ -50,8 +50,11 @@ Medecin::Medecin(MediPass* mp,sqlite3* db,std::string firstname,
             std::string specialite)
      : Pro_sante(mp, db, firstname,last_name,dateNaissance,password,active,telephone,created_by,created_at,"A2","medecin",specialite)
 {
+            std::cout << "[!]: Constructeur medecin atteint" << std::endl;
+
     if(!specialite_est_valide(specialite))
         throw Invalid{};
+
 }
 
 
@@ -311,7 +314,7 @@ bool Medecin::ajouter_disponibilite(sqlite3* db,
         return false;
     }
 
-    
+
     sqlite3_bind_int(stmt, 1, id_medecin);
     sqlite3_bind_int(stmt, 2, day);
     sqlite3_bind_text(stmt, 3, heure_start.c_str(), -1, SQLITE_TRANSIENT);
@@ -373,7 +376,7 @@ void Medecin::afficher_disponibilites()
         return;
     }
 
-    std::cout << "\n--- Disponibilités de " 
+    std::cout << "\n--- Disponibilités de "
               << firstname << " " << last_name << " ---\n";
 
     for(const auto& d : dispos){
@@ -399,7 +402,7 @@ void Medecin::afficher_patients() {
         // Construire un patient à partir de son ID
         Patient p(this->mp, this->db, patientId);
 
-        // Affichage lisible 
+        // Affichage lisible
         cout << i + 1 << ". "
              << p.getNomComplet() << "\n";
     }

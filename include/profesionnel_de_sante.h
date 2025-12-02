@@ -42,12 +42,7 @@ public:
 
 
 protected:
-    MediPass* mp;
-    sqlite3* db;
 
-    std::string autorisation;
-    std::string role;
-    std::string statut;
 
     std::vector<std::chrono::system_clock::time_point> liste_disponibilite;
     std::vector<int> patients_id;

@@ -2,6 +2,7 @@
 #include "globals.h"
 #include <sqlite3.h>
 #include "MediPass.h"
+#include <iostream>
 
 // constructeur vide utilisé par load_user()
 User::User()
@@ -30,9 +31,10 @@ User::User(MediPass* mp, sqlite3* db, const std::string& firstname,
       created_by(created_by),
       created_at(created_at),
       mp(mp),
-      db(db), autorisation(autorisation), statut(statut), speécialité(specialite)
+      db(db), autorisation(autorisation), statut(statut), specialite(specialite)
       {
-        
+            std::cout << "[!]: Constructeur user medecin atteint" << std::endl;
+
       }
 
 // Getters
