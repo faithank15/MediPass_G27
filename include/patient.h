@@ -24,6 +24,7 @@ public:
             const std::string created_at);
 
     int getId() const { return id; }
+    int getPatientId(int id);
     std::string getNomComplet() const { return this->firstname + " " + this->last_name; }
     std::string getDateNaissance() const { return dateNaissance; }
 

@@ -42,7 +42,7 @@ bool specialite_est_valide(const string& specialite)
 
 
 
-Medecin::Medecin(MediPass* mp,sqlite3* db,std::string firstname,
+Medecin::Medecin(MediPass* mp,sqlite3* db,int id,std::string firstname,
             std::string last_name,
             std::string dateNaissance,
             std::string password,
@@ -52,7 +52,7 @@ Medecin::Medecin(MediPass* mp,sqlite3* db,std::string firstname,
             std::string created_at,
             std::string autorisation,
             std::string specialite)
-     : Pro_sante(mp, db, firstname,last_name,dateNaissance,password,active,telephone,created_by,created_at,"A2","medecin",specialite)
+     : Pro_sante(mp, db, firstname,last_name,dateNaissance,password,active,telephone,created_by,created_at,"A2","medecin",specialite) ,id(id)
 {
 
     if(!specialite_est_valide(specialite))
@@ -172,12 +172,12 @@ bool Medecin::editer_dossier_medical(sqlite3* db, MediPass* mp, const string& fi
                 std::cout << "Type : ";
                 std::getline(std::cin, type);
 
-                dossier->ajouterAntecedent(Antecedant(id, desc, date, type));
+                dossier->ajouterAntecedent(Antecedant(id,type,date,desc));
                 break;
             }
 
             case 2: {
-                std::string motif, obs;
+                std::string motif, obs,prec;
                 std::cout << "Souhaitez vous lire le dossier médical d'abord ? Oui(o) ou Non(n) \n";
                 char r = ' ';
                 cin >> r;
@@ -191,12 +191,15 @@ bool Medecin::editer_dossier_medical(sqlite3* db, MediPass* mp, const string& fi
                 std::cout << "Observations : ";
                 std::getline(std::cin, obs);
 
+                std::cout << "Prescription : ";
+                std::getline(std::cin, prec);
+
                 // Une consultation devrait inclure médecin + examens + BD
-                Consultation c;
-                c.setMotif(motif);
-                c.setObservations(obs);
-                c.setPatientId(patient->getId());
-                c.setProId(this->getId());
+                Consultation c(mp, db, this,
+                                patient->getId(),
+                                motif,
+                                obs,
+                                prec);
 
 
                 // --- Ajouter des examens à la consultation ---
@@ -216,7 +219,7 @@ bool Medecin::editer_dossier_medical(sqlite3* db, MediPass* mp, const string& fi
 
                     std::cout << "Résultat : ";
                     std::getline(std::cin, resultat);
-                    Examen examen(dateExamen, typeExamen, resultat);
+                    Examen examen(db, c.id, mp->getDossierId(db,patient->getId()), dateExamen, typeExamen, resultat);
 
                     c.ajouter_examen(examen);                           // à nécessité une méthode ajouterExamen dans Consultation
 
@@ -241,61 +244,27 @@ bool Medecin::editer_dossier_medical(sqlite3* db, MediPass* mp, const string& fi
     return true;
 }
 
+bool Medecin::patientValide(int patient_id)
+{
+    string sql = "SELECT COUNT(*) FROM PATIENTS WHERE id = " + std::to_string(patient_id) + ";";
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        std::cerr << "Erreur lors de la préparation de la requête : " << sqlite3_errmsg(db) << std::endl;
+        return false;
+    }
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_ROW) {
+        std::cerr << "Erreur lors de l'exécution de la requête : " << sqlite3_errmsg(db) << std::endl;
+        sqlite3_finalize(stmt);
+        return false;
+    }
+    int count = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+    return count > 0;
+}
 
 // Cette méthode a été achevé
-bool Medecin::creer_consultation(
-                        sqlite3* db,
-                        MediPass* mp,
-                        const string& firstname,
-                        const string& last_name,
-                        const string& observations,
-                        const string& motif)
-
-{
-
-    vector<string> creds = mp->getUserCreds(db, firstname, last_name);
-    if (creds.empty()) { std::cerr << "Patient introuvable ou inactif.\n"; return false; }
-
-    Patient* patient = mp->load_patient(db, creds);
-
-
-    // 2. Créer la consultation
-    Consultation c(mp, db, this,
-                   patient->getId(),
-                   motif,
-                   observations);
-
-    // --- Ajouter des examens à la consultation ---
-        char choixExamen = 'n';
-        std::cout << "Ajouter un examen ? (o/n) : ";
-        std::cin >> choixExamen;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-        while (choixExamen == 'o' || choixExamen == 'O') {
-            std::string dateExamen, typeExamen, resultat;
-
-            std::cout << "Date de l'examen (JJ/MM/AAAA) : ";
-            std::getline(std::cin, dateExamen);
-
-            std::cout << "Type d'examen : ";
-            std::getline(std::cin, typeExamen);
-
-            std::cout << "Résultat : ";
-            std::getline(std::cin, resultat);
-            Examen examen(dateExamen, typeExamen, resultat);
-
-            c.ajouter_examen(examen);                           // à nécessité une méthode ajouterExamen dans Consultation
-
-                    std::cout << "Ajouter un autre examen ? (o/n) : ";
-                    std::cin >> choixExamen;
-                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        }
-
-    // 3. Ajouter la consultation au dossier médical du patient
-    patient->getDossierMedical()->ajouterConsultation(c);
-    delete patient;
-    return true;
-}
 
 bool Medecin::ajouter_disponibilite(sqlite3* db,
                                     int id_medecin,
@@ -475,7 +444,6 @@ void Medecin::ajouter_consultation_interactive() {
     std::cin >> choix;
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-    while (choix == 'o' || choix == 'O') {
 
         std::string date, typeExamen, resultat;
 
@@ -490,12 +458,11 @@ void Medecin::ajouter_consultation_interactive() {
         std::cout << "Résultat : ";
         std::getline(std::cin, resultat);
 
-        examens.emplace_back(date, typeExamen, resultat);
+        cout << "\n----------------\n";
 
-        std::cout << "Ajouter un autre examen ? (o/n) : ";
-        std::cin >> choix;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    }
+    std::string prescription;
+    std::cout << "Prescription : ";
+    std::getline(std::cin, prescription);
 
     // --- Création de la consultation ---
     Consultation nouvelleConsultation(
@@ -503,237 +470,596 @@ void Medecin::ajouter_consultation_interactive() {
         db,
         this,
         patient->getId(),
-        observations,
         motif,
+        observations,
+        prescription,
         examens
     );
+
+    examens.emplace_back(db, nouvelleConsultation.id, mp->getDossierId(db,patient->getId()), date, typeExamen, resultat);
 
     std::cout << "\nConsultation ajoutée avec succès pour le patient "
               << patient->getNomComplet() << ".\n";
 }
 
 
-void Medecin::exportDossiersCSV() {
+void Medecin::exportDossiersCSV(int patientId) {
 
-    std::string path = "./exported";  // Dossier d'exportation
-    // Créer le dossier s'il n'existe pas
-    if (!fs::exists(path)) {
-        fs::create_directory(path);
-    }
+    // -------------------------
+    // Vérifier l'existence du patient
+    // -------------------------
+    sqlite3_stmt* stmtUser = nullptr;
+    const char* sqlUser =
+        "SELECT u.firstname, u.last_name "
+        "FROM PATIENTS p "
+        "JOIN USERS u ON p.patient_user_id = u.id "
+        "WHERE p.id = ? AND u.is_active = 1;";
 
-    std::cout << "Veuillez renseigner l'ID du patient dont vous souhaitez exporter le dossier medical : ";
-    int patientId;
-    std::cin >> patientId;
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-    std::vector<string> patientNames;
-    string sql = "SELECT firstname, last_name FROM USERS WHERE id = " + std::to_string(patientId) + " AND is_active = 1;";
-    sqlite3_stmt* stmt;
-    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
-        std::cerr << "Erreur SQL : " << sqlite3_errmsg(db) << std::endl;
+    if (sqlite3_prepare_v2(db, sqlUser, -1, &stmtUser, nullptr) != SQLITE_OK) {
+        std::cerr << "Erreur SQL (patient lookup): " << sqlite3_errmsg(db) << std::endl;
         return;
     }
 
-    patientNames.push_back(""); // firstname
-    patientNames.push_back(""); // last_name
-    sqlite3_step(stmt);
-    patientNames[0] = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
-    patientNames[1] = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
-    sqlite3_finalize(stmt);
-    sqlite3_reset(stmt);
+    sqlite3_bind_int(stmtUser, 1, patientId);
 
-    std::vector<string> creds = mp->getUserCreds(db, patientNames[0], patientNames[1]);
-    if (creds.empty()) {
-        std::cerr << "Patient introuvable ou inactif.\n";
+    if (sqlite3_step(stmtUser) != SQLITE_ROW) {
+        std::cerr << "Patient introuvable ou inactif." << std::endl;
+        sqlite3_finalize(stmtUser);
         return;
     }
 
-    std::string filename = path + "/dossiers_export_" + std::to_string(patientId) + ".csv";
-    std::ofstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "[!] Impossible d'ouvrir le fichier pour l'écriture.\n";
+    std::string firstname = (const char*)sqlite3_column_text(stmtUser, 0);
+    std::string lastname  = (const char*)sqlite3_column_text(stmtUser, 1);
+
+    sqlite3_finalize(stmtUser);
+
+    // -------------------------
+    // Créer fichier CSV
+    // -------------------------
+    std::string filename =
+        "./export/dossier_" + std::to_string(patientId) + ".csv";
+
+    std::filesystem::create_directories("./export");
+    std::ofstream out(filename);
+
+    if (!out.is_open()) {
+        std::cerr << "Impossible d'écrire dans " << filename << "\n";
         return;
     }
 
-    file << "DossierID,CreatedAt,Antecedants,Consultations,Examens,Soins\n";
+    auto csv = [&](const std::string& s) {
+        if (s.find(';') != std::string::npos ||
+            s.find('"') != std::string::npos)
+            return "\"" + s + "\"";
+        return s;
+    };
 
-    sql = "SELECT id, patient_id, created_at FROM DOSSIERS_MEDICAUX"
-          " WHERE patient_id = " + std::to_string(patientId) + ";";
+    // -------------------------
+    // ENTÊTE PATIENT
+    // -------------------------
+    out << patientId << ";" << csv(lastname) << ";" << csv(firstname) << "\n\n";
 
 
-    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
-        std::cerr << "Erreur SQL : " << sqlite3_errmsg(db) << std::endl;
-        return;
+    // =======================================================================================
+    //  SECTION 1 — ANTECEDENTS
+    // =======================================================================================
+    out << "# ANTECEDENTS\n";
+    out << "type;observations\n";
+
+    sqlite3_stmt* stmtAnte = nullptr;
+    const char* sqlAnte =
+        "SELECT type, observations "
+        "FROM ANTECEDANTS "
+        "WHERE dossier_id IN (SELECT id FROM DOSSIERS_MEDICAUX WHERE patient_id = ?);";
+
+    sqlite3_prepare_v2(db, sqlAnte, -1, &stmtAnte, nullptr);
+    sqlite3_bind_int(stmtAnte, 1, patientId);
+
+    while (sqlite3_step(stmtAnte) == SQLITE_ROW) {
+        std::string type   = (const char*)sqlite3_column_text(stmtAnte, 0);
+        std::string obs    = (const char*)sqlite3_column_text(stmtAnte, 1);
+        out << csv(type) << ";" << csv(obs) << "\n";
     }
+    sqlite3_finalize(stmtAnte);
 
-    while (sqlite3_step(stmt) == SQLITE_ROW) {
-        int dossierId = sqlite3_column_int(stmt, 0);
-        std::string created_at = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+    out << "FIN_ANTECEDENTS\n\n";
 
-        auto concatChamp = [&](const char* table, const char* champ) {
-            sqlite3_stmt* s;
-            std::string result;
-            std::string q = "SELECT " + std::string(champ) + " FROM " + std::string(table) +
-                            " WHERE dossier_id=" + std::to_string(dossierId) + ";";
-            if (sqlite3_prepare_v2(db, q.c_str(), -1, &s, nullptr) == SQLITE_OK) {
-                while (sqlite3_step(s) == SQLITE_ROW) {
-                    const unsigned char* txt = sqlite3_column_text(s, 0);
-                    if (txt) result += std::string(reinterpret_cast<const char*>(txt)) + "|";
-                }
-            }
-            sqlite3_finalize(s);
-            if (!result.empty()) result.pop_back();
-            return result;
-        };
 
-        std::string antecedants   = concatChamp("ANTECEDANTS", "type");
-        std::string consultations = concatChamp("CONSULTATIONS", "notes");
-        std::string examens       = concatChamp("EXAMENS", "type");
-        std::string soins         = concatChamp("SOINS", "description");
+    // =======================================================================================
+    //  SECTION 2 — CONSULTATIONS
+    // =======================================================================================
+    out << "# CONSULTATIONS\n";
+    out << "notes\n";
 
-        file << dossierId << "," << created_at << ","
-             << "\"" << antecedants << "\","
-             << "\"" << consultations << "\","
-             << "\"" << examens << "\","
-             << "\"" << soins << "\"\n";
+    sqlite3_stmt* stmtCons = nullptr;
+    const char* sqlCons =
+        "SELECT id, notes FROM CONSULTATIONS "
+        "WHERE dossier_id IN (SELECT id FROM DOSSIERS_MEDICAUX WHERE patient_id = ?);";
+
+    sqlite3_prepare_v2(db, sqlCons, -1, &stmtCons, nullptr);
+    sqlite3_bind_int(stmtCons, 1, patientId);
+
+    std::vector<int> consultationIds;
+
+    while (sqlite3_step(stmtCons) == SQLITE_ROW) {
+        int cId = sqlite3_column_int(stmtCons, 0);
+        consultationIds.push_back(cId);
+
+        std::string notes = (const char*)sqlite3_column_text(stmtCons, 1);
+        out << csv(notes) << "\n";
     }
+    sqlite3_finalize(stmtCons);
 
-    sqlite3_finalize(stmt);
-    file.close();
-    std::cout << "[+] Export terminé : " << filename << std::endl;
+    out << "FIN_CONSULTATIONS\n\n";
+
+
+    // =======================================================================================
+    //  SECTION 3 — EXAMENS
+    // =======================================================================================
+    out << "# EXAMENS\n";
+    out << "type;results;consultation_index\n";
+
+    sqlite3_stmt* stmtExam = nullptr;
+    const char* sqlExam =
+        "SELECT type, results, consultation_id "
+        "FROM EXAMENS "
+        "WHERE dossier_id IN (SELECT id FROM DOSSIERS_MEDICAUX WHERE patient_id = ?);";
+
+    sqlite3_prepare_v2(db, sqlExam, -1, &stmtExam, nullptr);
+    sqlite3_bind_int(stmtExam, 1, patientId);
+
+    while (sqlite3_step(stmtExam) == SQLITE_ROW) {
+
+        std::string type   = (const char*)sqlite3_column_text(stmtExam, 0);
+        std::string res    = (const char*)sqlite3_column_text(stmtExam, 1);
+        int cID            = sqlite3_column_int(stmtExam, 2);
+
+        // calcul de l’index de la consultation
+        int index = 0;
+        for (size_t i = 0; i < consultationIds.size(); ++i)
+            if (consultationIds[i] == cID) index = i + 1;
+
+        out << csv(type) << ";" << csv(res) << ";" << index << "\n";
+    }
+    sqlite3_finalize(stmtExam);
+
+    out << "FIN_EXAMENS\n\n";
+
+
+    // =======================================================================================
+    //  SECTION 4 — SOINS
+    // =======================================================================================
+    out << "# SOINS\n";
+    out << "description;date;infirmier_id\n";
+
+    sqlite3_stmt* stmtSoins = nullptr;
+    const char* sqlSoins =
+        "SELECT description, date, infirmier_id "
+        "FROM SOINS "
+        "WHERE dossier_id IN (SELECT id FROM DOSSIERS_MEDICAUX WHERE patient_id = ?);";
+
+    sqlite3_prepare_v2(db, sqlSoins, -1, &stmtSoins, nullptr);
+    sqlite3_bind_int(stmtSoins, 1, patientId);
+
+    while (sqlite3_step(stmtSoins) == SQLITE_ROW) {
+
+        std::string desc = (const char*)sqlite3_column_text(stmtSoins, 0);
+        std::string date = (const char*)sqlite3_column_text(stmtSoins, 1);
+
+        int infID;
+        if (sqlite3_column_type(stmtSoins, 2) == SQLITE_NULL)
+            infID = -1;
+        else
+            infID = sqlite3_column_int(stmtSoins, 2);
+
+        out << csv(desc) << ";" << csv(date) << ";";
+        if (infID == -1) out << "";
+        else out << infID;
+        out << "\n";
+    }
+    sqlite3_finalize(stmtSoins);
+
+    out << "FIN_SOINS\n\n";
+
+    out.close();
+
+    std::cout << "[✔] Export terminé : " << filename << std::endl;
 }
 
 
 
 void Medecin::importDossiersCSV() {
 
-    std::string path = "./import";  // Chemin du dossier à lire
+    std::string path = "./import";
 
-    // Vérifier si le dossier existe
     if (!fs::exists(path) || !fs::is_directory(path)) {
-        std::cout << "Dossier introuvable !" << std::endl;
-        return;
-    }
-    // Lister les fichiers CSV dans le dossier
-    std::vector<fs::path> csvFiles;
-    for (const auto& entry : fs::directory_iterator(path)) {
-        if (entry.path().extension() == ".csv") {
-            csvFiles.push_back(entry.path());
-        }
-    }
-
-    if (csvFiles.empty()) {
-        std::cout << "Aucun fichier CSV trouvé dans le dossier." << std::endl;
+        std::cout << "Dossier d'import introuvable." << std::endl;
         return;
     }
 
-    std::cout << "Fichiers CSV disponibles pour l'importation :\n";
-    for (size_t i = 0; i < csvFiles.size(); ++i) {
-        std::cout << i + 1 << ". " << csvFiles[i].filename().string() << "\n";
+    // ----------------------------------------------------
+    // 1. Sélection du fichier CSV
+    // ----------------------------------------------------
+    std::vector<fs::path> files;
+    for (auto &e : fs::directory_iterator(path)) {
+        if (e.path().extension() == ".csv")
+            files.push_back(e.path());
     }
+
+    if (files.empty()) {
+        std::cout << "Aucun fichier CSV trouvé.\n";
+        return;
+    }
+
+    std::cout << "Fichiers détectés : \n";
+    for (size_t i = 0; i < files.size(); i++)
+        std::cout << i + 1 << ". " << files[i].filename().string() << "\n";
 
     int choice;
-    std::cout << "Choisissez un fichier à importer (entrez le numéro) : ";
+    std::cout << "Choisissez un fichier : ";
     std::cin >> choice;
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cin.ignore();
 
-
-    if (choice < 1 || choice > static_cast<int>(csvFiles.size())) {
-        std::cerr << "Choix invalide. Import annulé." << std::endl;
+    if (choice < 1 || choice > (int)files.size()) {
+        std::cout << "Choix invalide." << std::endl;
         return;
     }
 
-    std::string filename = csvFiles[choice - 1].string();
+    std::string filename = files[choice - 1].string();
 
     std::ifstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "[!] Impossible d'ouvrir le fichier pour lecture.\n";
+        std::cerr << "Impossible d'ouvrir le fichier.\n";
         return;
     }
 
-    std::string line;
-    std::getline(file, line); // ignorer l'entête
-
-    // Demander le patient
+    cout << "Veuillez préciser l'ID du patient pour l'importation : ";
     int patientId;
-    std::cout << "Entrez le matricule (ID du patient) pour lequel importer les dossiers : ";
-    std::cin >> patientId;
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-    std::vector<string> patientNames;
-    string sql = "SELECT firstname, last_name FROM USERS WHERE id = " + std::to_string(patientId) + " AND is_active = 1;";
-    sqlite3_stmt* stmt;
-    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
-        std::cerr << "Erreur SQL : " << sqlite3_errmsg(db) << std::endl;
+    cin >> patientId;
+    cin.ignore();
+    if (!patientValide(patientId)) {
+        std::cerr << "ID patient invalide.\n";
         return;
     }
 
-    patientNames.push_back(""); // firstname
-    patientNames.push_back(""); // last_name
-    sqlite3_step(stmt);
-    patientNames[0] = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
-    patientNames[1] = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+
+    // ----------------------------------------------------
+    // 2. Parseur CSV simple avec gestion des guillemets
+    // ----------------------------------------------------
+    auto parseCSV = [&](const std::string& line) {
+        std::vector<std::string> fields;
+        std::string cur;
+        bool inQuotes = false;
+
+        for (char c : line) {
+            if (c == '"') {
+                inQuotes = !inQuotes;
+            }
+            else if (c == ';' && !inQuotes) {
+                fields.push_back(cur);
+                cur.clear();
+            }
+            else {
+                cur.push_back(c);
+            }
+        }
+        fields.push_back(cur);
+
+        // enlever les guillemets autour
+        for (auto &f : fields)
+            if (f.size() >= 2 && f.front() == '"' && f.back() == '"')
+                f = f.substr(1, f.size() - 2);
+
+        return fields;
+    };
+
+
+    // ----------------------------------------------------
+    // 3. Lire l’en-tête du fichier
+    // ----------------------------------------------------
+    std::string line;
+
+    if (!std::getline(file, line)) {
+        std::cerr << "Fichier vide.\n";
+        return;
+    }
+
+    auto header = parseCSV(line);
+
+    if (header.size() < 2) {
+        std::cerr << "En-tête CSV invalide.\n";
+        return;
+    }
+
+    std::getline(file, line);
+    auto patientRow = parseCSV(line);
+
+    //int csvPatientId = std::stoi(patientRow[0]);
+    std::string csvLastname = patientRow[1];
+    std::string csvFirstname = patientRow[2];
+
+
+    // ----------------------------------------------------
+    // 4. Vérifier la correspondance patient
+    // ----------------------------------------------------
+    sqlite3_stmt* stmt = nullptr;
+
+    const char* sql =
+        "SELECT firstname, last_name "
+        "FROM USERS WHERE id = ?";
+
+    sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+    sqlite3_bind_int(stmt, 1, mp->getUserId(db, patientId));
+
+    if (sqlite3_step(stmt) != SQLITE_ROW) {
+        std::cerr << "Patient inexistant.\n";
+        sqlite3_finalize(stmt);
+        return;
+    }
+
+    std::string dbFirstname = (const char*)sqlite3_column_text(stmt, 0);
+    std::string dbLastname  = (const char*)sqlite3_column_text(stmt, 1);
     sqlite3_finalize(stmt);
 
-
-    // Vérifier qu'il s'agit du bon patient
-    std::vector<string> creds = mp->getUserCreds(db, patientNames[0], patientNames[1]);
-    if (creds.empty()) {
-        std::cerr << "Patient introuvable ou inactif.\n";
+    cout << "\n\nS'agit -il bien du patient "
+         << dbFirstname << " " << dbLastname << " ? (o/n) : ";
+    char confirm; std::cin >> confirm;
+    if (confirm != 'o' && confirm != 'O') {
+        std::cout << "Importation annulée par l'utilisateur.\n";
         return;
     }
 
-    while (std::getline(file, line)) {
-        std::stringstream ss(line);
-        std::string dummyPatientIdStr, dossierIdStr, created_at, antecedants, consultations, examens, soins;
-
-        std::getline(ss, dummyPatientIdStr, ','); // Ignorer l'ID du patient du CSV
-        std::getline(ss, dossierIdStr, ',');
-        std::getline(ss, created_at, ',');
-        std::getline(ss, antecedants, ',');
-        std::getline(ss, consultations, ',');
-        std::getline(ss, examens, ',');
-        std::getline(ss, soins, ',');
-
-
-
-        // Créer un nouveau dossier (toujours auto-increment pour éviter les conflits)
-        std::string sql = sqlite3_mprintf("INSERT INTO DOSSIERS_MEDICAUX (patient_id, created_at) VALUES (%d, '%q');",
-                          patientId, created_at.c_str());
-        char* errMsg = nullptr;
-        if (sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
-            std::cerr << "Erreur SQL : " << errMsg << std::endl;
-            sqlite3_free(errMsg);
-            continue;
-        }
-
-        int dossierId = (int)sqlite3_last_insert_rowid(db);
-
-        auto insererLignes = [&](const std::string& table, const std::string& champ, const std::string& valeurs) {
-            std::stringstream ss_val(valeurs);
-            std::string item;
-            while (std::getline(ss_val, item, '|')) {
-                if (!item.empty()) {
-                    std::string sql2 = "INSERT INTO " + table + " (dossier_id, " + champ + ") VALUES (" +
-                        std::to_string(dossierId) + ", '" + item + "');";
-                    sqlite3_exec(db, sql2.c_str(), nullptr, nullptr, nullptr);
-                }
-            }
-        };
-
-        insererLignes("ANTECEDANTS", "type", antecedants);
-        insererLignes("CONSULTATIONS", "notes", consultations);
-        insererLignes("EXAMENS", "type", examens);
-        insererLignes("SOINS", "description", soins);
+    if (dbFirstname != csvFirstname || dbLastname != csvLastname) {
+        std::cout << "[!] Le fichier ne correspond pas au patient réel.\n"
+                  << "Fichier: " << csvFirstname << " " << csvLastname << "\n"
+                  << "Base:   " << dbFirstname  << " " << dbLastname  << "\n"
+                  << "Continuer l'import ? (o/n) : ";
+        char c; std::cin >> c;
+        if (c != 'o' && c != 'O') return;
     }
 
-    fs::remove(filename); // Supprimer le fichier après importation
+
+    // ----------------------------------------------------
+    // 5. Créer Dossier Médical
+    // ----------------------------------------------------
+    int dossierId = mp->getDossierId(db,patientId);
+
+    // Pour associer examens → consultations
+    std::vector<int> createdConsultIds;
+
+
+    // ----------------------------------------------------
+    // 6. Parcours du reste du fichier section par section
+    // ----------------------------------------------------
+    enum Section { NONE, ANTE, CONS, EXAM, SOIN };
+    Section current = NONE;
+
+    bool firstLine = true;
+
+    while (std::getline(file, line)) {
+
+        if (line.empty()) continue;
+
+        if (line == "# ANTECEDENTS") { current = ANTE; std::getline(file, line); if(firstLine){std::getline(file, line); firstLine = false;} continue; }
+        if (line == "FIN_ANTECEDENTS") { current = NONE; firstLine = true;continue; }
+
+        if (line == "# CONSULTATIONS") { current = CONS; std::getline(file, line);if(firstLine){std::getline(file, line); firstLine = false;} continue; }
+        if (line == "FIN_CONSULTATIONS") { current = NONE; firstLine = true; continue; }
+
+        if (line == "# EXAMENS") { current = EXAM; std::getline(file, line); if(firstLine){std::getline(file, line); firstLine = false;} continue; }
+        if (line == "FIN_EXAMENS") { current = NONE; firstLine = true; continue; }
+        if (line == "# SOINS") { current = SOIN; std::getline(file, line); if(firstLine){std::getline(file, line); firstLine = false;} continue; }
+        if (line == "FIN_SOINS") { current = NONE; firstLine = true; continue; }
+
+
+        // -----------------------
+        // SECTION ANTECEDENTS
+        // -----------------------
+        if (current == ANTE) {
+            auto f = parseCSV(line);
+            if (f.size() < 2) continue;
+
+            const char* sqlA =
+                "INSERT INTO ANTECEDANTS (dossier_id, type, observations) "
+                "VALUES (?,?,?);";
+
+            sqlite3_stmt* st;
+            sqlite3_prepare_v2(db, sqlA, -1, &st, nullptr);
+            sqlite3_bind_int(st, 1, dossierId);
+            sqlite3_bind_text(st, 2, f[0].c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(st, 3, f[1].c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_step(st);
+            sqlite3_finalize(st);
+        }
+
+
+        // -----------------------
+        // SECTION CONSULTATIONS
+        // -----------------------
+        if (current == CONS) {
+
+            auto f = parseCSV(line);
+            if (f.size() < 7) continue;
+
+            int f_dossier_id      = std::stoi(f[0]);
+            int f_prof_id         = std::stoi(f[1]);
+            int f_patient_id      = std::stoi(f[2]);
+            std::string f_date    = f[3];
+            std::string f_motif   = f[4];
+            std::string f_obs     = f[5];
+            std::string f_presc   = f[6];
+
+            const char* sqlC =
+                "INSERT INTO CONSULTATIONS "
+                "(dossier_id, professionnel_id, patient_id, date_et_heure, motif, observations, prescription) "
+                "VALUES (?,?,?,?,?,?,?);";
+
+            sqlite3_stmt* st;
+            sqlite3_prepare_v2(db, sqlC, -1, &st, nullptr);
+
+            sqlite3_bind_int(st, 1, dossierId);               // remplace le dossier_id du CSV
+            sqlite3_bind_int(st, 2, f_prof_id);
+            sqlite3_bind_int(st, 3, patientId);
+            sqlite3_bind_text(st, 4, f_date.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(st, 5, f_motif.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(st, 6, f_obs.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(st, 7, f_presc.c_str(), -1, SQLITE_TRANSIENT);
+
+            sqlite3_step(st);
+            sqlite3_finalize(st);
+
+            // pour EXAMENS plus tard
+            int consId = sqlite3_last_insert_rowid(db);
+            createdConsultIds.push_back(consId);
+        }
+
+
+        // -----------------------
+        // SECTION EXAMENS
+        // -----------------------
+        if (current == EXAM) {
+
+            auto f = parseCSV(line);
+            if (f.size() < 5) continue;
+
+            sqlite3_stmt* st = nullptr;
+
+            const char* sqlE =
+                "INSERT INTO EXAMENS "
+                "(consultation_id, dossier_id, type, results, date) "
+                "VALUES (?,?,?,?,?);";
+
+            sqlite3_prepare_v2(db, sqlE, -1, &st, nullptr);
+
+            sqlite3_bind_int(st, 1, std::stoi(f[0]));   // consultation_id
+            sqlite3_bind_int(st, 2, std::stoi(f[1]));   // dossier_id
+            sqlite3_bind_text(st, 3, f[2].c_str(), -1, SQLITE_TRANSIENT); // type
+            sqlite3_bind_text(st, 4, f[3].c_str(), -1, SQLITE_TRANSIENT); // results
+            sqlite3_bind_text(st, 5, f[4].c_str(), -1, SQLITE_TRANSIENT); // date
+
+            sqlite3_step(st);
+            sqlite3_finalize(st);
+        }
+
+
+        // -----------------------
+        // SECTION SOINS
+        // -----------------------
+        if (current == SOIN) {
+
+            auto f = parseCSV(line);
+            if (f.size() < 4) continue;
+
+            int f_dossier_csv   = std::stoi(f[0]);
+            std::string f_type  = f[1];
+            std::string f_date  = f[2];
+            std::string f_infid = f[3];
+
+            const char* sqlS =
+                "INSERT INTO SOINS (dossier_id, type, description, date, infirmier_id) "
+                "VALUES (?,?,?,?,?);";
+
+            sqlite3_stmt* st;
+            sqlite3_prepare_v2(db, sqlS, -1, &st, nullptr);
+
+            sqlite3_bind_int(st, 1, dossierId);           // ignore dossier CSV
+            sqlite3_bind_text(st, 2, f_type.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(st, 3, f_type.c_str(), -1, SQLITE_TRANSIENT); // description = type
+            sqlite3_bind_text(st, 4, f_date.c_str(), -1, SQLITE_TRANSIENT);
+
+            if (f_infid.empty())
+                sqlite3_bind_null(st, 5);
+            else
+                sqlite3_bind_int(st, 5, std::stoi(f_infid));
+
+            sqlite3_step(st);
+            sqlite3_finalize(st);
+        }
+
+    }
 
     file.close();
-    std::cout << "[+] Import terminé pour le patient ID " << patientId << std::endl;
+    fs::remove(filename);
+
+    std::cout << "[+] Import terminé avec succès.\n";
 }
 
 
+void Medecin::prendreEnChargePatient() {
+
+    int patient_id;
+    std::cout << "Entrez le patient ID du patient à prendre en charge : ";
+    std::cin >> patient_id;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    if(!patientValide(patient_id)){
+        std::cerr << "Erreur : patient invalide ou non attribué à ce professionnel.\n";
+        return;
+    }
+
+    const char* sql =
+        "INSERT INTO PRIS_EN_CHARGE (professionnel_id, patient_id) "
+        "VALUES (?, ?);";
+
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+
+    if(rc != SQLITE_OK){
+        std::cerr << "Erreur prepare: " << sqlite3_errmsg(db) << std::endl;
+        return;
+    }
+
+    sqlite3_bind_int(stmt, 1, this->getId());
+    sqlite3_bind_int(stmt, 2, patient_id);
+
+    rc = sqlite3_step(stmt);
+
+    if(rc != SQLITE_DONE){
+        std::cerr << "Erreur insert: " << sqlite3_errmsg(db) << std::endl;
+        sqlite3_finalize(stmt);
+        return;
+    }
+
+    sqlite3_finalize(stmt);
+
+    patients_id.emplace_back(mp, db, patient_id);
+}
+
+void Medecin::libererPatient() {
+
+    int patient_id;
+    std::cout << "\nVoici la liste de vos patients actuels :\n";
+    afficher_patients();
+    std::cout << "\nEntrez le patient ID du patient à libérer de votre prise en charge : ";
+    std::cin >> patient_id;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    const char* sql =
+        "DELETE FROM PRIS_EN_CHARGE "
+        "WHERE professionnel_id = ? AND patient_id = ?;";
+
+    sqlite3_stmt* stmt;
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+
+    if(rc != SQLITE_OK){
+        std::cerr << "Erreur prepare: " << sqlite3_errmsg(db) << std::endl;
+        return;
+    }
+
+    sqlite3_bind_int(stmt, 1, this->getId());
+    sqlite3_bind_int(stmt, 2, patient_id);
+
+    rc = sqlite3_step(stmt);
+
+    if(rc != SQLITE_DONE){
+        std::cerr << "Erreur delete: " << sqlite3_errmsg(db) << std::endl;
+        sqlite3_finalize(stmt);
+        return;
+    }
+
+    sqlite3_finalize(stmt);
+    patients_id.erase(std::remove(patients_id.begin(), patients_id.end(), patient_id), patients_id.end());
+}
 
 void Medecin::afficher_infos_professionnelles() {
     cout << "\n--- Vos informations professionnelles ---\n";
@@ -742,6 +1068,28 @@ void Medecin::afficher_infos_professionnelles() {
     cout << "Autorisation : " << obtenir_autorisation() << "\n";
     cout << "Statut : " << obtenir_statut() << "\n";
     cout << "Actif : " << (isActive() ? "Oui" : "Non") << "\n";
+}
+
+void Medecin::enregistrerDisponibilites() {
+    int day;
+    std::string heure_start, heure_end;
+
+    std::cout << "\n--- Enregistrement de disponibilités ---\n";
+    std::cout << "Entrez le jour de la semaine (0=Dimanche, 1=Lundi, ..., 6=Samedi) : ";
+    std::cin >> day;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    std::cout << "Heure de début (HH:MM) : ";
+    std::getline(std::cin, heure_start);
+
+    std::cout << "Heure de fin (HH:MM) : ";
+    std::getline(std::cin, heure_end);
+
+    if (ajouter_disponibilite(db, this->getId(), day, heure_start, heure_end)) {
+        std::cout << "Disponibilité enregistrée avec succès.\n";
+    } else {
+        std::cout << "Erreur lors de l'enregistrement de la disponibilité.\n";
+    }
 }
 
 void Medecin::menu() {
@@ -756,13 +1104,16 @@ void Medecin::menu() {
              << " | Autorisation : " << obtenir_autorisation() << "\n";
         cout << "------------------------------\n";
         cout << "1. Voir la liste de mes patients\n";
-        cout << "2. Voir mes disponibilités\n";
-        cout << "3. Créer une consultation\n";
-        cout << "4. Voir mes informations professionnelles\n";
-        cout << "5. Lire le dossier medical d'un patient\n";
-        cout << "6. Export CSV des dossiers médicaux\n";
-        cout << "7. Import CSV des dossiers médicaux\n";
-        cout << "0. Se déconnecter / Quitter\n";
+        cout << "2. Enregistrer mes disponibilites\n";
+        cout << "3. Voir mes disponibilites\n";
+        cout << "4. Créer une consultation\n";
+        cout << "5. Voir mes informations professionnelles\n";
+        cout << "6. Prendre en charge un patient\n";
+        cout << "7. Libérer un patient\n";
+        cout << "8. Lire le dossier medical d'un patient\n";
+        cout << "9. Export CSV des dossiers médicaux\n";
+        cout << "10. Import CSV des dossiers médicaux\n";
+        cout << "0. Se deconnecter / Quitter\n";
         cout << "------------------------------\n";
         cout << "Votre choix : ";
 
@@ -772,7 +1123,7 @@ void Medecin::menu() {
         if (cin.fail()) {
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "Entrée invalide. Veuillez réessayer.\n";
+            cout << "Entree invalide. Veuillez reessayer.\n";
             continue;
         }
 
@@ -782,25 +1133,49 @@ void Medecin::menu() {
                 break;
 
             case 2:
-                afficher_disponibilites();
+                enregistrerDisponibilites();
                 break;
 
             case 3:
-                ajouter_consultation_interactive();
+                afficher_disponibilites();
                 break;
 
             case 4:
-                afficher_infos_professionnelles();
+                ajouter_consultation_interactive();
                 break;
 
             case 5:
-                lire_dossier_medical_interactive();
+                afficher_infos_professionnelles();
                 break;
+
             case 6:
-                exportDossiersCSV();
+                prendreEnChargePatient();
                 break;
 
             case 7:
+                libererPatient();
+                break;
+
+            case 8:
+                lire_dossier_medical_interactive();
+                break;
+
+            case 9:
+
+                cout << "Veuillez préciser l'ID du patient pour l'exportation : ";
+                int patientIdExport;
+                cin >> patientIdExport;
+                cin.ignore();
+
+                if (!patientValide(patientIdExport)) {
+                    std::cerr << "ID patient invalide.\n";
+                    break;
+                }
+
+                exportDossiersCSV(patientIdExport);
+                break;
+
+            case 10:
                 importDossiersCSV();
                 break;
 

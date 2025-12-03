@@ -28,9 +28,9 @@ Soin::Soin(MediPass* mp,sqlite3* db, Infirmier* infirmier,
     );
 
     sqlite3_exec(db,
-        sqlite3_mprintf("INSERT INTO SOINS (dossier_id, description, date, infirmier_id) "
-                        "VALUES (%d, '%q', '%q', %d);",
-                        dossier_id, description.c_str(), this->date.c_str(), this->infirmier_id),
+        sqlite3_mprintf("INSERT INTO SOINS (dossier_id, type, description, date, infirmier_id) "
+                        "VALUES (%d, '%q', '%q', '%q', %d);",
+                        dossier_id, type.c_str(), description.c_str(), this->date.c_str(), this->infirmier_id),
         nullptr, nullptr, nullptr);
 }
 

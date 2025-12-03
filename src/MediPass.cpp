@@ -315,10 +315,21 @@ std::string MediPass::create_db(sqlite3* db)
          "FOREIGN KEY(patient_id) REFERENCES patients(id) ON DELETE SET NULL ON UPDATE CASCADE"
          ");"
         },
+        {"PRIS_EN_CHARGE",
+         "CREATE TABLE IF NOT EXISTS PRIS_EN_CHARGE ("
+         "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+         "professionnel_id INTEGER NOT NULL,"
+         "patient_id INTEGER NOT NULL,"
+         "FOREIGN KEY(professionnel_id) REFERENCES USERS(id) ON DELETE SET NULL ON UPDATE CASCADE,"
+         "FOREIGN KEY(patient_id) REFERENCES PATIENTS(id) ON DELETE CASCADE ON UPDATE CASCADE"
+         ");"
+
+        },
         {"SOINS",
          "CREATE TABLE IF NOT EXISTS SOINS ("
          "id INTEGER PRIMARY KEY AUTOINCREMENT,"
          "dossier_id INTEGER NOT NULL,"
+         "type TEXT NOT NULL,"
          "description TEXT NOT NULL,"
          "date DATETIME DEFAULT CURRENT_TIMESTAMP,"
          "infirmier_id INTEGER,"
@@ -330,8 +341,14 @@ std::string MediPass::create_db(sqlite3* db)
          "CREATE TABLE IF NOT EXISTS CONSULTATIONS ("
          "id INTEGER PRIMARY KEY AUTOINCREMENT,"
          "dossier_id INTEGER NOT NULL,"
-         "notes TEXT,"
-         "date DATETIME DEFAULT CURRENT_TIMESTAMP,"
+         "professionnel_id INTEGER,"
+         "patient_id INTEGER,"
+         "date_et_heure DATETIME DEFAULT CURRENT_TIMESTAMP,"
+         "motif TEXT,"
+         "observations TEXT,"
+         "prescription TEXT,"
+         "FOREIGN KEY(patient_id) REFERENCES PATIENTS(id) ON DELETE CASCADE ON UPDATE CASCADE,"
+         "FOREIGN KEY(professionnel_id) REFERENCES USERS(id) ON DELETE SET NULL ON UPDATE CASCADE,"
          "FOREIGN KEY(dossier_id) REFERENCES DOSSIERS_MEDICAUX(id) ON DELETE CASCADE ON UPDATE CASCADE"
          ");"
         },
@@ -494,7 +511,7 @@ int MediPass::load_sante(sqlite3* db, vector<string> creds)
     string userStatut = creds[11];
     if (userStatut == "medecin") {
 
-        current_user = new Medecin(this,db,creds[1],creds[2],creds[3],creds[4],creds[6]=="1",stoi(creds[7]),creds[8],creds[9],creds[10],creds[12]);
+        current_user = new Medecin(this,db,stoi(creds[0]),creds[1],creds[2],creds[3],creds[4],creds[6]=="1",stoi(creds[7]),creds[8],creds[9],creds[10],creds[12]);
     } else if (userStatut == "infirmier") {
         current_user = new Infirmier(this,db,creds[1],creds[2],creds[3],creds[4],creds[5],creds[6]=="1",stoi(creds[7]),creds[8],creds[9],creds[10],creds[12]);
     } else {
@@ -648,3 +665,21 @@ int MediPass::getDossierId(sqlite3* db, int patientId) {
     sqlite3_finalize(stmt);
     return dossierId;
 }
+
+int MediPass::getUserId(sqlite3* db, int patientId) {
+    const char* sql = "SELECT patient_user_id FROM PATIENTS WHERE id = ?;";
+    sqlite3_stmt* stmt = nullptr;
+    int userId = -1; // -1 si pas trouvé
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_int(stmt, 1, patientId);
+
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            userId = sqlite3_column_int(stmt, 0);
+        }
+    }
+
+    sqlite3_finalize(stmt);
+    return userId;
+}
+

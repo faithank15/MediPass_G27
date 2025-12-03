@@ -69,6 +69,25 @@ void Administrateur::creerUtilisateur() {
         std::cin.ignore();
 
         autorisation = defaultAut[statut];
+
+        std::string sql = sqlite3_mprintf(
+        "INSERT INTO users (firstname, last_name, date_of_birth, password, role, is_active, telephone, created_by, created_at, autorisation, statut, specialite) "
+        "VALUES('%q','%q','%q','%q','%q',%d,%d,'%q','%q','%q','%q','%q');",
+        prenom.c_str(), nom.c_str(), dateNaissance.c_str(), passw.c_str(),
+        type.c_str(),
+        is_active ? 1 : 0, telephone,
+        this->getFirstname().c_str(),
+        mp->getTimeDate().c_str(),
+        autorisation.c_str(), statut.c_str(), specialite.c_str()
+        );
+
+        char* errMsg = nullptr;
+        if (sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
+            std::cerr << "Erreur SQL : " << errMsg << std::endl;
+            sqlite3_free(errMsg);
+            return;
+        }
+
     }
 
     // -----------------------------
@@ -83,6 +102,25 @@ void Administrateur::creerUtilisateur() {
 
         statut = "admin basique";
         autorisation = defaultAut["admin"];
+
+        std::string sql = sqlite3_mprintf(
+        "INSERT INTO users (firstname, last_name, date_of_birth, password, role, is_active, telephone, created_by, created_at, autorisation, statut, specialite) "
+        "VALUES('%q','%q','%q','%q','%q',%d,%d,'%q','%q','%q','%q','%q');",
+        prenom.c_str(), nom.c_str(), dateNaissance.c_str(), passw.c_str(),
+        type.c_str(),
+        is_active ? 1 : 0, telephone,
+        this->getFirstname().c_str(),
+        mp->getTimeDate().c_str(),
+        autorisation.c_str(), statut.c_str(), specialite.c_str()
+        );
+
+        char* errMsg = nullptr;
+        if (sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
+            std::cerr << "Erreur SQL : " << errMsg << std::endl;
+            sqlite3_free(errMsg);
+            return;
+        }
+
     }
 
     // -----------------------------
@@ -94,6 +132,50 @@ void Administrateur::creerUtilisateur() {
         std::cout << "Date de naissance (AAAA-MM-JJ) : "; std::getline(std::cin, dateNaissance);
         std::cout << "Téléphone : "; std::cin >> telephone;
         std::cin.ignore();
+
+        statut = "patient";
+        autorisation = "A4";
+
+        std::string sql = sqlite3_mprintf(
+            "INSERT INTO users (firstname, last_name, date_of_birth, password, role, is_active, telephone, created_by, created_at, autorisation, statut, specialite) "
+            "VALUES('%q','%q','%q','%q','%q',%d,%d,'%q','%q','%q','%q','%q');",
+            prenom.c_str(), nom.c_str(), dateNaissance.c_str(), passw.c_str(),
+            type.c_str(),
+            is_active ? 1 : 0, telephone,
+            this->getFirstname().c_str(),
+            mp->getTimeDate().c_str(),
+            autorisation.c_str(), statut.c_str(), specialite.c_str()
+        );
+        char* errMsg = nullptr;
+        if (sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
+            std::cerr << "Erreur SQL : " << errMsg << std::endl;
+            sqlite3_free(errMsg);
+            return;
+        }
+
+        int id = sqlite3_last_insert_rowid(db);
+
+        sql = sqlite3_mprintf(
+            "INSERT INTO patients (patient_user_id) VALUES(%d);",
+            id
+        );
+        if (sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
+            std::cerr << "Erreur SQL : " << errMsg << std::endl;
+            sqlite3_free(errMsg);
+            return;
+        }
+
+        sql = sqlite3_mprintf(
+            "INSERT INTO DOSSIERS_MEDICAUX (patient_id, created_at) VALUES(%d,'%q');",
+            sqlite3_last_insert_rowid(db), mp->getTimeDate().c_str()
+        );
+
+        if (sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
+            std::cerr << "Erreur SQL : " << errMsg << std::endl;
+            sqlite3_free(errMsg);
+            return;
+        }
+
     }
 
     // -----------------------------
@@ -108,6 +190,24 @@ void Administrateur::creerUtilisateur() {
 
         statut = "secretaire";
         autorisation = "A4";
+
+        std::string sql = sqlite3_mprintf(
+            "INSERT INTO users (firstname, last_name, date_of_birth, password, role, is_active, telephone, created_by, created_at, autorisation, statut, specialite) "
+            "VALUES('%q','%q','%q','%q','%q',%d,%d,'%q','%q','%q','%q','%q');",
+            prenom.c_str(), nom.c_str(), dateNaissance.c_str(), passw.c_str(),
+            type.c_str(),
+            is_active ? 1 : 0, telephone,
+            this->getFirstname().c_str(),
+            mp->getTimeDate().c_str(),
+            autorisation.c_str(), statut.c_str(), specialite.c_str()
+        );
+        char* errMsg = nullptr;
+        if (sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
+            std::cerr << "Erreur SQL : " << errMsg << std::endl;
+            sqlite3_free(errMsg);
+            return;
+        }
+        
     }
 
 
@@ -115,23 +215,7 @@ void Administrateur::creerUtilisateur() {
     // INSERT utilisateur
     // ------------------------------------------------------
 
-    std::string sql = sqlite3_mprintf(
-        "INSERT INTO users (firstname, last_name, date_of_birth, password, role, is_active, telephone, created_by, created_at, autorisation, statut, specialite) "
-        "VALUES('%q','%q','%q','%q','%q',%d,%d,'%q','%q','%q','%q','%q');",
-        prenom.c_str(), nom.c_str(), dateNaissance.c_str(), passw.c_str(),
-        type.c_str(),
-        is_active ? 1 : 0, telephone,
-        this->getFirstname().c_str(),
-        mp->getTimeDate().c_str(),
-        autorisation.c_str(), statut.c_str(), specialite.c_str()
-    );
-
-    char* errMsg = nullptr;
-    if (sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
-        std::cerr << "Erreur SQL : " << errMsg << std::endl;
-        sqlite3_free(errMsg);
-        return;
-    }
+    
 
     std::cout << "[+] Utilisateur créé avec succès !" << std::endl;
 
@@ -147,6 +231,7 @@ void Administrateur::creerUtilisateur() {
             "INSERT INTO patients (patient_user_id) VALUES(%d);",
             newUserId
         );
+        char* errMsg = nullptr;
 
         if (sqlite3_exec(db, sql2.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
             std::cerr << "Erreur lors de la création du patient : " << errMsg << std::endl;

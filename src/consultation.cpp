@@ -12,11 +12,14 @@ Consultation::Consultation(MediPass* mp,sqlite3* db,
                           int id_patient,
                           const std::string& motif,
                           const std::string& observations,
+                          const std::string& prescription,
                           const std::vector<Examen> examens)
     :  patient_id(id_patient),
-      motif(motif), observations(observations), examens(examens) {
+      motif(motif), observations(observations), prescription(prescription), examens(examens) {
 
       this->date_et_heure = mp->getTimeDate();
+
+      dossier_id = mp->getDossierId(db, id_patient);
 
       professionnel_info.push_back(medecin->getFirstname());
       professionnel_info.push_back(medecin->getLast_name());
@@ -27,7 +30,28 @@ Consultation::Consultation(MediPass* mp,sqlite3* db,
         &patient_info,
         nullptr
       );
+
+      //Enregistrer la consultation dans la base de données
+      const char* sql =
+          "INSERT INTO CONSULTATIONS (date_et_heure,dossier_id, pro_id, patient_id, motif, observations) "
+          "VALUES ('%q', %d, %d, '%q', '%q');";
+      char* errMsg = nullptr;
+      std::string formatted_sql = sqlite3_mprintf(
+          sql,
+          date_et_heure.c_str(),
+          medecin->getId(),
+          id_patient,
+          motif.c_str(),
+          observations.c_str()
+      );
+      if (sqlite3_exec(db, formatted_sql.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
+          std::cerr << "Erreur lors de l'insertion de la consultation : " << errMsg << std::endl;
+          sqlite3_free(errMsg);
+      } else {
+          id = sqlite3_last_insert_rowid(db); 
       }
+      sqlite3_free((void*)formatted_sql.c_str());
+}
 
 // Getters
 std::string Consultation::getDateHeure() const { return date_et_heure; }

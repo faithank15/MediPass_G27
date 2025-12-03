@@ -2,13 +2,17 @@
 #define EXAMEN_H
 
 #include <string>
+#include <sqlite3.h>
 
 class Examen {
 private:
-    
+
 public:
     Examen();
-    Examen(const std::string& date,
+    Examen(sqlite3* db,
+        int consultation_id,
+           int dossier_id,
+           const std::string& date,
            const std::string& typeExamen,
            const std::string& resultat);
 
@@ -27,6 +31,8 @@ public:
     std::string date;
     std::string typeExamen;
     std::string resultat;
+    int consultation_id;
+    int dossier_id;
 
     int id;
 

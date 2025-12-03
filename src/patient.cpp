@@ -17,7 +17,7 @@ Patient::Patient(MediPass* mp,sqlite3* db, int id)
     }
 
     if (sqlite3_step(stmt) == SQLITE_ROW) {
-        this->id = id;
+        this->id = getPatientId(id);
         this->firstname = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
         this->last_name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
         this->dateNaissance = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
@@ -57,7 +57,7 @@ Patient::Patient(MediPass* mp,sqlite3* db,
             int telephone,
             const std::string created_by,
             const std::string created_at)
-    : User(mp, db, firstname,lastname,dateNaissance,"","patient",active,telephone,created_by,created_at,"",""),id(id)
+    : User(mp, db, firstname,lastname,dateNaissance,"","patient",active,telephone,created_by,created_at,"",""),id(getPatientId(id))
 {
 
 
@@ -71,6 +71,20 @@ Patient::Patient(MediPass* mp,sqlite3* db,
 }
 
 // Accesseurs
+
+int Patient::getPatientId(int id) {
+    const char* sql = "SELECT id FROM PATIENTS WHERE patient_user_id = ?;";
+    sqlite3_stmt* stmt = nullptr;
+    int patientId = -1; // -1 si pas trouvé
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_int(stmt, 1, id);
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            patientId = sqlite3_column_int(stmt, 0);
+        }
+    }
+    sqlite3_finalize(stmt);
+    return patientId;
+}
 
 
 

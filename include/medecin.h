@@ -24,8 +24,11 @@ public:
     // --- Exceptions ---
     class Invalid {};
 
+    int id;
+
     // --- Constructeurs ---
     Medecin(MediPass* mp, sqlite3* db,
+            int id,
             std::string firstname,
             std::string last_name,
             std::string dateNaissance,
@@ -76,8 +79,14 @@ public:
     bool lire_dossier_medical_interactive();
 
     // --- Import / Export CSV des dossiers médicaux ---
-    void exportDossiersCSV();
+    void exportDossiersCSV(int patientId);
     void importDossiersCSV();
+
+    void enregistrerDisponibilites();
+    void prendreEnChargePatient();
+    void libererPatient();
+    bool patientValide(int patient_id);
+
 
 
     // --- Accesseurs ---

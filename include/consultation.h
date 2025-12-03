@@ -20,6 +20,8 @@ public:
     std::string motif;
     std::string observations;
     int id;
+    int dossier_id;
+    std::string prescription;
 
     Consultation();
     Consultation(MediPass* mp,sqlite3* db,
@@ -27,6 +29,7 @@ public:
                  int id_patient,
                  const std::string& motif,
                  const std::string& observations,
+                 const std::string& prescription,
                  const std::vector<Examen> examens = {}
                 );
 

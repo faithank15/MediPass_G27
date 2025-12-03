@@ -1,1 +1,7 @@
 DossierID,CreatedAt,Antecedants,Consultations,Examens,Soins
+1,2025-01-10,"Diabète|Allergie","Consultation du 12/01 - suivi glycémie|Contrôle du 25/01 - tension","Radio thorax|Prise de sang","Injection vitamine D|Pansement plaie"
+2,2025-02-02,"Hypertension","","IRM cérébrale",""
+3,2025-03-15,"Asthme|Rhinite allergique","Consultation de suivi asthme","Spirométrie","Administration traitement inhalateur"
+4,2025-04-05,"Cholestérol élevé","Contrôle bilan lipidique","Prise de sang","Conseil diététique"
+5,2025-05-20,"Antécédent chirurgical appendicectomie","Suivi post-opératoire","Échographie abdominale","Pansement et soins cicatrice"
+

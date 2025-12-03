@@ -1,4 +1,0 @@
-PatientID,DossierID,CreatedAt,Antecedants,Consultations,Examens,Soins
-1,101,2025-12-01 10:00,Hypertension|Diabète,Consultation initiale|Suivi,Analyse sanguine|ECG,Injection vitamine D|Pansement
-2,102,2025-12-01 11:30,,Consultation suivi,,,
-3,103,2025-12-02 09:15,Asthme,Consultation contrôle,Examen pulmonaire,Inhalateur

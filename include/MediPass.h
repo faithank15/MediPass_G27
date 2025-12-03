@@ -41,6 +41,7 @@ class MediPass
         Patient* load_patient(sqlite3* db,vector<string> creds);
         int load_secretaire(sqlite3* db,vector<string> creds);
         int getDossierId(sqlite3* db, int patientId);
+        int getUserId(sqlite3* db, int patientId);
         //DossierMedical* load_dossier();
 
         string getTimeDate();
