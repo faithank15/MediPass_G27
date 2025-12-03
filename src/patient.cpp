@@ -9,7 +9,7 @@
 //Constructeur
 Patient::Patient(MediPass* mp,sqlite3* db, int id)
 {
-    string sql = "SELECT firstname, last_name, date_of_birth, is_active, telephone, created_by, created_at FROM users WHERE id = " + std::to_string(id) + ";";
+    string sql = "SELECT firstname, last_name, date_of_birth, is_active, telephone, created_by, created_at FROM users WHERE id = " + std::to_string(getPatientId(id)) + ";";
     sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
         std::cerr << "[ERROR] Failed to prepare statement: " << sqlite3_errmsg(db) << std::endl;
@@ -49,7 +49,7 @@ Patient::Patient(MediPass* mp,sqlite3* db, int id)
 
 
 Patient::Patient(MediPass* mp,sqlite3* db,
-            int id,
+            int Id,
             const std::string& firstname,
             const std::string& lastname,
             const std::string& dateNaissance,
@@ -57,7 +57,7 @@ Patient::Patient(MediPass* mp,sqlite3* db,
             int telephone,
             const std::string created_by,
             const std::string created_at)
-    : User(mp, db, firstname,lastname,dateNaissance,"","patient",active,telephone,created_by,created_at,"",""),id(getPatientId(id))
+    : User(mp, db, firstname,lastname,dateNaissance,"","patient",active,telephone,created_by,created_at,"",""),id(getPatientId(Id))
 {
 
 
@@ -73,7 +73,7 @@ Patient::Patient(MediPass* mp,sqlite3* db,
 // Accesseurs
 
 int Patient::getPatientId(int id) {
-    const char* sql = "SELECT id FROM PATIENTS WHERE patient_user_id = ?;";
+    const char* sql = "SELECT patient_user_id FROM PATIENTS WHERE id = ?;";
     sqlite3_stmt* stmt = nullptr;
     int patientId = -1; // -1 si pas trouvé
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {

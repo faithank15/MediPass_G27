@@ -36,9 +36,9 @@ public:
     DossierMedical* getDossierMedical() { return dossier; }
 
     void menu();
+    int id;
 
 private:
-    int id;
     DossierMedical* dossier = nullptr;
     MediPass* mp;
     sqlite3* db;

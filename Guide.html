@@ -1,317 +1,428 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Guide d'utilisation étendu — MediPass</title>
+<meta charset="UTF-8">
+<title>Guide Utilisateur MediPass</title>
 <style>
-  :root{
-    --bg:#f7fafc; --card:#fff; --muted:#6b7280; --accent:#2563eb; --accent-2:#0ea5a4; --hr:#e6eaf0;
-    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  }
-  body{margin:0;background:var(--bg);color:#0f172a;line-height:1.5}
-  header{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;padding:28px 20px}
-  header h1{margin:0;font-size:20px}
-  header p{margin:6px 0 0;color:rgba(255,255,255,0.95);font-size:13px}
-  .container{max-width:1000px;margin:20px auto;padding:0 16px}
-  nav.toc{background:var(--card);border:1px solid var(--hr);padding:14px;border-radius:10px;margin-bottom:16px;box-shadow:0 6px 20px rgba(2,6,23,0.04)}
-  nav.toc h2{margin:0 0 8px;font-size:16px}
-  nav.toc ul{margin:0;padding:0 0 0 18px;color:var(--muted)}
-  article.card{background:var(--card);border:1px solid var(--hr);padding:20px;border-radius:10px;box-shadow:0 6px 20px rgba(2,6,23,0.04)}
-  h2{color:#0f172a;margin-top:18px}
-  h3{margin-top:14px;color:#111827}
-  p.lead{color:var(--muted)}
-  pre, code{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; font-size:13px}
-  pre{background:#0b1220;color:#e6eef8;padding:12px;border-radius:8px;overflow:auto}
-  table{width:100%;border-collapse:collapse;margin:10px 0}
-  th,td{border:1px solid var(--hr);padding:8px;text-align:left}
-  .muted{color:var(--muted);font-size:14px}
-  .btn{display:inline-block;background:var(--accent);color:white;padding:8px 12px;border-radius:8px;text-decoration:none}
-  footer{margin:18px 0;color:var(--muted);font-size:13px}
-  @media (min-width:900px){
-    .layout{display:grid;grid-template-columns:260px 1fr;gap:16px}
-    nav.toc{position:sticky;top:18px;height:fit-content}
-  }
-  .warn {background:#fff7e6;border-left:4px solid #ffb020;padding:8px;border-radius:6px}
-  .ok {background:#ecfdf5;border-left:4px solid #10b981;padding:8px;border-radius:6px}
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: #f0f4f8; color: #333; line-height: 1.6; }
+    h1, h2, h3 { color: #1e3a8a; }
+    h1 { border-bottom: 3px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 20px; }
+    h2 { margin-top: 40px; }
+    h3 { margin-top: 20px; }
+    p { margin: 8px 0; }
+    ul, ol { margin: 8px 0 15px 25px; }
+    table { border-collapse: collapse; width: 100%; margin: 15px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    th, td { padding: 10px; text-align: left; transition: all 0.3s; }
+    th { background-color: #1e3a8a; color: #fff; }
+    tr:hover { background-color: #dbeafe; }
+    code { background-color: #e0e7ff; padding: 2px 5px; border-radius: 3px; }
+    pre { background-color: #e0e7ff; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    .alert { color: #b91c1c; font-weight: bold; }
+    nav { position: fixed; top: 0; width: 100%; background: #1e3a8a; padding: 10px 20px; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    nav a { color: #fff; text-decoration: none; margin-right: 15px; font-weight: bold; transition: color 0.3s; }
+    nav a:hover { color: #93c5fd; }
+    .container { max-width: 1000px; margin: 90px auto 40px auto; padding: 0 20px; animation: fadeIn 1s ease-in; }
+    @keyframes fadeIn { 0% {opacity: 0; transform: translateY(20px);} 100% {opacity: 1; transform: translateY(0);} }
+    .btn { background: #1e3a8a; color: #fff; padding: 5px 12px; border-radius: 5px; text-decoration: none; transition: background 0.3s; }
+    .btn:hover { background: #2563eb; }
 </style>
 </head>
 <body>
-<header>
-  <div class="container">
-    <h1>MediPass — Guide d'utilisation étendu</h1>
-    <p>Mode d'emploi et procédures pour l'installation, le premier démarrage (DB absente), gestion des utilisateurs et bonnes pratiques.</p>
-  </div>
-</header>
 
-<div class="container layout">
-  <nav class="toc" aria-label="Table des matières">
-    <h2>Sommaire</h2>
-    <ul>
-      <li><a href="#intro">Introduction</a></li>
-      <li><a href="#first-run">Premier démarrage (DB manquante)</a></li>
-      <li><a href="#default-creds">Comportement mots de passe par défaut</a></li>
-      <li><a href="#roles">Fonctionnalités par rôle</a></li>
-      <li><a href="#dossier">Chargement des dossiers médicaux</a></li>
-      <li><a href="#sqlite-tips">Tips SQLite (foreign keys, last id, préparées)</a></li>
-      <li><a href="#security">Sécurité & bonnes pratiques</a></li>
-      <li><a href="#cross">Portabilité Windows / Linux</a></li>
-      <li><a href="#troubleshoot">Dépannage courant</a></li>
-      <li><a href="#support">Support</a></li>
-    </ul>
-  </nav>
+<nav>
+    <a href="#introduction">Introduction</a>
+    <a href="#demarrage">Démarrage</a>
+    <a href="#roles">Rôles & Autorisations</a>
+    <a href="#navigation">Navigation</a>
+    <a href="#menu">Menus</a>
+    <a href="#csv">CSV</a>
+    <a href="#securite">Sécurité</a>
+</nav>
 
-  <article class="card" role="article">
+<div class="container">
 
-    <section id="intro">
-      <h2>Introduction</h2>
-      <p class="lead">Ce guide détaille le comportement attendu de MediPass, en particulier le scénario où l'application est lancée sans base de données existante. Il explique aussi comment les mots de passe par défaut sont gérés.</p>
-    </section>
+<h1 id="introduction">Guide Utilisateur MediPass</h1>
 
-    <section id="first-run">
-      <h2>Premier démarrage — base absente</h2>
+<h2>1. Introduction</h2>
+<p>MediPass est une application de gestion médicale permettant la coordination entre les différents acteurs d’un centre de santé : médecins, infirmiers, secrétaires, administrateurs et patients. Chaque rôle possède des fonctionnalités spécifiques, offrant un système sécurisé et structuré.</p>
+<p>Ce guide décrit l’utilisation complète de l’application, depuis la création du super utilisateur et la connexion, jusqu’à l’usage avancé des fonctionnalités, menus, autorisations et gestion des données.</p>
 
-      <p>Lorsque MediPass démarre, il tente d'ouvrir la base SQLite configurée (par défaut : <code>medipass.db</code> ou chemin défini). Si le fichier de base n'existe pas ou si l'initialisation échoue, le comportement par défaut est :</p>
+<h2 id="demarrage">2. Démarrage et première utilisation</h2>
 
-      <ol>
-        <li>Créer la base SQLite et exécuter les scripts de création de tables (toutes les tables nécessaires : <code>USERS</code>, <code>DOSSIERS_MEDICAUX</code>, <code>CONSULTATIONS</code>, <code>EXAMENS</code>, <code>SOINS</code>, etc.).</li>
-        <li>Activer les contraintes de foreign key immédiatement :  
-          <pre>sqlite3_exec(db, "PRAGMA foreign_keys = ON;", NULL, NULL, NULL);</pre>
-        </li>
-        <li>Créer automatiquement un **compte administrateur par défaut** pour permettre la première connexion et configuration.</li>
-      </ol>
+<h3>2.1 Création du Super Administrateur</h3>
+<p>Lors de la première exécution, MediPass oblige à créer un super administrateur (A0). Les informations requises :</p>
+<ul>
+    <li>Prénom</li>
+    <li>Nom</li>
+    <li>Date de naissance (YYYY-MM-DD)</li>
+    <li>Téléphone</li>
+    <li>Mot de passe</li>
+</ul>
+<p>Le super administrateur peut :</p>
+<ul>
+    <li>Créer et gérer tous les utilisateurs</li>
+    <li>Définir ou modifier les autorisations</li>
+    <li>Activer ou désactiver des comptes</li>
+    <li>Accéder aux statistiques détaillées</li>
+</ul>
+<p class="alert">⚠️ Les doublons prénom + nom ne sont pas autorisés. Le mot de passe doit être sécurisé.</p>
 
-      <h3>Compte administrateur par défaut (first-run)</h3>
-      <p class="warn"><strong>Comportement par défaut :</strong> si la DB n'existe pas, MediPass crée un admin par défaut dont les identifiants sont :</p>
-      <ul>
-        <li><strong>firstname</strong> : <code>admin</code></li>
-        <li><strong>lastname</strong> : <code>admin</code></li>
-        <li><strong>password</strong> : <code>admin</code></li>
-        <li><strong>role/statut</strong> : <code>admin</code></li>
-      </ul>
+<h3>2.2 Connexion</h3>
+<p>Après création, l’utilisateur doit se connecter avec :</p>
+<ul>
+    <li>Prénom</li>
+    <li>Nom</li>
+    <li>Mot de passe</li>
+</ul>
+<h3>2.3 Lancement</h3>
+<p class="alert">Au Lancement de MediPass la base de données que nous avons fournis <code>(medipass.db)</code> sera chargé toutefois si vous voulez tester la fonctionnalité de création du super admin lors du premier lancement sans db veuillez deplacer le fichier dans un autre dossier le code le considérera comme absent</p>
+<p>Le rôle et l’autorisation sont identifiés et le menu adapté est affiché.</p>
+<p class="alert">⚠️ Chaque utilisateur ne peut se connecter qu’avec prénom + nom + mot de passe corrects.</p>
 
-      <p>Le compte est créé avec des droits administrateurs complets. <span class="warn">Changez immédiatement ce mot de passe au premier login.</span></p>
+<h2 id="roles">3. Rôles et autorisations</h2>
+<p>MediPass gère plusieurs types d’utilisateurs et un système d’autorisations :</p>
 
-      <h3>Exemple SQL d'initialisation (pseudocode)</h3>
-      <pre>
-// création table users (extrait)
-CREATE TABLE IF NOT EXISTS USERS (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  firstname TEXT,
-  lastname TEXT,
-  password TEXT,
-  role TEXT,
-  active INTEGER DEFAULT 1,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+<table>
+<tr>
+<th>Rôle</th>
+<th>Description</th>
+<th>Droits principaux</th>
+<th>Autorisation</th>
+</tr>
+<tr>
+<td>Super Administrateur</td>
+<td>Gère toute la plateforme</td>
+<td>Créer/Modifier/Supprimer utilisateurs, gérer autorisations, voir statistiques, importer/exporter données</td>
+<td>A0</td>
+</tr>
+<tr>
+<td>Administrateur</td>
+<td>Gère la plateforme</td>
+<td>Gestion utilisateurs, import/export de dossiers médicaux</td>
+<td>A1</td>
+</tr>
+<tr>
+<td>Médecin</td>
+<td>Suit les patients et gère dossiers médicaux</td>
+<td>Lire/éditer dossiers, consulter disponibilités, créer consultations</td>
+<td>A2/A3</td>
+</tr>
+<tr>
+<td>Secrétaire</td>
+<td>Gère les rendez-vous et l’agenda</td>
+<td>Programmer consultations, consulter disponibilités</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Infirmier</td>
+<td>Suit les soins</td>
+<td>Consulter dossiers, enregistrer soins</td>
+<td>A2/A3</td>
+</tr>
+<tr>
+<td>Patient</td>
+<td>Accède à son dossier personnel</td>
+<td>Consulter son dossier médical, rendez-vous</td>
+<td>A4</td>
+</tr>
+</table>
 
-// si pas d'utilisateur admin existant -> créer admin par défaut
-INSERT INTO USERS (username, firstname, lastname, password, role)
-VALUES ('admin', 'Admin', 'Default', 'admin', 'admin');
-      </pre>
+<h2 id="navigation">4. Navigation générale</h2>
+<ul>
+    <li>Entrée → valider une option</li>
+    <li>0 → se déconnecter / quitter</li>
+    <li>Menus numérotés pour sélectionner les actions</li>
+    <li>Les erreurs sont affichées sous forme de messages explicatifs</li>
+</ul>
 
-      <p class="muted">Dans ton code, vérifie que le mot de passe est stocké de façon sécurisée (hashé). L'exemple ci-dessus est illustratif — il ne doit pas être utilisé en production tel quel.</p>
-    </section>
+<h2 id="menu">5. Menus et fonctionnalités par rôle</h2>
 
-    <section id="default-creds">
-      <h2>Comportement des mots de passe par défaut pour les nouveaux utilisateurs</h2>
+<h3>5.1 Administrateur / Super Administrateur</h3>
+<p>Le rôle de l’administrateur permet de gérer les utilisateurs, les autorisations et d’accéder aux statistiques détaillées du système.</p>
 
-      <p>Règles opérationnelles configurées dans l'application :</p>
-      <ul>
-        <li>Quand un administrateur crée un nouvel utilisateur via l'interface, **le mot de passe par défaut attribué** est : <code>user</code>.</li>
-        <li>L'utilisateur doit être informé du mot de passe initial par l'admin (par exemple par email interne/secure message) et **forcé à changer** son mot de passe au premier login.</li>
-        <li>Procédure recommandée : lors du premier login, vérifier un flag <code>must_change_password</code> et envoyer l'utilisateur sur l'écran de changement de mot de passe avant tout autre accès.</li>
-      </ul>
+<ul>
+    <li>Menu principal :</li>
+</ul>
+<pre>
+====================================================
+             Menu Administrateur (Prénom)
+====================================================
+0. Créer un super administrateur    (uniquement A0)
+1. Créer un utilisateur
+2. Modifier l'autorisation d'un utilisateur
+3. Activer / Désactiver un utilisateur
+4. Statistiques détaillées
+5. Liste des utilisateurs
+6. Déconnexion
+</pre>
 
-      <h3>Exemple : SQL pour créer un utilisateur avec mot de passe par défaut</h3>
-      <pre>
-INSERT INTO USERS (username, firstname, lastname, password, role, must_change_password)
-VALUES ('jdoe', 'John', 'Doe', 'user', 'patient', 1);
-      </pre>
+<p><strong>Fonctionnalités détaillées :</strong></p>
+<ol>
+    <li><strong>Créer un super administrateur</strong> : accessible uniquement à un A0. Permet de créer un compte avec autorisation complète (A0).</li>
+    <li><strong>Créer un utilisateur</strong> :
+        <ul>
+            <li>Types possibles : admin, patient, secrétaire, professionnel de santé (médecin / infirmier).</li>
+            <li>Pour un professionnel de santé :
+                <ul>
+                    <li>Saisir prénom, nom, date de naissance, statut (médecin ou infirmier), spécialité, téléphone.</li>
+                    <li><strong>Spécialités médicales valides :</strong></li>
+                    <ul>
+                        <li>Médecine générale / Médecine de famille</li>
+                        <li>Cardiologie</li>
+                        <li>Dermatologie et vénéréologie</li>
+                        <li>Endocrinologie, diabétologie et métabolisme</li>
+                        <li>Gastro-entérologie et hépatologie</li>
+                        <li>Gériatrie</li>
+                        <li>Maladies infectieuses et tropicales</li>
+                        <li>Médecine interne</li>
+                        <li>Neurologie</li>
+                        <li>Oncologie médicale</li>
+                        <li>Pédiatrie</li>
+                        <li>Pneumologie</li>
+                        <li>Psychiatrie</li>
+                        <li>Rhumatologie</li>
+                        <li>Chirurgie générale / viscérale et digestive</li>
+                        <li>Chirurgie orthopédique et traumatologique</li>
+                        <li>Chirurgie plastique, reconstructrice et esthétique</li>
+                        <li>Gynécologie obstétrique</li>
+                        <li>Ophtalmologie</li>
+                        <li>Oto-rhino-laryngologie (ORL)</li>
+                        <li>Urologie</li>
+                        <li>Anesthésiologie et réanimation</li>
+                        <li>Anatomie et cytologie pathologiques</li>
+                        <li>Radiologie et imagerie médicale</li>
+                    </ul>
+                    <li class="alert">⚠️ Utiliser uniquement les spécialités listées ci-dessus pour la création d’un médecin ou d'un infirmier.</li>
+                </ul>
+            </li>
+            <li>Pour un patient : le compte est créé dans la table <code>users</code> et un dossier médical est automatiquement créé.</li>
+        </ul>
+    </li>
+    <li><strong>Modifier autorisation</strong> : changer le niveau d’accès d’un utilisateur (ex : A1, A2, A3, A4).</li>
+    <li><strong>Activer / Désactiver un utilisateur</strong> : permet de gérer l’état actif d’un compte.</li>
+    <li><strong>Statistiques détaillées</strong> :
+        <ul>
+            <li>Nombre total d’utilisateurs actifs et inactifs.</li>
+            <li>Répartition par rôles : administrateurs, médecins, infirmiers, secrétaires, patients.</li>
+            <li>Nombre de consultations et de dossiers médicaux.</li>
+            <li>Consultations moyennes par patient et répartition des médecins par spécialité.</li>
+        </ul>
+    </li>
+    <li><strong>Liste des utilisateurs</strong> : affiche les ID, prénom, nom, rôle et état actif de tous les utilisateurs.</li>
+    <li><strong>Déconnexion</strong> : quitter le menu administrateur.</li>
+</ol>
 
-      <p class="warn">Important : <strong>ne stocke jamais les mots de passe en clair</strong>. Utilise bcrypt/Argon2 ou au minimum un sha256+salt adapté. Le guide ci-dessus utilise des valeurs "admin"/"user" pour l'exemple uniquement.</p>
-    </section>
+<p class="alert">⚠️ Les utilisateurs n’ayant pas les autorisations nécessaires (A0 ou A1) ne peuvent pas accéder à l’administration.</p>
 
-    <section id="roles">
-      <h2>Fonctionnalités par rôle (rappel)</h2>
-      <p class="muted">Synopsis rapide, plus détaillé dans la version précédente du guide.</p>
-      <ul>
-        <li><strong>Admin</strong> : gestion complète des utilisateurs, rôles, logs, création sauvegardes.</li>
-        <li><strong>Médecin</strong> : accès aux dossiers patients, ajouter consultations/examens.</li>
-        <li><strong>Infirmier</strong> : ajouter soins, observations.</li>
-        <li><strong>Secrétaire</strong> : gestion RDV, disponibilités.</li>
-        <li><strong>Patient</strong> : consultation de son dossier / RDV.</li>
-      </ul>
-    </section>
 
-    <section id="dossier">
-      <h2>Chargement dynamique du DossierMedical (implémentation)</h2>
-      <p>Comportement attendu : le constructeur <code>DossierMedical(MediPass* mp, sqlite3* db, int patientId, int dossierId)</code> charge automatiquement :</p>
-      <ul>
-        <li>heureCréation (colonne <code>created_at</code> dans <code>DOSSIERS_MEDICAUX</code>),</li>
-        <li>tous les <code>ANTECEDANTS</code> (vector),</li>
-        <li>toutes les <code>CONSULTATIONS</code> et pour chacune ses <code>EXAMENS</code>,</li>
-        <li>tous les <code>SOINS</code>.</li>
-      </ul>
+<h2>Guide du Médecin - MediPass</h2>
 
-      <h3>Extraits C++ (utiliser prepared statements)</h3>
-      <pre>
-// récupérer created_at
-const char* sql = "SELECT created_at FROM DOSSIERS_MEDICAUX WHERE id = ?;";
-sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
-sqlite3_bind_int(stmt, 1, dossierId);
-if (sqlite3_step(stmt) == SQLITE_ROW) {
-    heureCreation = reinterpret_cast<const char*>(sqlite3_column_text(stmt,0));
-}
-sqlite3_finalize(stmt);
+<h3>5.2 Fonctionnalités principales</h3>
 
-// récupérer antécédants
-const char* sql2 = "SELECT id, type, observations FROM ANTECEDANTS WHERE dossier_id = ?;";
-sqlite3_prepare_v2(db, sql2, -1, &stmt, NULL);
-sqlite3_bind_int(stmt, 1, dossierId);
-while (sqlite3_step(stmt) == SQLITE_ROW) {
-    Antecedant a;
-    a.id = sqlite3_column_int(stmt,0);
-    a.type = (const char*)sqlite3_column_text(stmt,1);
-    a.observations = (const char*)sqlite3_column_text(stmt,2);
-    antecedants.push_back(a);
-}
-sqlite3_finalize(stmt);
-      </pre>
+<ul>
+    <li>Afficher les patients suivis</li>
+    <li>Consulter et gérer les disponibilités</li>
+    <li>Créer et éditer les consultations</li>
+    <li>Lire les dossiers médicaux</li>
+    <li>Exporter / importer les dossiers médicaux en CSV</li>
+    <li>Prendre en charge et libérer un patient</li>
+    <li>Afficher les informations professionnelles</li>
+    <li>Menu interactif complet</li>
+</ul>
 
-      <p class="muted">Utilise toujours <code>sqlite3_finalize()</code> après chaque <code>prepare</code> et vérifie le code de retour des appels SQLite.</p>
-    </section>
-
-    <section id="sqlite-tips">
-      <h2>Tips SQLite importants</h2>
-
-      <h3>Activer foreign keys</h3>
-      <pre>
-sqlite3_exec(db, "PRAGMA foreign_keys = ON;", NULL, NULL, NULL);
-      </pre>
-      <p class="muted">Doit être exécuté juste après <code>sqlite3_open()</code> sur chaque connexion.</p>
-
-      <h3>Récupérer l'ID de la dernière insertion</h3>
-      <pre>
-long id = sqlite3_last_insert_rowid(db);
-      </pre>
-      <p>Renvoie l'INTEGER PRIMARY KEY de la dernière insertion sur cette connexion.</p>
-
-      <h3>Préférer requêtes préparées</h3>
-      <p>Plutôt que de concaténer des strings SQL, utilisez :</p>
-      <pre>
-sqlite3_prepare_v2(db, "INSERT INTO users(username, password) VALUES(?,?);", -1, &stmt, NULL);
-sqlite3_bind_text(stmt,1, username.c_str(), -1, SQLITE_TRANSIENT);
-sqlite3_bind_text(stmt,2, hash.c_str(), -1, SQLITE_TRANSIENT);
-sqlite3_step(stmt);
-sqlite3_finalize(stmt);
-      </pre>
-
-      <h3>Utiliser sqlite3_mprintf en dernier recours</h3>
-      <pre>
-char* q = sqlite3_mprintf("INSERT INTO logs(msg) VALUES('%q');", message.c_str());
-sqlite3_exec(db, q, NULL, NULL, NULL);
-sqlite3_free(q);
-      </pre>
-      <p class="muted">%q échappe les apostrophes automatiquement.</p>
-    </section>
-
-    <section id="security">
-      <h2>Sécurité & bonnes pratiques</h2>
-
-      <h3>Mots de passe</h3>
-      <ul>
-        <li>Ne stocke jamais de mots de passe en clair : utilise hashing (bcrypt/Argon2 sinon PBKDF2+salt).</li>
-        <li>Forcer le changement du mot de passe par défaut au premier login (<code>must_change_password</code>).</li>
-      </ul>
-
-      <h3>Protections initiales</h3>
-      <ul>
-        <li>Après la première connexion admin, crée un compte administrateur réel et supprime/renomme le compte par défaut si tu l'as utilisé.</li>
-        <li>Limiter l'accès physiques/SSH au serveur contenant la DB.</li>
-      </ul>
-
-      <h3>Sauvegardes</h3>
-      <ul>
-        <li>Faire des dumps réguliers : <code>sqlite3 medipass.db .dump &gt; backup.sql</code></li>
-        <li>Conserver au moins 3 sauvegardes rotations (quotidienne/hebdo/mensuelle).</li>
-      </ul>
-
-      <h3>Autres recommandations techniques</h3>
-      <ul>
-        <li>Activer <code>PRAGMA foreign_keys = ON;</code> sur chaque connexion.</li>
-        <li>Utiliser des transactions (`BEGIN` / `COMMIT`) pour opérations multi-updates.</li>
-        <li>Vérifier les tailles et indices pour performances (indexer <code>patient_id</code>, <code>dossier_id</code>, <code>medecin_id</code>).</li>
-      </ul>
-    </section>
-
-    <section id="cross">
-      <h2>Portabilité Windows / Linux (Code::Blocks)</h2>
-
-      <h3>Include SQLite</h3>
-      <p>Dans le code :<br><code>#include &lt;sqlite3.h&gt;</code> — identique sur Linux et Windows.</p>
-
-      <h3>Linkage</h3>
-      <ul>
-        <li>Linux : installer <code>libsqlite3-dev</code> et linker avec <code>-lsqlite3</code>.</li>
-        <li>Windows : tu peux intégrer <code>sqlite3.c</code> + <code>sqlite3.h</code> directement au projet pour une portabilité maximale (pas besoin d'installer la lib).</li>
-      </ul>
-
-      <h3>Code::Blocks (conseil)</h3>
-      <ul>
-        <li>Ajoute le dossier <code>include/</code> dans « Search directories » → Compiler.</li>
-        <li>Si tu fournis <code>sqlite3.c</code> dans ton projet, ajoute-le aux sources (compile time).</li>
-      </ul>
-    </section>
-
-    <section id="troubleshoot">
-      <h2>Dépannage courant (extraits de l'historique du projet)</h2>
-
-      <h3>Problèmes SQL — syntax error near "NULLtype"</h3>
-      <p>Souvent dû à une virgule manquante entre deux colonnes. Exemple corrigé :</p>
-      <pre>
-"dossier_id INTEGER NOT NULL,"  -- note la virgule
-"type TEXT NOT NULL,"
-      </pre>
-
-      <h3>dynamic_cast échoue (source type is not polymorphic)</h3>
-      <p>Assure-toi que la classe de base a au moins une méthode virtuelle (par exemple <code>virtual ~User(){}</code>).</p>
-
-      <h3>Référence indéfinie au link time (undefined reference)</h3>
-      <p>Vérifie que la définition d'une méthode membre corresponde exactement à la déclaration (mêmes const, refs, ordre). Exemple :</p>
-      <pre>
--- header :
-void getDisponibilites(sqlite3* db, int doc_id, const std::string& f, const std::string& l);
-
-// cpp :
-void Secretaire::getDisponibilites(sqlite3* db, int doc_id, const std::string& f, const std::string& l) { ... }
-      </pre>
-
-      <h3>Crash à l'instanciation de Medecin / Pro_sante (exception Invalid)</h3>
-      <p>Vérifie les index du tableau <code>creds</code> chargé depuis la DB : utiliser <code>creds.at(i)</code> et valider la taille <code>creds.size()</code> avant d'accéder aux éléments. Les erreurs de mapping champ → index sont la cause la plus fréquente.</p>
-
-      <h3>DB absent → création admin par défaut</h3>
-      <p>Si tu veux connaître l'endroit où le programme crée l'admin par défaut, recherche la routine d'initialisation qui exécute les scripts SQL de création puis vérifie la présence d'au moins un utilisateur admin ; si absent, INSERT admin par défaut.</p>
-
-    </section>
-
-    <section id="support">
-      <h2>Support & checklist avant mise en production</h2>
-      <ol>
-        <li>Changer immédiatement le mot de passe du compte admin par défaut.</li>
-        <li>Activer hashing sécurisé pour les mots de passe.</li>
-        <li>Configurer sauvegardes automatiques (cron ou service).</li>
-        <li>Limiter accès base via ACL / chiffrement disque si nécessaire.</li>
-        <li>Tester les migrations : s'assurer que la création automatique de tables couvre toutes les versions (migration scripts versionnés).</li>
-      </ol>
-
-      <p class="muted">Version du guide : 1.1 — mis à jour pour inclure le scénario "DB absente" et mots de passe par défaut.</p>
-    </section>
-
-    <footer>
-      <p class="muted">Ce guide est généré pour le projet MediPass (MediPass_G27). Adapte les exemples SQL/C++ à ta base réelle et remplace les mots de passe d'exemple par un système de hash sécurisé.</p>
-    </footer>
-  </article>
+<div class="fonctionnalite">
+    <h4>Afficher les patients suivis</h4>
+    <p>Méthode : <code>afficher_patients()</code></p>
+    <p>Liste tous les patients dont le médecin est responsable en affichant leurs noms complets.</p>
 </div>
+
+<div class="fonctionnalite">
+    <h4>Consulter et gérer les disponibilités</h4>
+    <p>Méthodes : <code>ajouter_disponibilite()</code>, <code>charger_disponibilites()</code>, <code>afficher_disponibilites()</code></p>
+    <p>Permet de créer de nouvelles disponibilités et de consulter celles existantes.</p>
+</div>
+
+<div class="fonctionnalite">
+    <h4>Créer et éditer les consultations</h4>
+    <p>Méthodes : <code>ajouter_consultation_interactive()</code>, <code>editer_dossier_medical()</code></p>
+    <p>Permet d'ajouter des consultations avec motif, observations, prescription et examens. Les dossiers peuvent être modifiés pour ajouter des antécédents ou des consultations.</p>
+</div>
+
+<div class="fonctionnalite">
+    <h4>Lire les dossiers médicaux</h4>
+    <p>Méthodes : <code>lire_dossier_medical()</code>, <code>lire_dossier_medical_interactive()</code></p>
+    <p>Le médecin peut consulter le dossier médical d’un patient uniquement si celui-ci est sous sa responsabilité.</p>
+</div>
+
+<div class="fonctionnalite">
+    <h4>Exporter / importer les dossiers médicaux</h4>
+    <p>Méthodes : <code>exportDossiersCSV()</code>, <code>importDossiersCSV()</code></p>
+    <p>Permet d’exporter un dossier complet au format CSV ou d’importer un fichier CSV pour mettre à jour la base de données.</p>
+</div>
+
+<div class="fonctionnalite">
+    <h4>Prendre en charge et libérer un patient</h4>
+    <p>Méthodes : <code>prendreEnChargePatient()</code>, <code>libererPatient()</code></p>
+    <p>Le médecin peut ajouter un patient à sa liste de suivi ou le retirer. La base de données est mise à jour en conséquence.</p>
+</div>
+
+<div class="fonctionnalite">
+    <h4>Afficher les informations professionnelles</h4>
+    <p>Méthode : <code>afficher_infos_professionnelles()</code></p>
+    <p>Affiche le nom, rôle, statut, autorisation et si le médecin est actif.</p>
+</div>
+
+<div class="menu">
+    <h4>Menu interactif</h4>
+    <pre>
+1. Voir la liste de mes patients
+2. Enregistrer mes disponibilites
+3. Voir mes disponibilites
+4. Créer une consultation
+5. Voir mes informations professionnelles
+6. Prendre en charge un patient
+7. Libérer un patient
+8. Lire le dossier medical d'un patient
+9. Export CSV des dossiers médicaux
+10. Import CSV des dossiers médicaux
+0. Se deconnecter / Quitter
+    </pre>
+</div>
+
+<h3>5.3 Secrétaire</h3>
+<p>Le rôle de la secrétaire consiste principalement à gérer les rendez-vous des patients et à consulter les disponibilités des professionnels de santé. La secrétaire ne peut pas modifier les dossiers médicaux ni accéder aux informations confidentielles des patients au-delà de ce qui est nécessaire pour la planification.</p>
+
+<ul>
+    <li><strong>Menu principal :</strong></li>
+</ul>
+<pre>
+===== Menu Secrétaire =====
+1. Prendre un rendez-vous
+2. Annuler un rendez-vous
+3. Consulter les disponibilités des professionnels
+4. Consulter les rendez-vous d'un patient
+0. Déconnexion
+</pre>
+
+<p><strong>Fonctionnalités détaillées :</strong></p>
+<ol>
+    <li><strong>Prendre un rendez-vous :</strong>
+        Permet de créer un rendez-vous pour un patient avec un professionnel de santé en vérifiant l’existence du patient, la disponibilité du professionnel et l’heure souhaitée.</li>
+    <li><strong>Annuler un rendez-vous :</strong>
+        Supprime un rendez-vous existant dans le système, avec confirmation que le rendez-vous a bien été annulé.</li>
+    <li><strong>Consulter les disponibilités :</strong>
+        Affiche toutes les plages horaires disponibles pour un professionnel selon sa spécialité et permet de planifier les rendez-vous de manière optimale.</li>
+    <li><strong>Consulter les rendez-vous d’un patient :</strong>
+        Liste tous les rendez-vous programmés pour un patient afin de suivre son planning et gérer les conflits éventuels.</li>
+    <li><strong>Déconnexion :</strong>
+        Quitte le menu secrétaire et sécurise la session de l’utilisateur.</li>
+</ol>
+
+<p class="alert">⚠️ La secrétaire n’a accès qu’aux fonctionnalités de planification et de consultation de rendez-vous. Elle ne peut ni modifier les dossiers médicaux ni accéder aux informations sensibles des patients.</p>
+
+<h3>5.4 Infirmier</h3>
+<p>Le rôle de l’infirmier consiste principalement à administrer des soins et consulter les dossiers médicaux des patients selon les autorisations.</p>
+<ul>
+    <li>Menu principal :</li>
+</ul>
+<pre>
+===== Menu Infirmier =====
+1. Administrer un soin
+2. Déconnexion
+</pre>
+<p>**Flux pour administrer un soin :**</p>
+<ol>
+    <li>Choisir l’option <code>1</code> dans le menu infirmier.</li>
+    <li>Saisir le prénom et le nom du patient.</li>
+    <li>Le système vérifie si le patient existe et est actif. Si non, un message d’erreur s’affiche.</li>
+    <li>Optionnel : consulter le dossier médical du patient.</li>
+    <li>Saisir le type de soin à administrer (ex : injection, pansement, perfusion).</li>
+    <li>Saisir une description détaillée du soin (notes complémentaires, observations).</li>
+    <li>Le soin est enregistré dans la base de données et associé au patient.</li>
+    <li>Message de confirmation : <code>Soin administré avec succès</code>.</li>
+</ol>
+<p>**Déconnexion :**</p>
+<ul>
+    <li>Choisir l’option <code>2</code> pour se déconnecter.</li>
+</ul>
+<p class="alert">⚠️ L’infirmier ne peut administrer un soin que pour les patients dont il a l’autorisation.</p>
+
+
+
+<h2 id="csv">6. Import / Export CSV</h2>
+<p>Les médecins peuvent importer et exporter les dossiers médicaux au format CSV. Le format utilisé correspond aux sections du dossier et permet une mise à jour complète ou partielle :</p>
+
+<h3>Exemple de structure CSV :</h3>
+<pre>
+# ANTECEDENTS
+"Diabète";"Suivi régulier"
+"Allergie";"Pollen"
+FIN_ANTECEDENTS
+
+# CONSULTATIONS
+12;34;101;"2025-01-10 14:00";"Consultation de contrôle";"Rien à signaler";"Paracétamol"
+FIN_CONSULTATIONS
+
+# EXAMENS
+12;101;"Radio thorax";"Résultat normal";"2025-01-11"
+FIN_EXAMENS
+
+# SOINS
+101;"Injection";"Injection intramusculaire";"2025-01-12";12
+FIN_SOINS
+</pre>
+
+<p><strong>Règles et bonnes pratiques :</strong></p>
+<ul>
+    <li>Chaque section est délimitée par un titre (# ANTECEDENTS, # CONSULTATIONS, # EXAMENS, # SOINS) et une fin de section (FIN_…).</li>
+    <li>Les champs multiples dans une colonne sont séparés par <code>|</code> si nécessaire.</li>
+    <li>Les textes sont entourés de guillemets <code>"</code>.</li>
+    <li>Le patient doit exister dans la base et être confirmé avant l'importation.</li>
+    <li>Les IDs des dossiers et consultations du CSV sont remplacés par ceux de la base lors de l'import.</li>
+    <li>Erreurs fréquentes : <code>UNIQUE constraint</code>, <code>FOREIGN KEY failed</code>, format invalide ou sections mal formées.</li>
+</ul>
+
+<p><strong>Fonctionnalités :</strong></p>
+<ol>
+    <li><strong>Importer un dossier CSV :</strong>
+
+        <p class="alert"> Pour importer un dossierMédical.csv veuillez utiliser le ficher Test.csv ou un fichier du même format et le copier coller dans le dossier import du projet avant de pouvoir l'imorter via le code (après chaque import le fichier importé est supprimé du dossier import)</p>
+        Permet de mettre à jour ou ajouter un dossier médical existant avec toutes ses sections : antécédents, consultations, examens, soins.
+        Le fichier est vérifié, le patient confirmé et les données insérées dans la base SQLite.</li>
+    <li><strong>Exporter un dossier CSV :</strong>
+        <p class="alert">Pour l'esport du dossier médical après l'export vous le récupèrerai dans le dossier export du projet</p>
+        Permet d’extraire le dossier médical complet d’un patient pour archivage ou partage, en respectant la même structure par sections.</li>
+</ol>
+
+<p class="alert">⚠️ Toujours vérifier que le fichier correspond au patient réel avant importation. Toute erreur de format ou ID incorrect peut corrompre la base de données.</p>
+
+
+<h2 id="securite">7. Sécurité et permissions</h2>
+<ul>
+    <li>Chaque utilisateur voit uniquement les données auxquelles il a droit</li>
+    <li>Médecins : uniquement leurs patients</li>
+    <li>Secrétaires : uniquement les rendez-vous</li>
+    <li>Administrateurs : accès global</li>
+    <li>Déconnexion via option 0 dans le menu</li>
+    <li>Vérifier les fichiers CSV et la base SQLite en cas d’erreurs</li>
+</ul>
+
+<h2 id="bonnespratiques">8. Bonnes pratiques</h2>
+<ul>
+    <li>Mot de passe sécurisé, unique et confidentiel</li>
+    <li>Numéro de téléphone sous forme de texte pour inclure les indicatifs</li>
+    <li>Dates au format <code>YYYY-MM-DD</code></li>
+    <li>Ne pas créer plusieurs utilisateurs avec le même prénom + nom</li>
+    <li>Respecter les autorisations pour éviter des conflits ou pertes de données</li>
+</ul>
+
+<h2 id="support">9. Support et dépannage</h2>
+<ul>
+    <li>Messages d’erreur SQL ou validations indiquent la cause du problème</li>
+    <li>Vérifier la cohérence de la base et des fichiers CSV</li>
+</ul>
+
+</div>
+
 </body>
 </html>

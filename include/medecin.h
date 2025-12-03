@@ -16,7 +16,7 @@ public:
     // --- Structure pour gérer les disponibilités ---
     struct Disponibilite {
         int id;
-        int day;
+        int day;   
         std::string heure_start;
         std::string heure_end;
     };
